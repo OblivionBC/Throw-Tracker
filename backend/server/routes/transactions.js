@@ -1,3 +1,7 @@
+/*
+  Purpose: Transactions holds all routes for editing the database and exports them with object router
+*/
+
 const router = require("express").Router();
 const {
   addPerson,

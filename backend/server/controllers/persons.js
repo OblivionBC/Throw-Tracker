@@ -1,3 +1,7 @@
+/*
+  Purpose: Persons.js holds all the HTTP Requests for editing the Person Table
+      The table is selected through the SQL Queries
+*/
 const { pool } = require(".././db");
 
 exports.addPerson = async (req, res) => {
