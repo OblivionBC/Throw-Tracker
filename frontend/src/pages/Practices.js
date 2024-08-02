@@ -1,7 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 import placeholder from "../images/ThrowLogo.png";
-import PracticeItem from "./PracticeItem";
+import PracticeItem from "../componenents/PracticeList";
+import TrainingPeriodList from "../componenents/TrainingPeriodList";
 
 const Page = styled.div`
   display: flex;
@@ -46,6 +47,7 @@ const ChartWrap = styled.div`
   background-position: center;
   height: 300px;
   width: 300px;
+  margin-bottom: 100px;
 `;
 
 const ChartPlaceholder = styled.img`
@@ -59,19 +61,20 @@ const Practices = () => {
   return (
     <Page>
       <LeftColumn>
-        <TrainingPeriodWrap>
-          <h1>Training</h1>
-        </TrainingPeriodWrap>
-        <PracticeWrap>
-          <h1>Practices</h1>
-          <PracticeItem data={PracticeItems} />;
-        </PracticeWrap>
-      </LeftColumn>
-      <RightColumn>
         <ChartWrap>
           <h1>Chart</h1>
           <ChartPlaceholder src={placeholder} />
         </ChartWrap>
+        <TrainingPeriodWrap>
+          <h1>Training Periods</h1>
+          <TrainingPeriodList data={TrainingPeriodItems} />
+        </TrainingPeriodWrap>
+      </LeftColumn>
+      <RightColumn>
+        <PracticeWrap>
+          <h1>Practices</h1>
+          <PracticeItem data={PracticeItems} />;
+        </PracticeWrap>
       </RightColumn>
     </Page>
   );
