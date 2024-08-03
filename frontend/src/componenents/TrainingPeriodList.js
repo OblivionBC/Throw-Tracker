@@ -1,48 +1,83 @@
-import React from "react";
 import styled from "styled-components";
+import "typeface-nunito";
+import DataTable from "react-data-table-component";
 // This is your PracticeItem component
 //Test that this works and add it to the practices component
-const TrainingPeriodWrap = styled.div`
+
+const CompWrap = styled.div`
+  background-color: gray;
+  width: 90%;
+  padding: 0.2rem;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  border-radius: 5px;
+`;
+const TableWrap = styled(DataTable)`
+  width: 100%;
+  .rdt_Table {
+    background-color: white;
+  }
+  .rdt_TableHeadRow {
+    background-color: #a9a5ba;
+    font-weight: bold;
+  }
+  .rdt_TableRow {
+    &:nth-of-type(odd) {
+      background-color: white;
+    }
+    &:nth-of-type(even) {
+      background-color: #eeeeee;
+    }
+  }
+  .rdt_Pagination {
+    background-color: #343a40;
+    color: #fff;
+  }
+`;
+const Title = styled.h1`
   display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  background: #E4E19F;
-  border: 2px black solid
-  border-radius: 100px;
-  margin: 2rem
+  align-self: flex-start;
 `;
-
-const ItemWrap = styled.p`
-  font-family: "Nunito", sans-serif;
-  margin-left: 15px;
-`;
-const TrainingPeriodItem = ({ startDate, endDate, PRSN_RK, TRPE_RK }, key) => {
+const TrainingPeriodList = ({ data, sharedState, setSharedState }) => {
+  const handleChange = ({ selectedRows }) => {
+    // You can set state or dispatch with something like Redux so we can use the retrieved data
+    if (selectedRows) {
+      const ids = selectedRows.map((row) => {
+        return row.TRPE_RK;
+      });
+      setSharedState(ids);
+    }
+  };
+  const columns = [
+    {
+      name: "ID",
+      selector: (row) => row.TRPE_RK,
+      sortable: true,
+    },
+    {
+      name: "Start",
+      selector: (row) => row.trpe_start_dt,
+      sortable: true,
+    },
+    {
+      name: "End",
+      selector: (row) => row.trpe_end_dt,
+      sortable: true,
+    },
+  ];
   return (
-    <TrainingPeriodWrap>
-      <ItemWrap>TRPE Key: {TRPE_RK}</ItemWrap>
-      <ItemWrap>Start Date: {startDate}</ItemWrap>
-      <ItemWrap>End Date: {endDate}</ItemWrap>
-      <ItemWrap>PRSN Key {PRSN_RK}</ItemWrap>
-    </TrainingPeriodWrap>
-  );
-};
-
-// This is your main component where you map through your data
-const TrainingPeriodList = ({ data }) => {
-  return (
-    <div>
-      {data.map((item) => (
-        <TrainingPeriodItem
-          key={item.TRPE_RK}
-          TRPE_RK={item.TRPE_RK}
-          startDate={item.trpe_start_dt}
-          endDate={item.trpe_end_dt}
-          PRSN_RK={item.PRSN_RK}
+    <>
+      <Title>Training Periods</Title>
+      <CompWrap>
+        <TableWrap
+          columns={columns}
+          data={data}
+          fixedHeader
+          pagination
+          selectableRows
+          onSelectedRowsChange={handleChange}
         />
-      ))}
-    </div>
+      </CompWrap>
+    </>
   );
 };
-
 export default TrainingPeriodList;

@@ -1,14 +1,15 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import placeholder from "../images/ThrowLogo.png";
 import PracticeItem from "../componenents/PracticeList";
 import TrainingPeriodList from "../componenents/TrainingPeriodList";
-
+import "typeface-rubik";
 const Page = styled.div`
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  height: 100vh;
+  height: 91vh;
+  font-family: "Rubik", sans-serif;
 `;
 
 const LeftColumn = styled.div`
@@ -17,26 +18,31 @@ const LeftColumn = styled.div`
   justify-content: center;
   align-items: center;
   width: 50%;
+  height: 90%;
   border-right: 1px solid #000;
 `;
 
 const RightColumn = styled.div`
   display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   width: 50%;
+  height: 90%;
 `;
 
 const TrainingPeriodWrap = styled.div`
   display: flex;
+  align-items: center;
   flex-direction: column;
   margin-bottom: 20px;
+  width: 90%;
 `;
 
 const PracticeWrap = styled.div`
   display: flex;
+  align-items: center;
   flex-direction: column;
+  width: 90%;
 `;
 
 const ChartWrap = styled.div`
@@ -58,22 +64,36 @@ const ChartPlaceholder = styled.img`
 `;
 
 const Practices = () => {
+  const [activeTRPE, setActiveTRPE] = useState([]);
+  const [activePRAC, setActivePRAC] = useState([]);
+  /*useEffect(() => {
+    console.log(activePRAC);
+  }, [activePRAC]);
+  useEffect(() => {
+    console.log(activeTRPE);
+  }, [activeTRPE]);
+*/
   return (
     <Page>
       <LeftColumn>
         <ChartWrap>
-          <h1>Chart</h1>
           <ChartPlaceholder src={placeholder} />
         </ChartWrap>
         <TrainingPeriodWrap>
-          <h1>Training Periods</h1>
-          <TrainingPeriodList data={TrainingPeriodItems} />
+          <TrainingPeriodList
+            data={TrainingPeriodItems}
+            sharedState={activeTRPE}
+            setSharedState={setActiveTRPE}
+          />
         </TrainingPeriodWrap>
       </LeftColumn>
       <RightColumn>
         <PracticeWrap>
-          <h1>Practices</h1>
-          <PracticeItem data={PracticeItems} />;
+          <PracticeItem
+            data={PracticeItems}
+            sharedState={activePRAC}
+            setSharedState={setActivePRAC}
+          />
         </PracticeWrap>
       </RightColumn>
     </Page>
