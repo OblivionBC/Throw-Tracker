@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import placeholder from "../images/ThrowLogo.png";
 import PracticeItem from "../componenents/PracticeList";
 import TrainingPeriodList from "../componenents/TrainingPeriodList";
+import LineChart from "../componenents/Chart";
 import "typeface-rubik";
+
 const Page = styled.div`
   display: flex;
   justify-content: center;
@@ -47,20 +48,15 @@ const PracticeWrap = styled.div`
 
 const ChartWrap = styled.div`
   display: flex;
+  align-items: center;
+  justify-content: center;
   flex-direction: column;
   background-image: url("https://source.unsplash.com/random");
   background-size: cover;
   background-position: center;
-  height: 300px;
-  width: 300px;
+  height: 100%;
+  width: 90%;
   margin-bottom: 100px;
-`;
-
-const ChartPlaceholder = styled.img`
-  display: flex;
-  color: #fff;
-  text-decoration: none;
-  border-radius: 20px;
 `;
 
 const Practices = () => {
@@ -77,7 +73,7 @@ const Practices = () => {
     <Page>
       <LeftColumn>
         <ChartWrap>
-          <ChartPlaceholder src={placeholder} />
+          <LineChart data={PracticeItems} />
         </ChartWrap>
         <TrainingPeriodWrap>
           <TrainingPeriodList
@@ -132,6 +128,38 @@ const PracticeItems = [
     prac_implement_weight: "7.26kg",
     prac_best: 72.15,
     prac_dt: "04/09/2024",
+    TRPE_RK: 4,
+  },
+  {
+    prac_rk: 5,
+    prac_implement: "Discus",
+    prac_implement_weight: "1.75kg",
+    prac_best: 32.02,
+    prac_dt: "05/10/2024",
+    TRPE_RK: 1,
+  },
+  {
+    prac_rk: 6,
+    prac_implement: "Javelin",
+    prac_implement_weight: "800g",
+    prac_best: 60.34,
+    prac_dt: "02/11/2024",
+    TRPE_RK: 2,
+  },
+  {
+    prac_rk: 7,
+    prac_implement: "Shot Put",
+    prac_implement_weight: "7.26kg",
+    prac_best: 16.44,
+    prac_dt: "25/11/2024",
+    TRPE_RK: 3,
+  },
+  {
+    prac_rk: 8,
+    prac_implement: "Hammer Throw",
+    prac_implement_weight: "7.26kg",
+    prac_best: 63.15,
+    prac_dt: "22/12/2024",
     TRPE_RK: 4,
   },
 ];
