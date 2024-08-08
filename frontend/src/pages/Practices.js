@@ -4,7 +4,7 @@ import PracticeItem from "../componenents/PracticeList";
 import TrainingPeriodList from "../componenents/TrainingPeriodList";
 import LineChart from "../componenents/Chart";
 import "typeface-rubik";
-
+import ErrorBoundary from "../componenents/ErrorBoundary";
 const Page = styled.div`
   display: flex;
   justify-content: center;
@@ -19,7 +19,7 @@ const LeftColumn = styled.div`
   justify-content: center;
   align-items: center;
   width: 50%;
-  height: 90%;
+  height: 100%;
   border-right: 1px solid #000;
 `;
 
@@ -35,6 +35,7 @@ const TrainingPeriodWrap = styled.div`
   display: flex;
   align-items: center;
   flex-direction: column;
+  height: 100%;
   margin-bottom: 20px;
   width: 90%;
 `;
@@ -55,41 +56,48 @@ const ChartWrap = styled.div`
   background-size: cover;
   background-position: center;
   height: 100%;
-  width: 90%;
-  margin-bottom: 100px;
+  width: 100%;
+  margin: 5px;
 `;
 
 const Practices = () => {
   const [activeTRPE, setActiveTRPE] = useState([]);
   const [activePRAC, setActivePRAC] = useState([]);
-  /*useEffect(() => {
-    console.log(activePRAC);
-  }, [activePRAC]);
+
   useEffect(() => {
+    console.log("Active TRPE change");
     console.log(activeTRPE);
   }, [activeTRPE]);
-*/
+
   return (
     <Page>
       <LeftColumn>
         <ChartWrap>
-          <LineChart data={PracticeItems} />
+          <ErrorBoundary>
+            <LineChart
+              activeTRPE={activeTRPE}
+              activePRAC={activePRAC}
+              data={PracticeItems}
+            />
+          </ErrorBoundary>
         </ChartWrap>
         <TrainingPeriodWrap>
-          <TrainingPeriodList
-            data={TrainingPeriodItems}
-            sharedState={activeTRPE}
-            setSharedState={setActiveTRPE}
-          />
+          <ErrorBoundary>
+            <TrainingPeriodList
+              sharedState={activeTRPE}
+              setSharedState={setActiveTRPE}
+            />
+          </ErrorBoundary>
         </TrainingPeriodWrap>
       </LeftColumn>
       <RightColumn>
         <PracticeWrap>
-          <PracticeItem
-            data={PracticeItems}
-            sharedState={activePRAC}
-            setSharedState={setActivePRAC}
-          />
+          <ErrorBoundary>
+            <PracticeItem
+              sharedState={activePRAC}
+              setSharedState={setActivePRAC}
+            />
+          </ErrorBoundary>
         </PracticeWrap>
       </RightColumn>
     </Page>

@@ -36,6 +36,19 @@ exports.getAllPractices = async (req, res) => {
   }
 };
 
+exports.getPracticesInTrpe = async (req, res) => {
+  try {
+    const { trpe_rk } = req.params;
+    const trpePractice = await pool.query(
+      "SELECT * FROM practice where trpe_rk = $1",
+      [trpe_rk]
+    );
+    res.json(trpePractice);
+  } catch (err) {
+    console.log(err.message);
+  }
+};
+
 exports.getPractice = async (req, res) => {
   try {
     const { prac_rk } = req.params;

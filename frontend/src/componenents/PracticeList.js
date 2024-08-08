@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import "typeface-nunito";
 import DataTable from "react-data-table-component";
+import dayjs from "dayjs";
 // This is your PracticeItem component
 //Test that this works and add it to the practices component
 
@@ -40,11 +41,34 @@ const Title = styled.h1`
   align-self: flex-start;
 `;
 
-const Practices = ({ data, sharedState, setSharedState }) => {
+const Practices = ({ sharedState, setSharedState }) => {
+  const [practiceData, setPracticeData] = useState([]);
+
+  const getPracticeData = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/get-all-practices`
+      );
+      const jsonData = await response.json();
+      setPracticeData(jsonData.rows);
+    } catch (error) {
+      console.error(error.message);
+    }
+  };
+
+  useEffect(() => {
+    try {
+      getPracticeData();
+    } catch (error) {
+      console.error(error.message);
+    }
+    console.log("Practice data loading Succeeded");
+  }, []);
+
   const handleChange = ({ selectedRows }) => {
     // You can set state or dispatch with something like Redux so we can use the retrieved data
     if (selectedRows) {
-      const ids = selectedRows.map((row) => {
+      const ids = selectedRows?.map((row) => {
         return row.prac_rk;
       });
       setSharedState(ids);
@@ -55,10 +79,12 @@ const Practices = ({ data, sharedState, setSharedState }) => {
       name: "ID",
       selector: (row) => row.prac_rk,
       sortable: true,
+      width: "10%",
     },
     {
       name: "Date",
       selector: (row) => row.prac_dt,
+      cell: (row) => <div>{dayjs(row.prac_dt).format("MMM D YYYY")}</div>,
       sortable: true,
     },
     {
@@ -68,12 +94,18 @@ const Practices = ({ data, sharedState, setSharedState }) => {
     },
     {
       name: "Weight",
-      selector: (row) => row.prac_implement_weight,
+      selector: (row) => row.prac_implement_weight + "kg",
       sortable: true,
+      width: "15%",
     },
     {
       name: "Best",
-      selector: (row) => row.prac_best,
+      selector: (row) => row.prac_best + "m",
+      sortable: true,
+    },
+    {
+      name: "Period ID",
+      selector: (row) => row.trpe_rk,
       sortable: true,
     },
   ];
@@ -83,7 +115,7 @@ const Practices = ({ data, sharedState, setSharedState }) => {
       <CompWrap>
         <TableWrap
           columns={columns}
-          data={data}
+          data={practiceData}
           fixedHeader
           pagination
           selectableRows

@@ -1,6 +1,8 @@
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import "typeface-nunito";
 import DataTable from "react-data-table-component";
+import dayjs from "dayjs";
 // This is your PracticeItem component
 //Test that this works and add it to the practices component
 
@@ -37,12 +39,34 @@ const Title = styled.h1`
   display: flex;
   align-self: flex-start;
 `;
-const TrainingPeriodList = ({ data, sharedState, setSharedState }) => {
+const TrainingPeriodList = ({ sharedState, setSharedState }) => {
+  const [trpeData, setTrpeData] = useState([]);
+  const getTRPEData = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/get-all-trainingPeriods`
+      );
+      const jsonData = await response.json();
+      setTrpeData(jsonData.rows);
+    } catch (error) {
+      console.error(error.message);
+    }
+  };
+
+  useEffect(() => {
+    try {
+      getTRPEData();
+    } catch (error) {
+      console.error(error.message);
+    }
+    console.log("TRPE data loading Succeeded");
+  }, []);
+
   const handleChange = ({ selectedRows }) => {
     // You can set state or dispatch with something like Redux so we can use the retrieved data
     if (selectedRows) {
-      const ids = selectedRows.map((row) => {
-        return row.TRPE_RK;
+      const ids = selectedRows?.map((row) => {
+        return row.trpe_rk;
       });
       setSharedState(ids);
     }
@@ -50,17 +74,24 @@ const TrainingPeriodList = ({ data, sharedState, setSharedState }) => {
   const columns = [
     {
       name: "ID",
-      selector: (row) => row.TRPE_RK,
+      selector: (row) => row.trpe_rk,
       sortable: true,
     },
     {
       name: "Start",
-      selector: (row) => row.trpe_start_dt,
+      selector: (row) => row.prac_dt,
+      cell: (row) => <div>{dayjs(row.trpe_start_dt).format("MMM D YYYY")}</div>,
       sortable: true,
     },
     {
       name: "End",
       selector: (row) => row.trpe_end_dt,
+      cell: (row) =>
+        row.trpe_end_dt === null ? (
+          ""
+        ) : (
+          <div>{dayjs(row.trpe_end_dt).format("MMM D YYYY")}</div>
+        ),
       sortable: true,
     },
   ];
@@ -70,7 +101,7 @@ const TrainingPeriodList = ({ data, sharedState, setSharedState }) => {
       <CompWrap>
         <TableWrap
           columns={columns}
-          data={data}
+          data={trpeData}
           fixedHeader
           pagination
           selectableRows
