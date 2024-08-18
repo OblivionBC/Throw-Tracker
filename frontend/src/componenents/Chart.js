@@ -9,11 +9,28 @@ const ChartWrap = styled.div`
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  width: 100%;
-  height: 90%;
+  width: 95% !important;
+  height: 100% !important;
   margin: 0;
   padding: 0;
+  overflow: hidden;
 `;
+
+const ImplementSelect = styled.select`
+  display: flex;
+  border-radius: 30px;
+  border-width: 2px;
+  font-family: "Nunito", sans-serif;
+  align-text: center;
+  width: 30%;
+  height: 10%;
+  font-weight: 700;
+`;
+const ResponsiveLineChart = styled(Line)`
+  width: 85% !important;
+  height: auto !important;
+`;
+
 function LineChart({ activePRAC, activeTRPE, data }) {
   const [practiceData, setPracticeData] = useState([]);
   const [selectedImplement, setSelectedImplement] = useState("discus");
@@ -91,7 +108,7 @@ function LineChart({ activePRAC, activeTRPE, data }) {
       datasets: [
         {
           //Label is the block at the top that you can click to filter
-          label: `${selectedImplement}`,
+          label: `${selectedImplement} Legend`,
           //Overall Data
           data: selectedData.data,
         },
@@ -106,13 +123,22 @@ function LineChart({ activePRAC, activeTRPE, data }) {
 
   return (
     <ChartWrap>
-      <select onChange={handleDatasetChange} value={selectedImplement}>
+      <ImplementSelect onChange={handleDatasetChange} value={selectedImplement}>
         <option value="javelin">Javelin</option>
         <option value="discus">Discus</option>
         <option value="shotput">Shotput</option>
         <option value="hammer">Hammer</option>
-      </select>
-      <Line data={userData} />
+      </ImplementSelect>
+      <ResponsiveLineChart
+        data={userData}
+        options={{
+          plugins: {
+            legend: {
+              display: false,
+            },
+          },
+        }}
+      />
     </ChartWrap>
   );
 }

@@ -16,7 +16,7 @@ const TableWrap = styled.div`
   flex-direction: column;
 
   width: 100%;
-  height: 90%;
+  height: auto;
   padding: 0.2rem;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
   border-radius: 5px;
@@ -46,7 +46,7 @@ const Table = styled(DataTable)`
 const Title = styled.h1`
   display: flex;
   align-self: flex-start;
-  margin: 0 0 5px 0;
+  margin: 0;
   padding: 0;
   height: 15%;
 `;
@@ -56,23 +56,26 @@ const TableStyles = {
     style: {
       minHeight: "30px", // Adjust the height as needed
       padding: "0 0px",
+      margin: "0 0px",
     },
     pageButtonsStyle: {
       minWidth: "30px", // Adjust the width as needed
       height: "10px", // Adjust the height as needed
       margin: "0 0px",
+      padding: "0 0px",
     },
   },
 };
-const TrainingPeriodList = ({ sharedState, setSharedState }) => {
-  const [trpeData, setTrpeData] = useState([]);
-  const getTRPEData = async () => {
+
+const ExcersiseList = () => {
+  const [excrData, setExcrData] = useState([]);
+  const getExerciseData = async () => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/get-all-trainingPeriods`
+        `http://localhost:5000/api/get-all-exercises`
       );
       const jsonData = await response.json();
-      setTrpeData(jsonData.rows);
+      setExcrData(jsonData.rows);
     } catch (error) {
       console.error(error.message);
     }
@@ -80,7 +83,7 @@ const TrainingPeriodList = ({ sharedState, setSharedState }) => {
 
   useEffect(() => {
     try {
-      getTRPEData();
+      getExerciseData();
     } catch (error) {
       console.error(error.message);
     }
@@ -88,44 +91,51 @@ const TrainingPeriodList = ({ sharedState, setSharedState }) => {
   }, []);
 
   const handleChange = ({ selectedRows }) => {
+    // You can set state or dispatch with something like Redux so we can use the retrieved data
     if (selectedRows) {
       const ids = selectedRows?.map((row) => {
         return row.trpe_rk;
       });
-      setSharedState(ids);
     }
   };
   const columns = [
     {
-      name: "ID",
-      selector: (row) => row.trpe_rk,
+      name: "Exercise",
+      selector: (row) => row.excr_nm,
       sortable: true,
+      width: "20%",
     },
     {
-      name: "Start",
-      selector: (row) => row.prac_dt,
-      cell: (row) => <div>{dayjs(row.trpe_start_dt).format("MMM D YYYY")}</div>,
+      name: "Sets",
+      selector: (row) => row.excr_sets,
       sortable: true,
+      width: "13%",
     },
     {
-      name: "End",
-      selector: (row) => row.trpe_end_dt,
-      cell: (row) =>
-        row.trpe_end_dt === null ? (
-          ""
-        ) : (
-          <div>{dayjs(row.trpe_end_dt).format("MMM D YYYY")}</div>
-        ),
+      name: "Reps",
+      selector: (row) => row.excr_reps,
+      sortable: true,
+      width: "13%",
+    },
+    {
+      name: "Weight",
+      selector: (row) => row.excr_weight + "lbs",
+      sortable: true,
+      width: "15%",
+    },
+    {
+      name: "Notes",
+      selector: (row) => row.excr_notes,
       sortable: true,
     },
   ];
   return (
     <CompWrap>
-      <Title>Training Periods</Title>
+      <Title>Current Exercises</Title>
       <TableWrap>
         <Table
           columns={columns}
-          data={trpeData}
+          data={excrData}
           fixedHeader
           pagination
           paginationPerPage={3}
@@ -142,4 +152,4 @@ const TrainingPeriodList = ({ sharedState, setSharedState }) => {
     </CompWrap>
   );
 };
-export default TrainingPeriodList;
+export default ExcersiseList;

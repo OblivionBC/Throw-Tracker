@@ -5,15 +5,23 @@ import DataTable from "react-data-table-component";
 import dayjs from "dayjs";
 // This is your PracticeItem component
 //Test that this works and add it to the practices component
-
 const CompWrap = styled.div`
-  width: 90%;
-  background-color: gray;
+  display: flex;
+  flex-direction: column;
+  width: 95%;
+  height: 100%;
+`;
+const TableWrap = styled.div`
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  height: auto;
   padding: 0.2rem;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
   border-radius: 5px;
 `;
-const TableWrap = styled(DataTable)`
+const Table = styled(DataTable)`
   width: 100%;
   .rdt_Table {
     background-color: white;
@@ -35,11 +43,29 @@ const TableWrap = styled(DataTable)`
     color: #fff;
   }
 `;
-
 const Title = styled.h1`
   display: flex;
   align-self: flex-start;
+  margin: 0;
+  padding: 0;
+  height: 15%;
 `;
+
+const TableStyles = {
+  pagination: {
+    style: {
+      minHeight: "30px", // Adjust the height as needed
+      padding: "0 0px",
+      margin: "0 0px",
+    },
+    pageButtonsStyle: {
+      minWidth: "30px", // Adjust the width as needed
+      height: "10px", // Adjust the height as needed
+      margin: "0 0px",
+      padding: "0 0px",
+    },
+  },
+};
 
 const Practices = ({ sharedState, setSharedState }) => {
   const [practiceData, setPracticeData] = useState([]);
@@ -66,7 +92,6 @@ const Practices = ({ sharedState, setSharedState }) => {
   }, []);
 
   const handleChange = ({ selectedRows }) => {
-    // You can set state or dispatch with something like Redux so we can use the retrieved data
     if (selectedRows) {
       const ids = selectedRows?.map((row) => {
         return row.prac_rk;
@@ -110,19 +135,26 @@ const Practices = ({ sharedState, setSharedState }) => {
     },
   ];
   return (
-    <>
+    <CompWrap>
       <Title>Practices</Title>
-      <CompWrap>
-        <TableWrap
+      <TableWrap>
+        <Table
           columns={columns}
           data={practiceData}
           fixedHeader
           pagination
+          paginationPerPage={8}
+          paginationComponentOptions={{
+            rowsPerPageText: "Rows per page:",
+            rangeSeparatorText: "of",
+            selectAllRowsItem: false,
+          }}
+          customStyles={TableStyles}
           selectableRows
           onSelectedRowsChange={handleChange}
         />
-      </CompWrap>
-    </>
+      </TableWrap>
+    </CompWrap>
   );
 };
 

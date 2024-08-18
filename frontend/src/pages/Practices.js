@@ -1,34 +1,36 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import PracticeItem from "../componenents/PracticeList";
+import PracticeList from "../componenents/PracticeList";
 import TrainingPeriodList from "../componenents/TrainingPeriodList";
 import LineChart from "../componenents/Chart";
 import "typeface-rubik";
 import ErrorBoundary from "../componenents/ErrorBoundary";
+
 const Page = styled.div`
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  height: 91vh;
+  height: 90vh;
   font-family: "Rubik", sans-serif;
 `;
 
 const LeftColumn = styled.div`
   display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  flex-direction: column;
   width: 50%;
   height: 100%;
-  border-right: 1px solid #000;
 `;
 
 const RightColumn = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-direction: column;
   width: 50%;
-  height: 90%;
+  height: 100%;
+  overflow: hidden;
 `;
 
 const TrainingPeriodWrap = styled.div`
@@ -72,40 +74,35 @@ const Practices = () => {
   return (
     <Page>
       <LeftColumn>
-        <ChartWrap>
-          <ErrorBoundary>
-            <LineChart
-              activeTRPE={activeTRPE}
-              activePRAC={activePRAC}
-              data={PracticeItems}
-            />
-          </ErrorBoundary>
-        </ChartWrap>
-        <TrainingPeriodWrap>
-          <ErrorBoundary>
-            <TrainingPeriodList
-              sharedState={activeTRPE}
-              setSharedState={setActiveTRPE}
-            />
-          </ErrorBoundary>
-        </TrainingPeriodWrap>
+        <ErrorBoundary>
+          <LineChart
+            activeTRPE={activeTRPE}
+            activePRAC={activePRAC}
+            data={PracticeLists}
+          />
+        </ErrorBoundary>
+
+        <ErrorBoundary>
+          <TrainingPeriodList
+            sharedState={activeTRPE}
+            setSharedState={setActiveTRPE}
+          />
+        </ErrorBoundary>
       </LeftColumn>
       <RightColumn>
-        <PracticeWrap>
-          <ErrorBoundary>
-            <PracticeItem
-              sharedState={activePRAC}
-              setSharedState={setActivePRAC}
-            />
-          </ErrorBoundary>
-        </PracticeWrap>
+        <ErrorBoundary>
+          <PracticeList
+            sharedState={activePRAC}
+            setSharedState={setActivePRAC}
+          />
+        </ErrorBoundary>
       </RightColumn>
     </Page>
   );
 };
 
 //Test Data
-const PracticeItems = [
+const PracticeLists = [
   {
     prac_rk: 1,
     prac_implement: "Discus",

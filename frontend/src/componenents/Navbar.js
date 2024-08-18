@@ -14,6 +14,8 @@ const NavWrap = styled.div`
   padding: 0;
   margin: 0;
   font-family: "Nunito", sans-serif;
+  width: 100%;
+  height: 55px;
 `;
 const NavLeft = styled.div`
   display: flex;
@@ -43,7 +45,17 @@ const NavPath = styled(Link)`
   font-family: "Nunito", sans-serif;
   font-weight: 600;
 `;
-
+const ActiveNavPath = styled(Link)`
+  color: white;
+  display: flex;
+  margin: 35px;
+  padding: 0;
+  text-decoration: none;
+  font-family: "Nunito", sans-serif;
+  font-weight: 700;
+  border-bottom: 2px solid white;
+  border-radius: 5px;
+`;
 const Logo = styled.img`
   display: flex;
   font-size: 1.5rem;
@@ -75,7 +87,7 @@ const Navbar = () => {
       </NavLeft>
       <NavCenter>
         <NavPath to="/home">Home</NavPath>
-        <NavPath to="/practices">Practices</NavPath>
+        <ActiveNavPath to="/practices">Practices</ActiveNavPath>
         <NavPath to="/meets">Meets</NavPath>
       </NavCenter>
       <NavRight>

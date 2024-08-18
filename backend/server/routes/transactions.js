@@ -28,6 +28,30 @@ const {
   updateTrainingPeriod,
 } = require("../controllers/trainingPeriods");
 
+const {
+  addExercise,
+  getExercise,
+  getAllExercises,
+  deleteExercise,
+  updateExercise,
+} = require("../controllers/exercises");
+
+const {
+  addMeet,
+  getMeet,
+  getAllMeets,
+  deleteMeet,
+  updateMeet,
+} = require("../controllers/meets");
+
+const {
+  addEvent,
+  getEvent,
+  getAllEvents,
+  deleteEvent,
+  updateEvent,
+} = require("../controllers/events");
+
 router
   .post("/add-person", addPerson)
   .get("/get-person/:prsn_rk", getPerson)
@@ -46,6 +70,23 @@ router
   .get("/get-trainingPeriod/:trpe_rk", getTrainingPeriod)
   .get("/get-all-trainingPeriods", getAllTrainingPeriods)
   .delete("/delete-trainingPeriod/:trpe_rk", deleteTrainingPeriod)
-  .put("/update-trainingPeriod/:trpe_rk", updateTrainingPeriod);
+  .put("/update-trainingPeriod/:trpe_rk", updateTrainingPeriod)
 
+  .post("/add-excersise", addExercise)
+  .get("/get-excersise/:excr_rk", getExercise)
+  .get("/get-all-exercises", getAllExercises)
+  .delete("/delete-excercise/:excr_rk", deleteExercise)
+  .put("/update-excercise/:excr_rk", updateExercise)
+
+  .post("/add-meet", addMeet)
+  .get("/get-meet/:meet_rk", getMeet)
+  .get("/get-all-meets", getAllMeets)
+  .delete("/delete-meet/:meet_rk", deleteMeet)
+  .put("/update-meet/:meet_rk", updateMeet)
+
+  .post("/add-event", addEvent)
+  .get("/get-event/:even_rk", addEvent)
+  .get("/get-all-event", getAllEvents)
+  .delete("/delete-event/:even_rk", deleteEvent)
+  .put("/update-event/:even_rk", updateEvent);
 module.exports = router;

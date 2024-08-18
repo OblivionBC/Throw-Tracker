@@ -21,7 +21,6 @@ const App = () => {
       <GlobalStyle />
       <Router>
         <Navbar />
-
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/home" element={<Home />} />

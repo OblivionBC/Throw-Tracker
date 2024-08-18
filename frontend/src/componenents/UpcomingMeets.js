@@ -13,10 +13,8 @@ const CompWrap = styled.div`
 `;
 const TableWrap = styled.div`
   display: flex;
-  flex-direction: column;
-
-  width: 100%;
-  height: 90%;
+  background-color: gray;
+  width: 90%;
   padding: 0.2rem;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
   border-radius: 5px;
@@ -48,23 +46,8 @@ const Title = styled.h1`
   align-self: flex-start;
   margin: 0 0 5px 0;
   padding: 0;
-  height: 15%;
 `;
-
-const TableStyles = {
-  pagination: {
-    style: {
-      minHeight: "30px", // Adjust the height as needed
-      padding: "0 0px",
-    },
-    pageButtonsStyle: {
-      minWidth: "30px", // Adjust the width as needed
-      height: "10px", // Adjust the height as needed
-      margin: "0 0px",
-    },
-  },
-};
-const TrainingPeriodList = ({ sharedState, setSharedState }) => {
+const UpcomingMeets = () => {
   const [trpeData, setTrpeData] = useState([]);
   const getTRPEData = async () => {
     try {
@@ -88,16 +71,16 @@ const TrainingPeriodList = ({ sharedState, setSharedState }) => {
   }, []);
 
   const handleChange = ({ selectedRows }) => {
+    // You can set state or dispatch with something like Redux so we can use the retrieved data
     if (selectedRows) {
       const ids = selectedRows?.map((row) => {
         return row.trpe_rk;
       });
-      setSharedState(ids);
     }
   };
   const columns = [
     {
-      name: "ID",
+      name: "ExerciseName",
       selector: (row) => row.trpe_rk,
       sortable: true,
     },
@@ -121,20 +104,13 @@ const TrainingPeriodList = ({ sharedState, setSharedState }) => {
   ];
   return (
     <CompWrap>
-      <Title>Training Periods</Title>
+      <Title>Upcoming Meets</Title>
       <TableWrap>
         <Table
           columns={columns}
           data={trpeData}
           fixedHeader
           pagination
-          paginationPerPage={3}
-          paginationComponentOptions={{
-            rowsPerPageText: "Rows per page:",
-            rangeSeparatorText: "of",
-            selectAllRowsItem: false,
-          }}
-          customStyles={TableStyles}
           selectableRows
           onSelectedRowsChange={handleChange}
         />
@@ -142,4 +118,4 @@ const TrainingPeriodList = ({ sharedState, setSharedState }) => {
     </CompWrap>
   );
 };
-export default TrainingPeriodList;
+export default UpcomingMeets;
