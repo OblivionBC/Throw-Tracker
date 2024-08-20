@@ -13,8 +13,10 @@ const CompWrap = styled.div`
 `;
 const TableWrap = styled.div`
   display: flex;
-  background-color: gray;
-  width: 90%;
+  flex-direction: column;
+
+  width: 100%;
+  height: auto;
   padding: 0.2rem;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
   border-radius: 5px;
@@ -44,18 +46,33 @@ const Table = styled(DataTable)`
 const Title = styled.h1`
   display: flex;
   align-self: flex-start;
-  margin: 0 0 5px 0;
-  padding: 0;
+  margin: 0;
+  padding: 0 5px 5px;
 `;
-const UpcomingMeets = () => {
-  const [trpeData, setTrpeData] = useState([]);
-  const getTRPEData = async () => {
+
+const TableStyles = {
+  pagination: {
+    style: {
+      minHeight: "30px", // Adjust the height as needed
+      padding: "0 0px",
+      margin: "0 0px",
+    },
+    pageButtonsStyle: {
+      minWidth: "30px", // Adjust the width as needed
+      height: "10px", // Adjust the height as needed
+      margin: "0 0px",
+      padding: "0 0px",
+    },
+  },
+};
+
+const MeetList = () => {
+  const [meetData, setMeetData] = useState([]);
+  const getMeetData = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/get-all-trainingPeriods`
-      );
+      const response = await fetch(`http://localhost:5000/api/get-all-meets`);
       const jsonData = await response.json();
-      setTrpeData(jsonData.rows);
+      setMeetData(jsonData.rows);
     } catch (error) {
       console.error(error.message);
     }
@@ -63,7 +80,7 @@ const UpcomingMeets = () => {
 
   useEffect(() => {
     try {
-      getTRPEData();
+      getMeetData();
     } catch (error) {
       console.error(error.message);
     }
@@ -78,39 +95,41 @@ const UpcomingMeets = () => {
       });
     }
   };
+  //meet_nm, meet_dt, meet_location, prsn_rk
   const columns = [
     {
-      name: "ExerciseName",
-      selector: (row) => row.trpe_rk,
+      name: "Name",
+      selector: (row) => row.meet_nm,
       sortable: true,
     },
     {
-      name: "Start",
-      selector: (row) => row.prac_dt,
-      cell: (row) => <div>{dayjs(row.trpe_start_dt).format("MMM D YYYY")}</div>,
+      name: "Date",
+      selector: (row) => row.meet_dt,
+      cell: (row) => <div>{dayjs(row.meet_dt).format("MMM D YYYY")}</div>,
       sortable: true,
     },
     {
-      name: "End",
-      selector: (row) => row.trpe_end_dt,
-      cell: (row) =>
-        row.trpe_end_dt === null ? (
-          ""
-        ) : (
-          <div>{dayjs(row.trpe_end_dt).format("MMM D YYYY")}</div>
-        ),
+      name: "Location",
+      selector: (row) => row.meet_location,
       sortable: true,
     },
   ];
   return (
     <CompWrap>
-      <Title>Upcoming Meets</Title>
+      <Title>Meets</Title>
       <TableWrap>
         <Table
           columns={columns}
-          data={trpeData}
+          data={meetData}
           fixedHeader
           pagination
+          paginationPerPage={3}
+          paginationComponentOptions={{
+            rowsPerPageText: "Rows per page:",
+            rangeSeparatorText: "of",
+            selectAllRowsItem: false,
+          }}
+          customStyles={TableStyles}
           selectableRows
           onSelectedRowsChange={handleChange}
         />
@@ -118,4 +137,4 @@ const UpcomingMeets = () => {
     </CompWrap>
   );
 };
-export default UpcomingMeets;
+export default MeetList;

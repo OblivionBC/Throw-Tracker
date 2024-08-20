@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import * as FaIcons from "react-icons/fa";
 import styled from "styled-components";
 import logo from "../images/ThrowLogo.png";
@@ -29,6 +29,18 @@ const NavCenter = styled.div`
   display: flex;
   justify-content: space-evenly;
   align-items: center;
+
+  a.active {
+    color: white;
+    display: flex;
+    margin: 35px;
+    padding: 0;
+    text-decoration: none;
+    font-family: "Nunito", sans-serif;
+    font-weight: 700;
+    border-bottom: 2px solid white;
+    border-radius: 5px;
+  }
 `;
 
 const NavRight = styled.div`
@@ -36,7 +48,7 @@ const NavRight = styled.div`
   align-items: center;
 `;
 
-const NavPath = styled(Link)`
+const NavPath = styled(NavLink)`
   color: white;
   display: flex;
   margin: 35px;
@@ -45,17 +57,7 @@ const NavPath = styled(Link)`
   font-family: "Nunito", sans-serif;
   font-weight: 600;
 `;
-const ActiveNavPath = styled(Link)`
-  color: white;
-  display: flex;
-  margin: 35px;
-  padding: 0;
-  text-decoration: none;
-  font-family: "Nunito", sans-serif;
-  font-weight: 700;
-  border-bottom: 2px solid white;
-  border-radius: 5px;
-`;
+
 const Logo = styled.img`
   display: flex;
   font-size: 1.5rem;
@@ -86,8 +88,8 @@ const Navbar = () => {
         <Logo src={logo} />
       </NavLeft>
       <NavCenter>
-        <NavPath to="/home">Home</NavPath>
-        <ActiveNavPath to="/practices">Practices</ActiveNavPath>
+        <NavPath to="/">Home</NavPath>
+        <NavPath to="/practices">Practices</NavPath>
         <NavPath to="/meets">Meets</NavPath>
       </NavCenter>
       <NavRight>

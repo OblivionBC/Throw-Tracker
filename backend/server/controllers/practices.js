@@ -49,6 +49,30 @@ exports.getPracticesInTrpe = async (req, res) => {
   }
 };
 
+exports.getLastPractice = async (req, res) => {
+  try {
+    const practice = await pool.query(
+      "SELECT * FROM practice order by prac_dt desc fetch first row only"
+    );
+    res.json(practice);
+  } catch (err) {
+    console.log(err.message);
+  }
+};
+
+exports.getPracticesWithImp = async (req, res) => {
+  try {
+    const { prac_implement } = req.params;
+    const practice = await pool.query(
+      "SELECT * FROM practice where prac_implement = $1",
+      [prac_implement]
+    );
+    res.json(practice);
+  } catch (err) {
+    console.log(err.message);
+  }
+};
+
 exports.getPractice = async (req, res) => {
   try {
     const { prac_rk } = req.params;

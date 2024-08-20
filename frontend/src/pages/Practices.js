@@ -32,36 +32,12 @@ const RightColumn = styled.div`
   height: 100%;
   overflow: hidden;
 `;
-
-const TrainingPeriodWrap = styled.div`
+const Title = styled.h1`
   display: flex;
-  align-items: center;
-  flex-direction: column;
-  height: 100%;
-  margin-bottom: 20px;
-  width: 90%;
+  align-self: flex-start;
+  margin: 0;
+  padding: 0 5px 5px;
 `;
-
-const PracticeWrap = styled.div`
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  width: 90%;
-`;
-
-const ChartWrap = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  background-image: url("https://source.unsplash.com/random");
-  background-size: cover;
-  background-position: center;
-  height: 100%;
-  width: 100%;
-  margin: 5px;
-`;
-
 const Practices = () => {
   const [activeTRPE, setActiveTRPE] = useState([]);
   const [activePRAC, setActivePRAC] = useState([]);
@@ -166,26 +142,6 @@ const PracticeLists = [
     prac_best: 63.15,
     prac_dt: "22/12/2024",
     TRPE_RK: 4,
-  },
-];
-const TrainingPeriodItems = [
-  {
-    TRPE_RK: 1,
-    trpe_start_dt: "01/09/2024",
-    trpe_end_dt: "01/11/2024",
-    PRSN_RK: 1,
-  },
-  {
-    TRPE_RK: 2,
-    trpe_start_dt: "01/11/2024",
-    trpe_end_dt: "01/01/2025",
-    PRSN_RK: 1,
-  },
-  {
-    TRPE_RK: 3,
-    trpe_start_dt: "01/01/2025",
-    trpe_end_dt: "01/03/2025",
-    PRSN_RK: 1,
   },
 ];
 

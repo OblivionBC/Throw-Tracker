@@ -31,6 +31,17 @@ exports.getAllExercises = async (req, res) => {
   }
 };
 
+exports.getExercisesInCurrentTRPE = async (req, res) => {
+  try {
+    const allExercises = await pool.query(
+      "SELECT * FROM Exercise excr join training_period trpe on excr.trpe_rk = trpe.trpe_rk where trpe.trpe_end_dt is null and trpe.trpe_start_dt < current_date "
+    );
+    res.json(allExercises);
+  } catch (err) {
+    console.log(err.message);
+  }
+};
+
 exports.getExercise = async (req, res) => {
   try {
     const { excr_rk } = req.params;

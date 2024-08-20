@@ -14,10 +14,11 @@ const CompWrap = styled.div`
 const TableWrap = styled.div`
   display: flex;
   flex-direction: column;
-
   width: 100%;
   height: 90%;
-  padding: 0.2rem;
+  padding: 0;
+  margin: 0;
+  height: auto;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
   border-radius: 5px;
 `;
@@ -56,11 +57,13 @@ const TableStyles = {
     style: {
       minHeight: "30px", // Adjust the height as needed
       padding: "0 0px",
+      margin: "0 0px",
     },
     pageButtonsStyle: {
       minWidth: "30px", // Adjust the width as needed
-      height: "10px", // Adjust the height as needed
+      height: "20px", // Adjust the height as needed
       margin: "0 0px",
+      padding: "0 0px",
     },
   },
 };

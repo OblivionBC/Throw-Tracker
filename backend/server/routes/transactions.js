@@ -15,8 +15,10 @@ const {
   addPractice,
   getPractice,
   getAllPractices,
+  getLastPractice,
   deletePractice,
   updatePractice,
+  getPracticesWithImp,
   getPracticesInTrpe,
 } = require("../controllers/practices");
 
@@ -32,6 +34,7 @@ const {
   addExercise,
   getExercise,
   getAllExercises,
+  getExercisesInCurrentTRPE,
   deleteExercise,
   updateExercise,
 } = require("../controllers/exercises");
@@ -62,7 +65,9 @@ router
   .post("/add-practice", addPractice)
   .get("/get-practice/:prac_rk", getPractice)
   .get("/get-all-practices", getAllPractices)
+  .get("/get-last-practice", getLastPractice)
   .get("/get-practicesInTrpe/:trpe_rk", getPracticesInTrpe)
+  .get("/get-practicesWithImp/:prac_implement", getPracticesWithImp)
   .delete("/delete-practice/:prac_rk", deletePractice)
   .put("/update-practice/:prac_rk", updatePractice)
 
@@ -74,7 +79,8 @@ router
 
   .post("/add-excersise", addExercise)
   .get("/get-excersise/:excr_rk", getExercise)
-  .get("/get-all-exercises", getAllExercises)
+  .get("/get-excersise/:trpe_rk", getAllExercises)
+  .get("/get-exercisesInCurrentTRPE", getExercisesInCurrentTRPE)
   .delete("/delete-excercise/:excr_rk", deleteExercise)
   .put("/update-excercise/:excr_rk", updateExercise)
 
@@ -85,7 +91,7 @@ router
   .put("/update-meet/:meet_rk", updateMeet)
 
   .post("/add-event", addEvent)
-  .get("/get-event/:even_rk", addEvent)
+  .get("/get-event/:even_rk", getEvent)
   .get("/get-all-event", getAllEvents)
   .delete("/delete-event/:even_rk", deleteEvent)
   .put("/update-event/:even_rk", updateEvent);

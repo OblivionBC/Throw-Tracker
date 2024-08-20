@@ -2,10 +2,12 @@
 import React, { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
 import { Chart as ChartJS } from "chart.js/auto";
+import { Tooltip } from "chart.js/auto";
 import styled from "styled-components";
-
+ChartJS.register(Tooltip);
 const ChartWrap = styled.div`
   display: flex;
+  flex-shrink: 1;
   align-items: center;
   justify-content: center;
   flex-direction: column;
@@ -22,123 +24,143 @@ const ImplementSelect = styled.select`
   border-width: 2px;
   font-family: "Nunito", sans-serif;
   align-text: center;
-  width: 30%;
-  height: 10%;
+  width: 100px;
   font-weight: 700;
+  margin: 0;
+  padding: 0;
 `;
 const ResponsiveLineChart = styled(Line)`
-  width: 85% !important;
-  height: auto !important;
+  width: 100% !important;
+  height: 90% !important;
+  margin: 0;
+  padding: 0;
+`;
+const Title = styled.h2`
+  display: flex;
+  align-self: flex-start;
+  margin: 0;
+  padding: 0;
+  margin-right: 15px;
+  white-space: nowrap;
+`;
+const Row = styled.div`
+  display: flex;
+  flex-direction: row;
+  margin: 0;
+  padding: 0;
 `;
 
 function LineChart({ activePRAC, activeTRPE, data }) {
   const [practiceData, setPracticeData] = useState([]);
-  const [selectedImplement, setSelectedImplement] = useState("discus");
-  const [userData, setUserData] = useState({
+  const [selectedImplement, setSelectedImplement] = useState("Discus");
+  const [loading, setLoading] = useState(true);
+  const [chartData, setChartData] = useState({
     labels: [],
     datasets: [
       {
-        label: "Data",
+        label: "",
         data: [],
+        backgroundColor: "",
+        borderColor: "",
+        borderWidth: 0,
       },
     ],
   });
-  const [dataSets, setDataSets] = useState("discus");
 
-  const getPracticeData = async () => {
-    try {
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
       const response = await fetch(
-        `http://localhost:5000/api/get-all-practices`
+        `http://localhost:5000/api/get-practicesWithImp/${selectedImplement}`
       );
       const jsonData = await response.json();
-      if (jsonData && jsonData.rows) {
-        setPracticeData(jsonData.rows);
-      } else {
-        console.error("Unexpected data structure:", jsonData);
-      }
-    } catch (error) {
-      console.error(error.message);
-    }
-  };
-
-  useEffect(() => {
-    getPracticeData();
-  }, []);
-
-  const hammerItems = practiceData?.filter(
-    (item) => item.prac_implement === "Hammer Throw"
-  );
-  const javelinItems = practiceData?.filter(
-    (item) => item.prac_implement === "Javelin"
-  );
-  const shotputItems = practiceData?.filter(
-    (item) => item.prac_implement === "Shot Put"
-  );
-  const discusItems = practiceData?.filter(
-    (item) => item.prac_implement === "Discus"
-  );
-
-  const datasets = {
-    hammer: {
-      labels: hammerItems.map((item) => item.prac_rk),
-      data: hammerItems.map((item) => item.prac_best),
-    },
-    discus: {
-      //Labels controls the x value / domain of each plot point
-      labels: discusItems.map((item) => item.prac_rk),
-      //Data is the y value or range of each plot point
-      data: discusItems.map((item) => item.prac_best),
-    },
-    shotput: {
-      labels: shotputItems.map((item) => item.prac_rk),
-      data: shotputItems.map((item) => item.prac_best),
-    },
-    javelin: {
-      labels: javelinItems.map((item) => item.prac_rk),
-      data: javelinItems.map((item) => item.prac_best),
-    },
-  };
-
-  useEffect(() => {
-    // Sets data for the graphData based on the selected implement
-    const selectedData = datasets[selectedImplement];
-    console.log(selectedData.data);
-    setUserData({
-      labels: selectedData.labels,
-      datasets: [
-        {
-          //Label is the block at the top that you can click to filter
-          label: `${selectedImplement} Legend`,
-          //Overall Data
-          data: selectedData.data,
-        },
-      ],
-    });
+      setPracticeData(jsonData.rows);
+      const labels = jsonData.rows.map((item) => {
+        if (item.prac_implement === selectedImplement) return item.prac_rk;
+      }); // Adjust according to your data structure
+      const values = jsonData.rows.map((item) => item.prac_best); // Adjust according to your data structure
+      setChartData({
+        labels: labels,
+        datasets: [
+          {
+            //Label is the block at the top that you can click to filter
+            label: `${selectedImplement} Legend`,
+            data: values,
+            pointRadius: 5,
+            pointHoverRadius: 8, // Increase the hover radius
+            pointHitRadius: 5, // Increase the hit radius
+          },
+        ],
+      });
+      setLoading(false);
+    };
+    fetchData();
   }, [selectedImplement]);
 
   //Selected dropdown value changes the selected implement, then changing the data given
   const handleDatasetChange = (event) => {
     setSelectedImplement(event.target.value);
   };
-
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        mode: "nearest",
+        intersect: false,
+        callbacks: {
+          label: function (tooltipItem) {
+            return `(${tooltipItem.raw}m, Prac ${tooltipItem.label})`;
+          },
+        },
+      },
+    },
+    hover: {
+      mode: "point",
+      intersect: false,
+      onHover: function (event, chartElement) {
+        event.native.target.style.cursor = chartElement[0]
+          ? "pointer"
+          : "default";
+      },
+    },
+    scales: {
+      x: {
+        type: "linear",
+        position: "bottom",
+        title: {
+          display: true,
+          text: "Practice Number",
+        },
+      },
+      y: {
+        title: {
+          display: true,
+          text: "Distance in Meters",
+        },
+      },
+    },
+  };
+  if (loading) {
+    return <div>Loading...</div>;
+  }
   return (
     <ChartWrap>
-      <ImplementSelect onChange={handleDatasetChange} value={selectedImplement}>
-        <option value="javelin">Javelin</option>
-        <option value="discus">Discus</option>
-        <option value="shotput">Shotput</option>
-        <option value="hammer">Hammer</option>
-      </ImplementSelect>
-      <ResponsiveLineChart
-        data={userData}
-        options={{
-          plugins: {
-            legend: {
-              display: false,
-            },
-          },
-        }}
-      />
+      <Row>
+        <Title>Chart of Practice Throws</Title>
+        <ImplementSelect
+          onChange={handleDatasetChange}
+          value={selectedImplement}
+        >
+          <option value="Javelin">Javelin</option>
+          <option value="Discus">Discus</option>
+          <option value="Shot Put">Shotput</option>
+          <option value="Hammer Throw">Hammer</option>
+        </ImplementSelect>
+      </Row>
+      <ResponsiveLineChart data={chartData} options={options} />
     </ChartWrap>
   );
 }

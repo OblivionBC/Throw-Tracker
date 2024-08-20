@@ -47,8 +47,7 @@ const Title = styled.h1`
   display: flex;
   align-self: flex-start;
   margin: 0;
-  padding: 0;
-  height: 15%;
+  padding: 0 5px 5px;
 `;
 
 const TableStyles = {
@@ -72,7 +71,7 @@ const ExcersiseList = () => {
   const getExerciseData = async () => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/get-all-exercises`
+        `http://localhost:5000/api/get-exercisesInCurrentTRPE`
       );
       const jsonData = await response.json();
       setExcrData(jsonData.rows);

@@ -76,8 +76,8 @@ VALUES
     ('Incline Bench Press', 4, 3, 180, '10 reps, 3 sets, 135 lbs', 2),
     ('Full Squat', 8, 3, 300, '10 reps, 3 sets, 135 lbs', 2),
     ('Deadlift', 8, 3, 350, '10 reps, 3 sets, 135 lbs', 2),
-    (' Decline Bench Press', 4, 3, 190, '10 reps, 3 sets, 135 lbs', 3),
-    ('Quarter Squat', 6, 3, 325, '10 reps, 3 sets, 135 lbs', 3),
-    ('Romaian Deadlift', 8, 3, 170, '10 reps, 3 sets, 135 lbs', 3);
+    ('Decline Bench Press', 4, 3, 190, '10 reps, 3 sets, 135 lbs', 4),
+    ('Quarter Squat', 6, 3, 325, '10 reps, 3 sets, 135 lbs', 4),
+    ('Romaian Deadlift', 8, 3, 170, '10 reps, 3 sets, 135 lbs', 4);
 
   

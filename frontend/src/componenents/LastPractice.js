@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import "typeface-nunito";
-import DataTable from "react-data-table-component";
 import dayjs from "dayjs";
+import * as FaIcons from "react-icons/fa";
 // This is your PracticeItem component
 //Test that this works and add it to the practices component
 
@@ -15,10 +15,10 @@ const CompWrap = styled.div`
 `;
 const Item = styled.div`
   display: flex;
-  justify-content: center;
+
   flex-direction: column;
   width: 95%;
-  height: 55%;
+  height: 100%;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
   border: 2px solid black;
   border-radius: 30px;
@@ -29,59 +29,148 @@ const Title = styled.h1`
   margin: 0 0 5px 0;
   padding: 0;
 `;
-const RowTop = styled.div`
+
+const DateWrap = styled.div`
+  display: flex;
+  align-self: flex-start;
+  margin: 1rem;
+  padding: 0;
+`;
+const Date = styled.h1`
+  display: flex;
+  align-self: flex-start;
+  margin: 10px 10px 0 10px;
+  padding: 0;
+`;
+
+const ColumnLeft = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: column;
+  width: 95%;
+`;
+const ColumnRight = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  width: 95%;
+`;
+const Rows = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: row;
   width: 95%;
 `;
-const RowBottom = styled.div`
+const Column = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: row;
   width: 95%;
 `;
+
 const DataLabel = styled.p`
   display: flex;
-  margin-right: 8%;
+  font-size: 24px;
+  font-weight: 500;
+  margin-right: 20px;
 `;
 const Data = styled.p`
   display: flex;
+  font-size: 20px;
+  margin: 0;
+  padding: 0;
   align-items: center;
   justify-content: center;
   flex-direction: row;
-  margin-left: 5%;
-  margin-right: 5%;
+`;
+const Weight = styled(FaIcons.FaWeightHanging)`
+  margin-right: 5px;
+  height: 25px;
+  width: 25px;
+`;
+const Medal = styled(FaIcons.FaMedal)`
+  margin-right: 5px;
+  height: 25px;
+  width: 25px;
 `;
 
+const Implement = styled(FaIcons.FaToolbox)`
+  height: 50px;
+  width: 50px;
+`;
 const LastPractice = () => {
   //Stuff
-  const [datas, setDatas] = useState({
-    prac_rk: 1,
-    prac_implement: "null",
-    prac_implement_weight: "Probably Heavy",
-    prac_best: 1,
-    prac_dt: "01/01/2000",
-    TRPE_RK: 1,
-  });
+  const [datas, setDatas] = useState({});
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
-    setDatas({
-      prac_rk: 3,
-      prac_implement: "Shot Put",
-      prac_implement_weight: "7.26kg",
-      prac_best: 18.44,
-      prac_dt: "03/09/2024",
-      TRPE_RK: 3,
-    });
+    const fetchData = async () => {
+      setLoading(true);
+      const response = await fetch(
+        `http://localhost:5000/api/get-last-practice`
+      );
+      const jsonData = await response.json();
+      const row = jsonData.rows[0];
+      console.log(row);
+      setDatas({
+        prac_rk: row.prac_rk,
+        prac_implement: row.prac_implement,
+        prac_implement_weight: row.prac_implement_weight,
+        prac_best: row.prac_best,
+        prac_dt: row.prac_dt,
+        TRPE_RK: row.TRPE_RK,
+      });
+      setLoading(false);
+    };
+    fetchData();
+    console.log("DONE");
   }, []);
 
+  if (loading) {
+    return <div>Loading</div>;
+  }
   return (
     <CompWrap>
       <Title>Last Practice</Title>
       <Item>
-        <RowTop>
+        <DateWrap>
+          <Date>{dayjs(datas.meet_dt).format("MMM D YYYY")}</Date>
+        </DateWrap>
+        <Rows>
+          <ColumnLeft>
+            <Data>
+              <Medal />
+              <DataLabel>Best Throw: </DataLabel>
+              {datas.prac_best}
+            </Data>
+            <Data>
+              <Weight />
+              <DataLabel>Implement Weight: </DataLabel>
+              {datas.prac_implement_weight}
+            </Data>
+          </ColumnLeft>
+          <ColumnRight>
+            <Implement />
+            <Data>
+              <DataLabel>Implement: </DataLabel>
+              {datas.prac_implement}
+            </Data>
+          </ColumnRight>
+        </Rows>
+      </Item>
+    </CompWrap>
+  );
+};
+
+export default LastPractice;
+/*<CompWrap>
+      <Title>Last Practice</Title>
+      <Item>
+        <Row>
+          <Date>{dayjs(datas.meet_dt).format("MMM D YYYY")}</Date>
           <Data>
             <DataLabel>PRAC_RK: </DataLabel>
             {datas.prac_rk}
@@ -94,20 +183,17 @@ const LastPractice = () => {
             <DataLabel>Implement Weight: </DataLabel>
             {datas.prac_implement_weight}
           </Data>
-        </RowTop>
-        <RowBottom>
+        </Row>
+        <ColumnRight>
           <Data>
             <DataLabel>Best Throw: </DataLabel>
             {datas.prac_best}
           </Data>
           <Data>
             <DataLabel>Date: </DataLabel>
-            {datas.prac_dt}
+            {dayjs(datas.meet_dt).format("MMM D YYYY")}
           </Data>
-        </RowBottom>
+        </ColumnRight>
       </Item>
     </CompWrap>
-  );
-};
-
-export default LastPractice;
+    */

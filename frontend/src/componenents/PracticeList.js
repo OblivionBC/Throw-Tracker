@@ -14,7 +14,6 @@ const CompWrap = styled.div`
 const TableWrap = styled.div`
   display: flex;
   flex-direction: column;
-
   width: 100%;
   height: auto;
   padding: 0.2rem;
@@ -47,8 +46,7 @@ const Title = styled.h1`
   display: flex;
   align-self: flex-start;
   margin: 0;
-  padding: 0;
-  height: 15%;
+  padding: 0 5px 5px;
 `;
 
 const TableStyles = {

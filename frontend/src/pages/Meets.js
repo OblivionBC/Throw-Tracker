@@ -5,6 +5,7 @@ import TrainingPeriodList from "../componenents/TrainingPeriodList";
 import LineChart from "../componenents/Chart";
 import "typeface-rubik";
 import ErrorBoundary from "../componenents/ErrorBoundary";
+import MeetList from "../componenents/MeetList";
 
 const Page = styled.div`
   display: flex;
@@ -54,10 +55,7 @@ const Meets = () => {
         </ErrorBoundary>
 
         <ErrorBoundary>
-          <TrainingPeriodList
-            sharedState={activeTRPE}
-            setSharedState={setActiveTRPE}
-          />
+          <MeetList />
         </ErrorBoundary>
       </LeftColumn>
       <RightColumn>
