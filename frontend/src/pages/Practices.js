@@ -51,11 +51,7 @@ const Practices = () => {
     <Page>
       <LeftColumn>
         <ErrorBoundary>
-          <LineChart
-            activeTRPE={activeTRPE}
-            activePRAC={activePRAC}
-            data={PracticeLists}
-          />
+          <LineChart activeTRPE={activeTRPE} data={PracticeLists} />
         </ErrorBoundary>
 
         <ErrorBoundary>
@@ -67,10 +63,7 @@ const Practices = () => {
       </LeftColumn>
       <RightColumn>
         <ErrorBoundary>
-          <PracticeList
-            sharedState={activePRAC}
-            setSharedState={setActivePRAC}
-          />
+          <PracticeList />
         </ErrorBoundary>
       </RightColumn>
     </Page>

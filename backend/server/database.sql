@@ -50,6 +50,18 @@ ALTER TABLE EXERCISE
    FOREIGN KEY (trpe_rk) 
    REFERENCES training_period(trpe_rk);
 
+Create Table MEASURABLE (
+  MEAS_RK   SERIAL PRIMARY KEY,     
+  meas_id varchar(32) NOT NULL,
+  meas_typ varchar(32) NOT NULL
+)
+ALTER TABLE MEASURABLE ADD COLUMN prac_rk INTEGER;
+ALTER TABLE MEASURABLE add COLUMN meas_unit varchar(16)
+   ADD CONSTRAINT prac_rk
+   FOREIGN KEY (prac_rk) 
+   REFERENCES practice(prac_rk);
+
+
 Create Table PRACTICE(
 PRAC_RK      SERIAL PRIMARY KEY,
 prac_best float,

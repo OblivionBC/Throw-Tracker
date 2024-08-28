@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import ExcersiseList from "../componenents/ExcersiseList";
+import CurrentExcersiseList from "../componenents/CurrentExerciseList";
 import LastPractice from "../componenents/LastPractice";
 import LineChart from "../componenents/Chart";
 import "typeface-rubik";
@@ -38,11 +38,6 @@ const Home = () => {
   const [activeTRPE, setActiveTRPE] = useState([]);
   const [activePRAC, setActivePRAC] = useState([]);
 
-  useEffect(() => {
-    console.log("Active TRPE change");
-    console.log(activeTRPE);
-  }, [activeTRPE]);
-
   return (
     <Page>
       <LeftColumn>
@@ -51,7 +46,7 @@ const Home = () => {
         </ErrorBoundary>
 
         <ErrorBoundary>
-          <ExcersiseList />
+          <CurrentExcersiseList />
         </ErrorBoundary>
       </LeftColumn>
       <RightColumn>

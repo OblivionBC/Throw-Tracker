@@ -131,7 +131,7 @@ const TrainingPeriodList = ({ sharedState, setSharedState }) => {
           data={trpeData}
           fixedHeader
           pagination
-          paginationPerPage={3}
+          paginationPerPage={4}
           paginationComponentOptions={{
             rowsPerPageText: "Rows per page:",
             rangeSeparatorText: "of",

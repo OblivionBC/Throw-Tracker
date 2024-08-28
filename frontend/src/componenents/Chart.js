@@ -1,5 +1,5 @@
 // components/BarChart.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, act } from "react";
 import { Line } from "react-chartjs-2";
 import { Chart as ChartJS } from "chart.js/auto";
 import { Tooltip } from "chart.js/auto";
@@ -50,8 +50,7 @@ const Row = styled.div`
   padding: 0;
 `;
 
-function LineChart({ activePRAC, activeTRPE, data }) {
-  const [practiceData, setPracticeData] = useState([]);
+function LineChart({ activeTRPE, data }) {
   const [selectedImplement, setSelectedImplement] = useState("Discus");
   const [loading, setLoading] = useState(true);
   const [chartData, setChartData] = useState({
@@ -70,15 +69,26 @@ function LineChart({ activePRAC, activeTRPE, data }) {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const response = await fetch(
-        `http://localhost:5000/api/get-practicesWithImp/${selectedImplement}`
+      var jsonData;
+      if (activeTRPE.length < 1) {
+        const response = await fetch(
+          `http://localhost:5000/api/get-practicesWithImp/${selectedImplement}`
+        );
+        jsonData = await response.json();
+      } else {
+        const params = new URLSearchParams({
+          keys: JSON.stringify(activeTRPE),
+        });
+        const response = await fetch(
+          `http://localhost:5000/api//get-practicesInTrpe?${params}`
+        );
+        jsonData = await response.json();
+      }
+      const currData = jsonData.rows.filter(
+        (item) => item.prac_implement === selectedImplement
       );
-      const jsonData = await response.json();
-      setPracticeData(jsonData.rows);
-      const labels = jsonData.rows.map((item) => {
-        if (item.prac_implement === selectedImplement) return item.prac_rk;
-      }); // Adjust according to your data structure
-      const values = jsonData.rows.map((item) => item.prac_best); // Adjust according to your data structure
+      const labels = currData.map((item) => item.prac_rk); // Adjust according to your data structure
+      const values = currData.map((item) => item.prac_best); // Adjust according to your data structure
       setChartData({
         labels: labels,
         datasets: [
@@ -95,7 +105,7 @@ function LineChart({ activePRAC, activeTRPE, data }) {
       setLoading(false);
     };
     fetchData();
-  }, [selectedImplement]);
+  }, [selectedImplement, activeTRPE]);
 
   //Selected dropdown value changes the selected implement, then changing the data given
   const handleDatasetChange = (event) => {
@@ -103,6 +113,7 @@ function LineChart({ activePRAC, activeTRPE, data }) {
   };
   const options = {
     responsive: true,
+    showLine: true,
     plugins: {
       legend: {
         display: false,
@@ -144,12 +155,12 @@ function LineChart({ activePRAC, activeTRPE, data }) {
     },
   };
   if (loading) {
-    return <div>Loading...</div>;
+    return <ChartWrap>Loading...</ChartWrap>;
   }
   return (
     <ChartWrap>
       <Row>
-        <Title>Chart of Practice Throws</Title>
+        <Title>Chart of Practices</Title>
         <ImplementSelect
           onChange={handleDatasetChange}
           value={selectedImplement}

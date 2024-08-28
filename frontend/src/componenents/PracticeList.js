@@ -65,7 +65,7 @@ const TableStyles = {
   },
 };
 
-const Practices = ({ sharedState, setSharedState }) => {
+const Practices = () => {
   const [practiceData, setPracticeData] = useState([]);
 
   const getPracticeData = async () => {
@@ -89,14 +89,6 @@ const Practices = ({ sharedState, setSharedState }) => {
     console.log("Practice data loading Succeeded");
   }, []);
 
-  const handleChange = ({ selectedRows }) => {
-    if (selectedRows) {
-      const ids = selectedRows?.map((row) => {
-        return row.prac_rk;
-      });
-      setSharedState(ids);
-    }
-  };
   const columns = [
     {
       name: "ID",
@@ -148,8 +140,6 @@ const Practices = ({ sharedState, setSharedState }) => {
             selectAllRowsItem: false,
           }}
           customStyles={TableStyles}
-          selectableRows
-          onSelectedRowsChange={handleChange}
         />
       </TableWrap>
     </CompWrap>

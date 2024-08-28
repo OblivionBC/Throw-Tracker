@@ -72,7 +72,7 @@ const Column = styled.div`
   width: 95%;
 `;
 
-const DataLabel = styled.p`
+const DataLabel = styled.span`
   display: flex;
   font-size: 24px;
   font-weight: 500;
@@ -114,7 +114,6 @@ const LastPractice = () => {
       );
       const jsonData = await response.json();
       const row = jsonData.rows[0];
-      console.log(row);
       setDatas({
         prac_rk: row.prac_rk,
         prac_implement: row.prac_implement,
@@ -126,7 +125,6 @@ const LastPractice = () => {
       setLoading(false);
     };
     fetchData();
-    console.log("DONE");
   }, []);
 
   if (loading) {

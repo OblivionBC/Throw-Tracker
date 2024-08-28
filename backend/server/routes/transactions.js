@@ -55,6 +55,14 @@ const {
   updateEvent,
 } = require("../controllers/events");
 
+const {
+  addMeasurable,
+  getAllMeasurablesForPerson,
+  getMeasurablesForPrac,
+  updateMeasurable,
+  deleteMeasurable,
+} = require("../controllers/measurables");
+
 router
   .post("/add-person", addPerson)
   .get("/get-person/:prsn_rk", getPerson)
@@ -66,7 +74,7 @@ router
   .get("/get-practice/:prac_rk", getPractice)
   .get("/get-all-practices", getAllPractices)
   .get("/get-last-practice", getLastPractice)
-  .get("/get-practicesInTrpe/:trpe_rk", getPracticesInTrpe)
+  .get("/get-practicesInTrpe", getPracticesInTrpe)
   .get("/get-practicesWithImp/:prac_implement", getPracticesWithImp)
   .delete("/delete-practice/:prac_rk", deletePractice)
   .put("/update-practice/:prac_rk", updatePractice)
@@ -79,10 +87,16 @@ router
 
   .post("/add-excersise", addExercise)
   .get("/get-excersise/:excr_rk", getExercise)
-  .get("/get-excersise/:trpe_rk", getAllExercises)
+  .get("/get-all-excersises/:trpe_rk", getAllExercises)
   .get("/get-exercisesInCurrentTRPE", getExercisesInCurrentTRPE)
   .delete("/delete-excercise/:excr_rk", deleteExercise)
   .put("/update-excercise/:excr_rk", updateExercise)
+
+  .post("/add-measurable", addMeasurable)
+  .get("/get-measurableForPrac", getMeasurablesForPrac)
+  .get("/get-all-measurables", getAllMeasurablesForPerson)
+  .delete("/delete-measurable/:meas_rk", deleteMeasurable)
+  .put("/update-measurable/:meas_rk", updateMeasurable)
 
   .post("/add-meet", addMeet)
   .get("/get-meet/:meet_rk", getMeet)

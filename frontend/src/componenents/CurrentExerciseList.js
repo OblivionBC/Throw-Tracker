@@ -66,7 +66,7 @@ const TableStyles = {
   },
 };
 
-const ExcersiseList = () => {
+const CurrentExcersiseList = () => {
   const [excrData, setExcrData] = useState([]);
   const getExerciseData = async () => {
     try {
@@ -89,14 +89,6 @@ const ExcersiseList = () => {
     console.log("TRPE data loading Succeeded");
   }, []);
 
-  const handleChange = ({ selectedRows }) => {
-    // You can set state or dispatch with something like Redux so we can use the retrieved data
-    if (selectedRows) {
-      const ids = selectedRows?.map((row) => {
-        return row.trpe_rk;
-      });
-    }
-  };
   const columns = [
     {
       name: "Exercise",
@@ -144,11 +136,9 @@ const ExcersiseList = () => {
             selectAllRowsItem: false,
           }}
           customStyles={TableStyles}
-          selectableRows
-          onSelectedRowsChange={handleChange}
         />
       </TableWrap>
     </CompWrap>
   );
 };
-export default ExcersiseList;
+export default CurrentExcersiseList;

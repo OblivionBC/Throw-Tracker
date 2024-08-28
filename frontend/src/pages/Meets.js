@@ -38,11 +38,6 @@ const Meets = () => {
   const [activeTRPE, setActiveTRPE] = useState([]);
   const [activePRAC, setActivePRAC] = useState([]);
 
-  useEffect(() => {
-    console.log("Active TRPE change");
-    console.log(activeTRPE);
-  }, [activeTRPE]);
-
   return (
     <Page>
       <LeftColumn>

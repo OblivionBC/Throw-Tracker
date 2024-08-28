@@ -11,6 +11,21 @@ VALUES ( '2023-11-23', '2023-12-26', 1),
  ( '2024-01-08', '2024-02-15', 1),
   ( '2024-02-20', '2024-03-21', 1);
 
+  INSERT INTO MEASURABLE ( meas_id, meas_typ, prac_rk, meas_unit)
+VALUES ( 'Benchpress Speed', 'Specific Preparatory', 11, 'm/s'),
+ ( '1.75kg Discus Throw', 'Competitive', 11, 'm/s'),
+  ( 'Overhead 16lb Shotput Toss', 'Specific Developmental', 12, 'm'),
+  ( 'Standing Bound', 'General', 12, 'm'),
+  ('Squat Jump', 'Specific Preparatory', 14, 'm/s'),
+  ('2kg Hammer Throw', 'Competitive', 14, 'm/s'),
+  ('Med Ball Chest Pass', 'Specific Developmental', 16, 'm'),
+  ('400m Run', 'General', 13, 's'),
+  ('Power Clean', 'Specific Preparatory', 15, 'm/s'),
+  ('600g Javelin Throw', 'Competitive', 13, 'm/s'),
+  ('Single-leg Hop', 'Specific Developmental', 16, 'm'),
+  ('Push-up', 'General', 16, 'reps')
+  ;
+
 INSERT INTO practice (prac_best, prac_implement, prac_implement_weight, prac_dt, trpe_rk)
 VALUES
     (39.42, 'Discus', 1.75, '2023-11-23', 1),
