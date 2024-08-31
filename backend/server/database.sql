@@ -61,6 +61,19 @@ ALTER TABLE MEASURABLE add COLUMN meas_unit varchar(16)
    FOREIGN KEY (prac_rk) 
    REFERENCES practice(prac_rk);
 
+Create Table MEASUREMENT (
+  MSRM_RK   SERIAL PRIMARY KEY,     
+  msrm_value float
+);
+ALTER TABLE MEASUREMENT ADD COLUMN prac_rk INTEGER;
+ALTER TABLE MEASUREMENT add COLUMN meas_rk INTEGER;
+ALTER TABLE MEASUREMENT ADD CONSTRAINT prac_rk
+   FOREIGN KEY (prac_rk) 
+   REFERENCES practice(prac_rk);
+ ALTER TABLE MEASUREMENT  ADD CONSTRAINT meas_rk
+   FOREIGN KEY (meas_rk) 
+   REFERENCES measurable(meas_rk);
+
 
 Create Table PRACTICE(
 PRAC_RK      SERIAL PRIMARY KEY,
@@ -85,3 +98,4 @@ ALTER TABLE TRAINING_PERIOD
    ADD CONSTRAINT fk_prsn
    FOREIGN KEY (prsn_rk) 
    REFERENCES person(prsn_rk);
+

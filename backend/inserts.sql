@@ -26,6 +26,11 @@ VALUES ( 'Benchpress Speed', 'Specific Preparatory', 11, 'm/s'),
   ('Push-up', 'General', 16, 'reps')
   ;
 
+  INSERT INTO MEASUREMENT ( msrm_value, prac_rk, meas_rk)
+VALUES ( 1.6, 12, 1),
+  ( 46.2, 11, 2),
+  ( 68.34, 14, 6);
+
 INSERT INTO practice (prac_best, prac_implement, prac_implement_weight, prac_dt, trpe_rk)
 VALUES
     (39.42, 'Discus', 1.75, '2023-11-23', 1),

@@ -3,6 +3,7 @@ import styled from "styled-components";
 import "typeface-nunito";
 import DataTable from "react-data-table-component";
 import dayjs from "dayjs";
+import PracticeDetailsModal from "./PracticeDetailsModal";
 // This is your PracticeItem component
 //Test that this works and add it to the practices component
 const CompWrap = styled.div`
@@ -49,6 +50,8 @@ const Title = styled.h1`
   padding: 0 5px 5px;
 `;
 
+const Detail = styled.button``;
+
 const TableStyles = {
   pagination: {
     style: {
@@ -67,6 +70,7 @@ const TableStyles = {
 
 const Practices = () => {
   const [practiceData, setPracticeData] = useState([]);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
 
   const getPracticeData = async () => {
     try {
@@ -98,7 +102,6 @@ const Practices = () => {
     },
     {
       name: "Date",
-      selector: (row) => row.prac_dt,
       cell: (row) => <div>{dayjs(row.prac_dt).format("MMM D YYYY")}</div>,
       sortable: true,
     },
@@ -123,9 +126,24 @@ const Practices = () => {
       selector: (row) => row.trpe_rk,
       sortable: true,
     },
+    {
+      cell: (row) => (
+        <Detail
+          onClick={() => setDetailModalOpen(true)}
+          style={{ display: "block" }}
+        >
+          Details
+        </Detail>
+      ),
+      width: "12%",
+    },
   ];
   return (
     <CompWrap>
+      <PracticeDetailsModal
+        open={detailModalOpen}
+        onClose={() => setDetailModalOpen(false)}
+      />
       <Title>Practices</Title>
       <TableWrap>
         <Table
