@@ -57,7 +57,7 @@ Create Table MEASURABLE (
 )
 ALTER TABLE MEASURABLE ADD COLUMN prac_rk INTEGER;
 ALTER TABLE MEASURABLE add COLUMN meas_unit varchar(16)
-   ADD CONSTRAINT prac_rk
+alter table   ADD CONSTRAINT prac_rk
    FOREIGN KEY (prac_rk) 
    REFERENCES practice(prac_rk);
 

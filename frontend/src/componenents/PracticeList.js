@@ -71,6 +71,7 @@ const TableStyles = {
 const Practices = () => {
   const [practiceData, setPracticeData] = useState([]);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [selectedPrac, setSelectedPrac] = useState({})
 
   const getPracticeData = async () => {
     try {
@@ -98,44 +99,45 @@ const Practices = () => {
       name: "ID",
       selector: (row) => row.prac_rk,
       sortable: true,
-      width: "10%",
+      width: "9%",
     },
     {
       name: "Date",
       cell: (row) => <div>{dayjs(row.prac_dt).format("MMM D YYYY")}</div>,
       sortable: true,
-    },
-    {
-      name: "Implement",
-      selector: (row) => row.prac_implement,
-      sortable: true,
-    },
-    {
-      name: "Weight",
-      selector: (row) => row.prac_implement_weight + "kg",
-      sortable: true,
       width: "15%",
     },
     {
-      name: "Best",
-      selector: (row) => row.prac_best + "m",
+      name: "Measurable",
+      selector: (row) => row.prac_implement,
       sortable: true,
+      //width: "15%",
     },
     {
-      name: "Period ID",
+      name: "Measurement",
+      selector: (row) => row.prac_best + "m",
+      sortable: true,
+      width: "13%"
+    },
+    {
+      name: "TRPE",
       selector: (row) => row.trpe_rk,
       sortable: true,
+      //width: "10%",
+    
     },
     {
       cell: (row) => (
         <Detail
-          onClick={() => setDetailModalOpen(true)}
+          onClick={() => {setDetailModalOpen(true)
+            setSelectedPrac(row)
+          }}
           style={{ display: "block" }}
         >
           Details
         </Detail>
       ),
-      width: "12%",
+      //width: "13%",
     },
   ];
   return (
@@ -143,6 +145,7 @@ const Practices = () => {
       <PracticeDetailsModal
         open={detailModalOpen}
         onClose={() => setDetailModalOpen(false)}
+        pracObj={selectedPrac}
       />
       <Title>Practices</Title>
       <TableWrap>

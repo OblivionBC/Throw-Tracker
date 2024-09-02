@@ -29,7 +29,13 @@ VALUES ( 'Benchpress Speed', 'Specific Preparatory', 11, 'm/s'),
   INSERT INTO MEASUREMENT ( msrm_value, prac_rk, meas_rk)
 VALUES ( 1.6, 12, 1),
   ( 46.2, 11, 2),
-  ( 68.34, 14, 6);
+  ( 68.34, 14, 6),
+  ( 60, 13, 8),
+  ( 24, 29, 12),
+  ( 22, 12, 12),
+  ( 28, 18, 12),
+  ( 29, 15, 12),
+  ( 1.9, 14, 1);
 
 INSERT INTO practice (prac_best, prac_implement, prac_implement_weight, prac_dt, trpe_rk)
 VALUES
