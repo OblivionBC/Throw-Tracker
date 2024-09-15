@@ -71,3 +71,24 @@ exports.deletePerson = async (req, res) => {
     console.log(err.message);
   }
 };
+
+exports.login = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    console.log(req.body);
+    //$1 is the variable to add in the db, runs sql query in quotes which is same as in the CLI
+    //Returning * returns back the data
+    const result = await pool.query(
+      "select p.prsn_first_nm, p.prsn_last_nm, p.prsn_email, p.prsn_role, o.org_name from person p inner join organization o on o.org_rk = p.org_rk where p.prsn_email = $1 and p.prsn_pwrd = $2",
+      [username, password]
+    );
+    if (result.rows.length == 0) {
+      res.status(404).json("Record does not exist");
+      return;
+    }
+    console.log(result.rows);
+    res.json(result);
+  } catch (err) {
+    console.error(err.message);
+  }
+};

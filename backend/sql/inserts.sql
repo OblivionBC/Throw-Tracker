@@ -1,5 +1,10 @@
+update person set org_rk = 1 where prsn_rk > 0;
+
 INSERT INTO person(prsn_first_nm, prsn_last_nm, prsn_email) 
 VALUES ('Gideon', 'Charles', 'gideon@gmail.com'), ('Starscourge', 'Radahn', 'radahn@gmail.com'), ('Queen', 'Marika', 'qmarika@gmail.com');
+
+INSERT INTO organization( org_name, org_code, org_type)
+VALUES ( 'University Of British Columbia', 'UBC', 'UNIVERSITY');
 
 INSERT INTO training_period ( trpe_start_dt, trpe_end_dt, prsn_rk)
 VALUES ( '2023-11-23', '2023-12-26', 1),

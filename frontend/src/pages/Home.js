@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import CurrentExcersiseList from "../componenents/CurrentExerciseList";
+import CurrentExcersiseList from "../componenents/tables/CurrentExerciseList";
 import LastPractice from "../componenents/LastPractice";
 import LineChart from "../componenents/Chart";
 import "typeface-rubik";
 import ErrorBoundary from "../componenents/ErrorBoundary";
-import MeetList from "../componenents/MeetList";
+import MeetList from "../componenents/tables/MeetList";
 
 const Page = styled.div`
   display: flex;

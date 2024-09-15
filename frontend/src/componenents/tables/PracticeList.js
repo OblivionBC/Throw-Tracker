@@ -3,7 +3,7 @@ import styled from "styled-components";
 import "typeface-nunito";
 import DataTable from "react-data-table-component";
 import dayjs from "dayjs";
-import PracticeDetailsModal from "./PracticeDetailsModal";
+import PracticeDetailsModal from "../modals/PracticeDetailsModal";
 // This is your PracticeItem component
 //Test that this works and add it to the practices component
 const CompWrap = styled.div`
@@ -71,7 +71,7 @@ const TableStyles = {
 const Practices = () => {
   const [practiceData, setPracticeData] = useState([]);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
-  const [selectedPrac, setSelectedPrac] = useState({})
+  const [selectedPrac, setSelectedPrac] = useState({});
 
   const getPracticeData = async () => {
     try {
@@ -99,38 +99,32 @@ const Practices = () => {
       name: "ID",
       selector: (row) => row.prac_rk,
       sortable: true,
-      width: "9%",
+      //width: "9%",
     },
     {
       name: "Date",
       cell: (row) => <div>{dayjs(row.prac_dt).format("MMM D YYYY")}</div>,
       sortable: true,
-      width: "15%",
-    },
-    {
-      name: "Measurable",
-      selector: (row) => row.prac_implement,
-      sortable: true,
       //width: "15%",
     },
     {
-      name: "Measurement",
-      selector: (row) => row.prac_best + "m",
+      name: "Measurables",
+      selector: (row) => row.measurement_count,
       sortable: true,
-      width: "13%"
+      //width: "15%",
     },
     {
       name: "TRPE",
       selector: (row) => row.trpe_rk,
       sortable: true,
       //width: "10%",
-    
     },
     {
       cell: (row) => (
         <Detail
-          onClick={() => {setDetailModalOpen(true)
-            setSelectedPrac(row)
+          onClick={() => {
+            setDetailModalOpen(true);
+            setSelectedPrac(row);
           }}
           style={{ display: "block" }}
         >
@@ -138,6 +132,9 @@ const Practices = () => {
         </Detail>
       ),
       //width: "13%",
+    },
+    {
+      cell: (row) => <button>Delete</button>,
     },
   ];
   return (

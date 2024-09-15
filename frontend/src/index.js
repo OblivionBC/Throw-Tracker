@@ -3,11 +3,22 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
+import { UserProvider } from "./componenents/UserContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <App />
+    <UserProvider
+      value={{
+        prsn_first_nm: "Connor",
+        prsn_last_nm: "Hengstler",
+        prsn_email: "connor.hengstler@gmail.com",
+        org_name: "UBC",
+        prsn_role: "ATHLETE",
+      }}
+    >
+      <App />
+    </UserProvider>
   </React.StrictMode>
 );
 

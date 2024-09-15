@@ -23,12 +23,12 @@ exports.addMeasurable = async (req, res) => {
 
 exports.getAllMeasurablesForPerson = async (req, res) => {
   try {
-    const decodedArray = decodeURIComponent(req.query.keys);
-    const keys = JSON.parse(decodedArray);
+    const decodedArray = decodeURIComponent(req.query.key);
+    const key = JSON.parse(decodedArray);
 
     const measurables = await pool.query(
-      "SELECT * FROM measurable m join practice p on p.prac_rk = m.prac_rk join training_period t on t.trpe_rk = p.trpe_rk join person prsn on prsn.prsn_rk = t.prsn_rk where prsn.prsn_rk = ANY($1)",
-      [keys]
+      "SELECT m.* FROM measurable m join practice p on p.prac_rk = m.prac_rk join training_period t on t.trpe_rk = p.trpe_rk join person prsn on prsn.prsn_rk = t.prsn_rk where prsn.prsn_rk = $1",
+      [key]
     );
     res.json(measurables);
   } catch (err) {
@@ -38,12 +38,12 @@ exports.getAllMeasurablesForPerson = async (req, res) => {
 
 exports.getMeasurablesForPrac = async (req, res) => {
   try {
-    const decodedArray = decodeURIComponent(req.query.keys);
-    const keys = JSON.parse(decodedArray);
+    const decodedArray = decodeURIComponent(req.query.key);
+    const key = JSON.parse(decodedArray);
 
     const measurables = await pool.query(
-      "SELECT * FROM measurables where prac_rk = ANY($1)",
-      [keys]
+      "SELECT m.*, msrm.msrm_value FROM measurable m join practice p on p.prac_rk = m.prac_rk join training_period t on t.trpe_rk = p.trpe_rk join person prsn on prsn.prsn_rk = t.prsn_rk join measurement msrm on msrm.meas_rk = m.meas_rk where prac_rk = $1",
+      [key]
     );
     res.json(measurables);
   } catch (err) {

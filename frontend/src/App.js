@@ -5,6 +5,7 @@ import { createGlobalStyle } from "styled-components";
 import Home from "./pages/Home";
 import Practices from "./pages/Practices";
 import Meets from "./pages/Meets";
+import LoginModal from "./componenents/modals/LoginModal";
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -22,7 +23,7 @@ const App = () => {
       <Router>
         <Navbar />
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<LoginModal />} />
           <Route path="/home" element={<Home />} />
           <Route path="/practices" element={<Practices />} />
           <Route path="/meets" element={<Meets />} />

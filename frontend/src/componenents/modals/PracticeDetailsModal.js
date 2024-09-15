@@ -1,6 +1,10 @@
 import React from "react";
 import styled from "styled-components";
 import { useEffect, useState } from "react";
+import PracticeEditForm from "../forms/PracticeEditForm";
+import MeasurablesList from "../tables/MeasurementList";
+import dayjs from "dayjs";
+
 const Modal = styled.div`
   position: fixed;
   top: 50%;
@@ -28,52 +32,51 @@ const ModalContainer = styled.div`
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  max-width: 600px;
+  max-width: 900px;
   width: 100%;
   position: fixed;
   background-color: white;
+  border-radius: 15px;
+  padding-bottom: 10px;
 `;
-const Content = styled.div``;
+const Content = styled.div`
+  width: 90%;
+`;
 const EditButton = styled.button``;
 const CloseButton = styled.button``;
 const PracticeDetailsModal = ({ open, onClose, pracObj }) => {
-  const [measurables, setMeasurables] = useEffect([]);
+  const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchMeasurables = async () => {
-      if (open === true) {
-        setLoading(true);
-        try {
-          const params = new URLSearchParams({
-            key: JSON.stringify(pracObj.prac_rk),
-          });
-          const response = await fetch(
-            `http://localhost:5000/api//get-measurableForPrac?${params}`
-          );
-          const jsonData = await response.json();
-          setMeasurables(jsonData);
-        } catch (error) {
-          console.error(error.message);
-        }
-        setLoading(false);
-      }
-    };
-    fetchMeasurables();
-  }, [open]);
+  const Details = () => {
+    if (editing) return null;
+    return (
+      <>
+        <p>{dayjs(pracObj.prac_dt).format("MMM D YYYY")}</p>
+        <MeasurablesList prac_rk={pracObj.prac_rk} />
+      </>
+    );
+  };
 
   if (!open) return null;
-  console.log("HERES THE PRAC IN MODAL");
-  console.log(pracObj);
-  console.log(pracObj.prac_best);
   return (
     <Modal>
       <Overlay>
         <ModalContainer>
           <p>HERE IS MY MODAL</p>
-          <CloseButton onClick={onClose}>Close</CloseButton>
-          <Content>HERE IS THE CONTANT {pracObj.prac_best}</Content>
-          <EditButton>Edit</EditButton>
+          <CloseButton
+            onClick={() => {
+              onClose();
+              setEditing(false);
+            }}
+          >
+            Close
+          </CloseButton>
+          <Content>
+            <PracticeEditForm prac={pracObj} editing={editing} />
+            <Details />
+          </Content>
+          <EditButton onClick={() => setEditing(!editing)}>Edit</EditButton>
         </ModalContainer>
       </Overlay>
     </Modal>

@@ -46,7 +46,7 @@ const Date = styled.h1`
 const ColumnLeft = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   flex-direction: column;
   width: 95%;
 `;
@@ -89,13 +89,8 @@ const Data = styled.p`
 `;
 const Weight = styled(FaIcons.FaWeightHanging)`
   margin-right: 5px;
-  height: 25px;
-  width: 25px;
-`;
-const Medal = styled(FaIcons.FaMedal)`
-  margin-right: 5px;
-  height: 25px;
-  width: 25px;
+  height: 50px;
+  width: 50px;
 `;
 
 const Implement = styled(FaIcons.FaToolbox)`
@@ -116,9 +111,9 @@ const LastPractice = () => {
       const row = jsonData.rows[0];
       setDatas({
         prac_rk: row.prac_rk,
-        prac_implement: row.prac_implement,
-        prac_implement_weight: row.prac_implement_weight,
-        prac_best: row.prac_best,
+        meas_id: row.meas_id,
+        msrm_value: row.msrm_value,
+        meas_unit: row.meas_unit,
         prac_dt: row.prac_dt,
         TRPE_RK: row.TRPE_RK,
       });
@@ -140,21 +135,16 @@ const LastPractice = () => {
         <Rows>
           <ColumnLeft>
             <Data>
-              <Medal />
-              <DataLabel>Best Throw: </DataLabel>
-              {datas.prac_best}
-            </Data>
-            <Data>
               <Weight />
-              <DataLabel>Implement Weight: </DataLabel>
-              {datas.prac_implement_weight}
+              <DataLabel>Measurement: </DataLabel>
+              {datas.msrm_value} and {datas.meas_unit}
             </Data>
           </ColumnLeft>
           <ColumnRight>
             <Implement />
             <Data>
-              <DataLabel>Implement: </DataLabel>
-              {datas.prac_implement}
+              <DataLabel>Measurable: </DataLabel>
+              {datas.meas_id}
             </Data>
           </ColumnRight>
         </Rows>
@@ -175,17 +165,17 @@ export default LastPractice;
           </Data>
           <Data>
             <DataLabel>Implement: </DataLabel>
-            {datas.prac_implement}
+            {datas.meas_id}
           </Data>
           <Data>
             <DataLabel>Implement Weight: </DataLabel>
-            {datas.prac_implement_weight}
+            {datas.msrm_value}
           </Data>
         </Row>
         <ColumnRight>
           <Data>
             <DataLabel>Best Throw: </DataLabel>
-            {datas.prac_best}
+            {datas.meas_unit}
           </Data>
           <Data>
             <DataLabel>Date: </DataLabel>

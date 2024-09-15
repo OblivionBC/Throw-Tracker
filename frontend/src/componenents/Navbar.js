@@ -1,9 +1,10 @@
-import React from "react";
-import { Link, NavLink } from "react-router-dom";
+import React, { useState } from "react";
+import { NavLink } from "react-router-dom";
 import * as FaIcons from "react-icons/fa";
 import styled from "styled-components";
-import logo from "../images/ThrowLogo.png";
+import logo from "../images/ThrowLogo5.png";
 import "typeface-nunito";
+import AccountDetailsModal from "./modals/AccountDetailModal";
 
 const NavWrap = styled.div`
   display: flex;
@@ -68,20 +69,27 @@ const Logo = styled.img`
   border-radius: 20px;
 `;
 
-const Profile = styled(Link)`
+const Profile = styled.div`
   color: white;
+  background-color: transparent;
   width: 50px;
-  &:hover {
-    color: #2b81e2;
-    transition: 200ms;
-  }
+  display: flex;
+  flex-direction: column;
 `;
 
 const UserIcon = styled(FaIcons.FaUser)`
   height: 25px;
   width: 25px;
+  &:hover {
+    color: #2b81e2;
+    transition: 200ms;
+    cursor: pointer;
+  }
 `;
 const Navbar = () => {
+  const [profile, setProfile] = useState(false);
+  // Example of updating user data
+
   return (
     <NavWrap>
       <NavLeft>
@@ -93,8 +101,9 @@ const Navbar = () => {
         <NavPath to="/meets">Meets</NavPath>
       </NavCenter>
       <NavRight>
-        <Profile to="/account">
+        <Profile onClick={() => setProfile(!profile)}>
           <UserIcon />
+          <AccountDetailsModal on={profile} />
         </Profile>
       </NavRight>
     </NavWrap>

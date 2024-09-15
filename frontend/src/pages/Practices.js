@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import PracticeList from "../componenents/PracticeList";
-import TrainingPeriodList from "../componenents/TrainingPeriodList";
+import PracticeList from "../componenents/tables/PracticeList";
+import TrainingPeriodList from "../componenents/tables/TrainingPeriodList";
 import LineChart from "../componenents/Chart";
 import "typeface-rubik";
 import ErrorBoundary from "../componenents/ErrorBoundary";

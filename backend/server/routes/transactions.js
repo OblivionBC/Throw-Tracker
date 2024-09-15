@@ -9,6 +9,7 @@ const {
   getAllPersons,
   deletePerson,
   updatePerson,
+  login,
 } = require("../controllers/persons");
 
 const {
@@ -63,12 +64,19 @@ const {
   deleteMeasurable,
 } = require("../controllers/measurables");
 
+const {
+  addMeasurement,
+  getMeasurementsForPrac,
+  deleteMeasurement,
+} = require("../controllers/measurements");
+
 router
   .post("/add-person", addPerson)
   .get("/get-person/:prsn_rk", getPerson)
   .get("/get-all-persons", getAllPersons)
   .delete("/delete-person/:prsn_rk", deletePerson)
   .put("/update-person/:prsn_rk", updatePerson)
+  .post("/login", login)
 
   .post("/add-practice", addPractice)
   .get("/get-practice/:prac_rk", getPractice)
@@ -94,9 +102,13 @@ router
 
   .post("/add-measurable", addMeasurable)
   .get("/get-measurableForPrac", getMeasurablesForPrac)
-  .get("/get-all-measurables", getAllMeasurablesForPerson)
+  .get("/get-all-measurablesForPrsn", getAllMeasurablesForPerson)
   .delete("/delete-measurable/:meas_rk", deleteMeasurable)
   .put("/update-measurable/:meas_rk", updateMeasurable)
+
+  .post("/add-measurement", addMeasurement)
+  .get("/get-measurementsForPrac", getMeasurementsForPrac)
+  .delete("/delete-measurement/:meas_rk", deleteMeasurement)
 
   .post("/add-meet", addMeet)
   .get("/get-meet/:meet_rk", getMeet)

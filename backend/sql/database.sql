@@ -1,11 +1,24 @@
 CREATE DATABASE trackApp;
--- Person Practice Training Period
+
+
 CREATE TABLE PERSON (
 PRSN_RK  SERIAL PRIMARY KEY,
 prsn_first_nm varchar(16) NOT NULL,
 prsn_last_nm varchar(24) NOT NULL,
 prsn_email varchar(30) NOT NULL
 );
+
+Create TABLE organization(
+org_rk  SERIAL PRIMARY KEY,
+org_name varchar(64) NOT NULL,
+org_type varchar(24)
+);
+ALTER TABLE PERSON ADD COLUMN org_rk INTEGER;
+ALTER TABLE PERSON 
+   ADD CONSTRAINT fk_org
+   FOREIGN KEY (org_rk) 
+   REFERENCES organization(org_rk);
+
 
 Create TABLE MEET(
 MEET_RK  SERIAL PRIMARY KEY,
