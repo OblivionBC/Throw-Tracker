@@ -1,7 +1,7 @@
 update person set org_rk = 1 where prsn_rk > 0;
 
-INSERT INTO person(prsn_first_nm, prsn_last_nm, prsn_email) 
-VALUES ('Gideon', 'Charles', 'gideon@gmail.com'), ('Starscourge', 'Radahn', 'radahn@gmail.com'), ('Queen', 'Marika', 'qmarika@gmail.com');
+INSERT INTO person (prsn_first_nm, prsn_last_nm, prsn_email, prsn_pwrd, org_rk, prsn_role) 
+VALUES('Gideon', 'Charles', 'gideon@gmail.com', crypt('mypass', gen_salt('bf')), 1, 'ATHLETE') RETURNING *
 
 INSERT INTO organization( org_name, org_code, org_type)
 VALUES ( 'University Of British Columbia', 'UBC', 'UNIVERSITY');

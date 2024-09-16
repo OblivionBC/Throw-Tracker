@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { useEffect, useState } from "react";
 import LoginForm from "../forms/LoginForm";
 import logo from "../../images/ThrowLogo.png";
+import SignUpForm from "../forms/SignUpForm";
 
 const Modal = styled.div`
   position: fixed;
@@ -49,6 +50,7 @@ const Logo = styled.img`
 
 const LoginModal = ({ open, onClose, pracObj }) => {
   const [loading, setLoading] = useState(true);
+  const [login, setLogin] = useState(true);
   if (!loading) return null;
   return (
     <Modal>
@@ -56,7 +58,8 @@ const LoginModal = ({ open, onClose, pracObj }) => {
         <ModalContainer>
           <Logo src={logo} alt="Throw Logo" />
 
-          <LoginForm />
+          <LoginForm on={login} off={() => setLogin(false)} />
+          <SignUpForm on={!login} off={() => setLogin(true)} />
         </ModalContainer>
       </Overlay>
     </Modal>

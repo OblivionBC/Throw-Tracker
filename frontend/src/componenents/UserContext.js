@@ -10,8 +10,6 @@ export const UserProvider = ({ children }) => {
 
   const loginComplete = (userData) => {
     setUser(userData);
-    console.log("UserData Updated");
-    console.log(userData);
   };
 
   const login = async (values) => {
@@ -28,7 +26,6 @@ export const UserProvider = ({ children }) => {
       });
       const jsonData = await response.json();
       if (jsonData.rowCount > 0) {
-        console.log(jsonData.rows[0]);
         setUser(jsonData.rows[0]);
         return true;
       } else {

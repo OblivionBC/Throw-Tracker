@@ -7,12 +7,19 @@ const { pool } = require(".././db");
 exports.addPerson = async (req, res) => {
   try {
     console.log(req.body);
-    const { prsn_first_nm, prsn_last_nm, prsn_email } = req.body;
+    const {
+      prsn_first_nm,
+      prsn_last_nm,
+      prsn_email,
+      prsn_pwrd,
+      org_rk,
+      prsn_role,
+    } = req.body;
     //$1 is the variable to add in the db, runs sql query in quotes which is same as in the CLI
     //Returning * returns back the data
     const newPerson = await pool.query(
-      "INSERT INTO person (prsn_first_nm, prsn_last_nm, prsn_email) VALUES($1, $2, $3) RETURNING *",
-      [prsn_first_nm, prsn_last_nm, prsn_email]
+      "INSERT INTO person (prsn_first_nm, prsn_last_nm, prsn_email, prsn_pwrd, org_rk, prsn_role) VALUES($1, $2, $3, crypt($4, gen_salt('bf')), $5, $6) RETURNING *",
+      [prsn_first_nm, prsn_last_nm, prsn_email, prsn_pwrd, org_rk, prsn_role]
     );
 
     res.json(newPerson);
@@ -79,7 +86,7 @@ exports.login = async (req, res) => {
     //$1 is the variable to add in the db, runs sql query in quotes which is same as in the CLI
     //Returning * returns back the data
     const result = await pool.query(
-      "select p.prsn_first_nm, p.prsn_last_nm, p.prsn_email, p.prsn_role, o.org_name from person p inner join organization o on o.org_rk = p.org_rk where p.prsn_email = $1 and p.prsn_pwrd = $2",
+      "SELECT p.prsn_first_nm, p.prsn_last_nm, p.prsn_email, p.prsn_role, o.org_name FROM person p inner join organization o on o.org_rk = p.org_rk WHERE p.prsn_email = $1 AND p.prsn_pwrd = crypt($2, p.prsn_pwrd);",
       [username, password]
     );
     if (result.rows.length == 0) {

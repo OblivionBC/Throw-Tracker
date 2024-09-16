@@ -96,7 +96,7 @@ const Navbar = () => {
         <Logo src={logo} />
       </NavLeft>
       <NavCenter>
-        <NavPath to="/">Home</NavPath>
+        <NavPath to="/home">Home</NavPath>
         <NavPath to="/practices">Practices</NavPath>
         <NavPath to="/meets">Meets</NavPath>
       </NavCenter>
