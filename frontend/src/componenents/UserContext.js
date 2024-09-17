@@ -37,19 +37,13 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  const refreshUser = () => {
-    //Fetch user from db
-    setUser({
-      prsn_first_nm: "Connor",
-      prsn_last_nm: "Hengstler",
-      prsn_email: "connor.hengstler@gmail.com",
-      org_name: "UBC",
-      prsn_role: "ATHLETE",
-    });
+  const signOut = async () => {
+    setUser({});
+    return;
   };
   return (
     <UserContext.Provider
-      value={{ user, refreshUser, useUser, login, loginComplete }}
+      value={{ user, useUser, signOut, login, loginComplete }}
     >
       {children}
     </UserContext.Provider>

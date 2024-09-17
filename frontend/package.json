@@ -17,6 +17,7 @@
     "react-icons": "^5.2.1",
     "react-router-dom": "^6.25.1",
     "react-scripts": "^5.0.1",
+    "react-select": "^5.8.0",
     "styled-components": "^6.1.12",
     "typeface-lato": "^1.1.13",
     "typeface-nunito": "^1.1.13",

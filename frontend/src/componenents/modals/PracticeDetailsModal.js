@@ -3,7 +3,55 @@ import styled from "styled-components";
 import { useEffect, useState } from "react";
 import PracticeEditForm from "../forms/PracticeEditForm";
 import MeasurablesList from "../tables/MeasurementList";
+import "typeface-nunito";
 import dayjs from "dayjs";
+
+const PracticeDetailsModal = ({ open, onClose, pracObj }) => {
+  const [editing, setEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const Details = () => {
+    if (editing) return null;
+    return (
+      <>
+        <RowContainer>
+          <FieldName>Date:</FieldName>
+          <p>{dayjs(pracObj.prac_dt).format("MMM D YYYY")}</p>
+        </RowContainer>
+        <RowContainer>
+          <FieldName>Training Period:</FieldName>
+          <p>{pracObj.trpe_rk}</p>
+        </RowContainer>
+        <MeasurablesList prac_rk={pracObj.prac_rk} />
+      </>
+    );
+  };
+
+  if (!open) return null;
+  return (
+    <Modal>
+      <Overlay>
+        <ModalContainer>
+          <CloseButton
+            onClick={() => {
+              onClose();
+              setEditing(false);
+            }}
+          >
+            Close
+          </CloseButton>
+          <Content>
+            <PracticeEditForm prac={pracObj} on={editing} />
+            <Details />
+          </Content>
+          <EditButton onClick={() => setEditing(!editing)}>
+            {editing ? "Details" : "Edit"}
+          </EditButton>
+        </ModalContainer>
+      </Overlay>
+    </Modal>
+  );
+};
 
 const Modal = styled.div`
   position: fixed;
@@ -42,45 +90,23 @@ const ModalContainer = styled.div`
 const Content = styled.div`
   width: 90%;
 `;
+const RowContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  font-family: "Nunito", sans-serif;
+  margin: 0;
+  padding: 0;
+`;
+
+const FieldName = styled.h3`
+  margin: 0 10px 0 0;
+  padding: 0;
+`;
 const EditButton = styled.button``;
-const CloseButton = styled.button``;
-const PracticeDetailsModal = ({ open, onClose, pracObj }) => {
-  const [editing, setEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  const Details = () => {
-    if (editing) return null;
-    return (
-      <>
-        <p>{dayjs(pracObj.prac_dt).format("MMM D YYYY")}</p>
-        <MeasurablesList prac_rk={pracObj.prac_rk} />
-      </>
-    );
-  };
-
-  if (!open) return null;
-  return (
-    <Modal>
-      <Overlay>
-        <ModalContainer>
-          <p>HERE IS MY MODAL</p>
-          <CloseButton
-            onClick={() => {
-              onClose();
-              setEditing(false);
-            }}
-          >
-            Close
-          </CloseButton>
-          <Content>
-            <PracticeEditForm prac={pracObj} editing={editing} />
-            <Details />
-          </Content>
-          <EditButton onClick={() => setEditing(!editing)}>Edit</EditButton>
-        </ModalContainer>
-      </Overlay>
-    </Modal>
-  );
-};
-
+const CloseButton = styled.button`
+  margin: 10px 0 0 0;
+  padding: 3px;
+`;
 export default PracticeDetailsModal;

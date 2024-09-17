@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { useUser } from "../UserContext";
+import { useNavigate } from "react-router-dom";
 import "typeface-nunito";
 
 const Modal = styled.div`
@@ -44,7 +45,15 @@ const Role = styled.ul`
 const SignOut = styled.button``;
 
 const AccountDetailsModal = ({ on }) => {
-  const { user } = useUser();
+  const { user, signOut } = useUser();
+  const navigate = useNavigate();
+
+  async function logout() {
+    try {
+      navigate("/");
+      signOut();
+    } catch (error) {}
+  }
 
   if (!on) {
     return null;
@@ -56,7 +65,7 @@ const AccountDetailsModal = ({ on }) => {
         <Org>{user.org_name}</Org>
         <Role>{user.prsn_role}</Role>
       </List>
-      <SignOut>Sign Out</SignOut>
+      <SignOut onClick={() => logout()}>Sign Out</SignOut>
     </Modal>
   );
 };
