@@ -85,7 +85,7 @@ router
   .get("/get-practicesInTrpe", getPracticesInTrpe)
   .get("/get-practicesWithImp/:prac_implement", getPracticesWithImp)
   .delete("/delete-practice/:prac_rk", deletePractice)
-  .put("/update-practice/:prac_rk", updatePractice)
+  .put("/update-practice", updatePractice)
 
   .post("/add-trainingPeriod", addTrainingPeriod)
   .get("/get-trainingPeriod/:trpe_rk", getTrainingPeriod)
@@ -102,7 +102,7 @@ router
 
   .post("/add-measurable", addMeasurable)
   .get("/get-measurableForPrac", getMeasurablesForPrac)
-  .get("/get-all-measurablesForPrsn", getAllMeasurablesForPerson)
+  .post("/get-all-measurablesForPrsn", getAllMeasurablesForPerson)
   .delete("/delete-measurable/:meas_rk", deleteMeasurable)
   .put("/update-measurable/:meas_rk", updateMeasurable)
 

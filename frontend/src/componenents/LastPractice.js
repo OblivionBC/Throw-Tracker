@@ -64,13 +64,6 @@ const Rows = styled.div`
   flex-direction: row;
   width: 95%;
 `;
-const Column = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: row;
-  width: 95%;
-`;
 
 const DataLabel = styled.span`
   display: flex;

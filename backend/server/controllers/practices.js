@@ -94,29 +94,17 @@ exports.getPractice = async (req, res) => {
 
 exports.updatePractice = async (req, res) => {
   try {
-    const { prac_rk } = req.params;
-    const {
-      prac_best,
-      prac_implement,
-      prac_implement_weight,
-      prac_dt,
-      trpe_rk,
-    } = req.body;
+    const { prac_rk, prac_dt, trpe_rk } = req.body;
     const updateTodo = await pool.query(
-      "UPDATE practice SET prac_best = $1, prac_implement = $2, prac_implement_weight = $3, prac_dt = $4, trpe_rk = $5 WHERE prac_rk = $6",
-      [
-        prac_best,
-        prac_implement,
-        prac_implement_weight,
-        prac_dt,
-        trpe_rk,
-        prac_rk,
-      ]
+      "UPDATE practice SET prac_best = 0, prac_implement = 'null', prac_implement_weight = 0, prac_dt = $1, trpe_rk = $2 WHERE prac_rk = $3",
+      [prac_dt, trpe_rk, prac_rk]
     );
     res.json("Practice was Updated");
+    console.log(updateTodo);
   } catch (err) {
     console.error(err.message);
   }
+  console.log("Prac Updated Succesfully");
 };
 
 exports.deletePractice = async (req, res) => {

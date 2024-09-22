@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import LoginForm from "../forms/LoginForm";
 import logo from "../../images/ThrowLogo.png";
 import SignUpForm from "../forms/SignUpForm";
@@ -40,18 +40,13 @@ const ModalContainer = styled.div`
   padding-top: 10px;
   padding-bottom: 10px;
 `;
-const Content = styled.div`
-  width: 90%;
-`;
 
 const Logo = styled.img`
   height: 100px;
 `;
 
 const LoginModal = ({ open, onClose, pracObj }) => {
-  const [loading, setLoading] = useState(true);
   const [login, setLogin] = useState(true);
-  if (!loading) return null;
   return (
     <Modal>
       <Overlay>

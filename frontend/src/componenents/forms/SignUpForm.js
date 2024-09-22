@@ -2,51 +2,7 @@ import React, { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
-import { useUser } from "../UserContext";
 import "typeface-nunito";
-
-const StyledForm = styled(Form)`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-`;
-
-const StyledInput = styled.input`
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  margin-bottom: 10px;
-`;
-const Blab = styled.div`
-  font-family: "Nunito", sans-serif;
-  color: blue;
-  cursor: pointer;
-  text-decoration: underline;
-`;
-
-const StyledButton = styled.button`
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-`;
-const SubmitError = styled.div`
-  font-size: 18;
-  color: red;
-  font-family: "Nunito", sans-serif;
-`;
-
-const StyledSelect = styled.select`
-  padding: 6px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  margin-bottom: 10px;
-`;
 
 const SignUpForm = ({ on, off }) => {
   const [failed, setFailed] = useState(false);
@@ -118,72 +74,93 @@ const SignUpForm = ({ on, off }) => {
           <StyledForm onSubmit={handleSubmit}>
             <Field name="fname">
               {({ field }) => (
-                <StyledInput
-                  type="text"
-                  placeholder="First Name Ex: Ryan"
-                  {...field}
-                />
+                <FieldOutputContainer>
+                  <FieldLabel>First Name: </FieldLabel>
+                  <StyledInput
+                    type="text"
+                    placeholder="First Name Ex: Ryan"
+                    {...field}
+                  />
+                </FieldOutputContainer>
               )}
             </Field>
             <ErrorMessage name="fname" component={SubmitError} />
 
             <Field name="lname">
               {({ field }) => (
-                <StyledInput
-                  type="text"
-                  placeholder="Last Name Ex: Crouser"
-                  {...field}
-                />
+                <FieldOutputContainer>
+                  <FieldLabel>Last Name: </FieldLabel>
+                  <StyledInput
+                    type="text"
+                    placeholder="Last Name Ex: Crouser"
+                    {...field}
+                  />
+                </FieldOutputContainer>
               )}
             </Field>
             <ErrorMessage name="lname" component={SubmitError} />
 
             <Field name="username">
               {({ field }) => (
-                <StyledInput type="text" placeholder="Email" {...field} />
+                <FieldOutputContainer>
+                  <FieldLabel>Email: </FieldLabel>
+                  <StyledInput type="text" placeholder="Email" {...field} />
+                </FieldOutputContainer>
               )}
             </Field>
             <ErrorMessage name="username" component={SubmitError} />
 
             <Field name="org">
               {({ field }) => (
-                <StyledInput
-                  type="text"
-                  placeholder="Organization Key"
-                  {...field}
-                />
+                <FieldOutputContainer>
+                  <FieldLabel>Organization Key: </FieldLabel>
+                  <StyledInput
+                    type="text"
+                    placeholder="Organization Key"
+                    {...field}
+                  />
+                </FieldOutputContainer>
               )}
             </Field>
             <ErrorMessage name="org" component={SubmitError} />
 
             <Field as="select" name="role">
               {({ field }) => (
-                <StyledSelect type="password" placeholder="Password" {...field}>
-                  <option value="COACH">Coach</option>
-                  <option value="ATHLETE">Athlete</option>
-                </StyledSelect>
+                <FieldOutputContainer>
+                  <FieldLabel>Role: </FieldLabel>
+                  <StyledSelect type="text" placeholder="role" {...field}>
+                    <option value="COACH">Coach</option>
+                    <option value="ATHLETE">Athlete</option>
+                  </StyledSelect>
+                </FieldOutputContainer>
               )}
             </Field>
             <ErrorMessage name="role" component={SubmitError} />
 
             <Field name="password">
               {({ field }) => (
-                <StyledInput
-                  type="password"
-                  placeholder="Password"
-                  {...field}
-                />
+                <FieldOutputContainer>
+                  <FieldLabel>Password: </FieldLabel>
+                  <StyledInput
+                    type="password"
+                    placeholder="Password"
+                    {...field}
+                  />
+                </FieldOutputContainer>
               )}
             </Field>
             <ErrorMessage name="password" component={SubmitError} />
 
             <Field name="confirmPassword">
               {({ field }) => (
-                <StyledInput
-                  type="password"
-                  placeholder="ConfirmPassword"
-                  {...field}
-                />
+                <FieldOutputContainer>
+                  <FieldLabel>Confirm Password: </FieldLabel>
+                  <StyledInput
+                    type="password"
+                    placeholder="ConfirmPassword"
+                    {...field}
+                  />
+                </FieldOutputContainer>
               )}
             </Field>
             <ErrorMessage name="confirmPassword" component={SubmitError} />
@@ -203,5 +180,58 @@ const SignUpForm = ({ on, off }) => {
     </>
   );
 };
+const FieldOutputContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  font-family: "Nunito", sans-serif;
+`;
+
+const FieldLabel = styled.h3`
+  margin-right: 10px;
+`;
+
+const StyledForm = styled(Form)`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+`;
+
+const StyledInput = styled.input`
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 10px;
+`;
+const Blab = styled.div`
+  font-family: "Nunito", sans-serif;
+  color: blue;
+  cursor: pointer;
+  text-decoration: underline;
+`;
+
+const StyledButton = styled.button`
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+`;
+const SubmitError = styled.div`
+  font-size: 18;
+  color: red;
+  font-family: "Nunito", sans-serif;
+`;
+
+const StyledSelect = styled.select`
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 10px;
+`;
 
 export default SignUpForm;

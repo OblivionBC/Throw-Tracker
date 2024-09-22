@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import PracticeEditForm from "../forms/PracticeEditForm";
 import MeasurablesList from "../tables/MeasurementList";
 import "typeface-nunito";
@@ -8,7 +8,6 @@ import dayjs from "dayjs";
 
 const PracticeDetailsModal = ({ open, onClose, pracObj }) => {
   const [editing, setEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   const Details = () => {
     if (editing) return null;

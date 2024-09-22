@@ -4,62 +4,86 @@ import * as Yup from "yup";
 import styled from "styled-components";
 import { useUser } from "../UserContext";
 import "typeface-nunito";
-import Select from "react-select";
 import PersonMeasurableOptions from "../PersonMeasurableOptions";
+import { MeasurableFieldArray } from "../MeasurableFieldArray";
 
+//Grab the initial values
+const addMeasurement = async (measurable) => {
+  //msrm_value, prac_rk, meas_rk
+  console.log(measurable);
+  const response = await fetch(`http://localhost:5000/api/add-measurement`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      meas_rk: measurable.meas_rk,
+      msrm_value: measurable.msrm_value,
+      prac_rk: measurable.prac_rk,
+    }),
+  });
+  const jsonData = await response.json();
+  console.log(jsonData);
+};
 const PracticeEditForm = ({ prac, on }) => {
   const [failed, setFailed] = useState(false);
   const initialValues = {
-    username: "",
-    password: "",
+    trpe: "",
+    date: "",
     measurables: [],
   };
   const { user } = useUser();
   const validationSchema = Yup.object().shape({
-    prac_trpe: Yup.number("Must be a number").required(
+    trpe: Yup.number("Must be a number").required(
       "Training Period is a required field"
     ),
-    prac_date: Yup.date().required(),
-    prac_wind: Yup.number("Must be a number, km/h will be applied").required(
-      "Training Period is a required field"
-    ),
-    selects: Yup.array().of(
-      Yup.object().shape({
-        //value: Yup.string().required("Required"),
-      })
-    ),
+    date: Yup.date().required(),
+    measurables: Yup.array()
+      .of(
+        Yup.object().shape({
+          meas_rk: Yup.number().required("Required"),
+          prac_rk: Yup.number().required("Required"),
+          msrm_value: Yup.number()
+            .required("Required")
+            .notOneOf([-1], "Please Choose the Measurable"),
+        })
+      )
+      .required("Must have measurables")
+      .min(1, "Minimum of 1 measurable"),
   });
   const handleSubmit = async (values, { setSubmitting }) => {
     // Handle form submission here
-    // For example, you could make an API call to authenticate the user\
+    //Make call on submit to update practice, and delete all measurments in for the prac, then create a new one for each in the array
+    console.log(values);
     setSubmitting(true);
     try {
-      const response = await fetch(`http://localhost:5000/api//add-person`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          prac_trpe: values.trpe,
-          prac_date: values.date,
-          prac_wind: values.wind,
-        }),
+      const response = await fetch(
+        `http://localhost:5000/api/update-practice`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            trpe_rk: values.trpe,
+            prac_dt: values.date,
+            prac_rk: prac.prac_rk,
+          }),
+        }
+      );
+
+      values.measurables.forEach((element) => {
+        addMeasurement(element);
+        console.log("POSTING");
       });
-      const jsonData = await response.json();
-      if (jsonData.rowCount === 0) {
-        setFailed(true);
-        return;
-      } else {
-      }
+      alert("Practice Updated Successfully");
     } catch (error) {
       setFailed(true);
       console.error(error.message);
       return false;
     }
-    alert("Submitted");
     setSubmitting(false);
   };
-
   if (!on) return null;
   return (
     <>
@@ -68,7 +92,7 @@ const PracticeEditForm = ({ prac, on }) => {
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
       >
-        {({ handleSubmit, isSubmitting, values }) => (
+        {({ handleSubmit, isSubmitting, values, setFieldValue }) => (
           //date, training period, wind, notes, measurables
           <StyledForm onSubmit={handleSubmit}>
             <Field name="trpe">
@@ -99,34 +123,23 @@ const PracticeEditForm = ({ prac, on }) => {
             </Field>
             <ErrorMessage name="date" component={SubmitError} />
 
-            <Field name="wind">
-              {({ field }) => (
-                <FieldOutputContainer>
-                  <FieldLabel>Wind:</FieldLabel>
-                  <StyledInput
-                    type="text"
-                    placeholder={prac.prac_wind}
-                    {...field}
-                  />
-                </FieldOutputContainer>
-              )}
-            </Field>
-            <ErrorMessage name="wind" component={SubmitError} />
-
-            <Field name="measurable">
+            <FieldArray name="measurables">
               {({ field }) => (
                 <FieldOutputContainer>
                   <FieldLabel>Measurables:</FieldLabel>
-                  <PersonMeasurableOptions prsn_rk={user.prsn_rk} />
+                  <MeasurableFieldArray
+                    array={values.measurables}
+                    values={values}
+                    setFieldValue={setFieldValue}
+                    prac_rk={prac.prac_rk}
+                  />
                 </FieldOutputContainer>
               )}
-            </Field>
-            <ErrorMessage name="measurable" component={SubmitError} />
-
-            <FieldArray name="measurables"></FieldArray>
+            </FieldArray>
+            <ErrorMessage name="measurables" component={SubmitError} />
 
             <StyledButton type="submit" disabled={isSubmitting}>
-              Sign Up
+              Save
             </StyledButton>
             {failed ? (
               <SubmitError>

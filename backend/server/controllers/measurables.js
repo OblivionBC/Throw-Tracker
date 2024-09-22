@@ -23,14 +23,14 @@ exports.addMeasurable = async (req, res) => {
 
 exports.getAllMeasurablesForPerson = async (req, res) => {
   try {
-    const decodedArray = decodeURIComponent(req.query.key);
-    const key = JSON.parse(decodedArray);
+    const { prsn_rk } = req.body;
 
     const measurables = await pool.query(
       "SELECT m.* FROM measurable m join practice p on p.prac_rk = m.prac_rk join training_period t on t.trpe_rk = p.trpe_rk join person prsn on prsn.prsn_rk = t.prsn_rk where prsn.prsn_rk = $1",
-      [key]
+      [prsn_rk]
     );
     res.json(measurables);
+    console.log(measurables);
   } catch (err) {
     console.log(err.message);
   }

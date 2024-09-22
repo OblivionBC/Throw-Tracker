@@ -55,7 +55,6 @@ const TableStyles = {
     },
   },
 };
-const SaveButton = styled.button``;
 
 const MeasurementList = ({ prac_rk }) => {
   const [measurables, setMeasurables] = useState([]);
