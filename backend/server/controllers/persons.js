@@ -24,7 +24,8 @@ exports.addPerson = async (req, res) => {
 
     res.json(newPerson);
   } catch (err) {
-    console.error(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred Adding Person." });
   }
 };
 
@@ -33,7 +34,8 @@ exports.getAllPersons = async (req, res) => {
     const allPersons = await pool.query("SELECT * FROM person");
     res.json(allPersons);
   } catch (err) {
-    console.log(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred Getting All Persons." });
   }
 };
 
@@ -47,7 +49,8 @@ exports.getPerson = async (req, res) => {
     res.json(person.rows);
     console.log(req.params);
   } catch (err) {
-    console.log(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred Getting Person." });
   }
 };
 
@@ -61,7 +64,8 @@ exports.updatePerson = async (req, res) => {
     );
     res.json("Person was Updated");
   } catch (err) {
-    console.error(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred Updating Person." });
   }
 };
 
@@ -75,7 +79,8 @@ exports.deletePerson = async (req, res) => {
 
     res.json("Person has been Deleted");
   } catch (err) {
-    console.log(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred Deleting Person." });
   }
 };
 
@@ -96,6 +101,7 @@ exports.login = async (req, res) => {
     console.log(result.rows);
     res.json(result);
   } catch (err) {
-    console.error(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred while Logging In." });
   }
 };

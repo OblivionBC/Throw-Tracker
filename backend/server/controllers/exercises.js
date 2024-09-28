@@ -18,7 +18,8 @@ exports.addExercise = async (req, res) => {
 
     res.json(newExercise);
   } catch (err) {
-    console.error(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred Adding Exercise." });
   }
 };
 
@@ -27,7 +28,8 @@ exports.getAllExercises = async (req, res) => {
     const allExercises = await pool.query("SELECT * FROM Exercise");
     res.json(allExercises);
   } catch (err) {
-    console.log(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred getting All Exercises." });
   }
 };
 
@@ -38,7 +40,10 @@ exports.getExercisesInCurrentTRPE = async (req, res) => {
     );
     res.json(allExercises);
   } catch (err) {
-    console.log(err.message);
+    console.error("Async Error:", err.message);
+    res
+      .status(500)
+      .json({ message: "Error occurred Getting Exercise from current TRPE." });
   }
 };
 
@@ -53,7 +58,8 @@ exports.getExercise = async (req, res) => {
     res.json(Exercise.rows);
     console.log(req.params);
   } catch (err) {
-    console.log(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred Getting Exercise." });
   }
 };
 
@@ -68,7 +74,8 @@ exports.updateExercise = async (req, res) => {
     );
     res.json("Exercise was Updated");
   } catch (err) {
-    console.error(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred Updating Exercise." });
   }
 };
 
@@ -82,6 +89,7 @@ exports.deleteExercise = async (req, res) => {
 
     res.json("Exercise has been Deleted");
   } catch (err) {
-    console.log(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred Deleting Exercise." });
   }
 };

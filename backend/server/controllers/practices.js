@@ -23,7 +23,8 @@ exports.addPractice = async (req, res) => {
 
     res.json(newPractice);
   } catch (err) {
-    console.error(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred while Adding Practice." });
   }
 };
 
@@ -34,7 +35,10 @@ exports.getAllPractices = async (req, res) => {
     );
     res.json(allPractice);
   } catch (err) {
-    console.log(err.message);
+    console.error("Async Error:", err.message);
+    res
+      .status(500)
+      .json({ message: "Error occurred while Getting All Practice." });
   }
 };
 
@@ -49,7 +53,10 @@ exports.getPracticesInTrpe = async (req, res) => {
     );
     res.json(trpePractice);
   } catch (err) {
-    console.log(err.message);
+    console.error("Async Error:", err.message);
+    res
+      .status(500)
+      .json({ message: "Error occurred while Getting Practices in the TRPE." });
   }
 };
 
@@ -60,7 +67,10 @@ exports.getLastPractice = async (req, res) => {
     );
     res.json(practice);
   } catch (err) {
-    console.log(err.message);
+    console.error("Async Error:", err.message);
+    res
+      .status(500)
+      .json({ message: "Error occurred while Getting Last Practice." });
   }
 };
 
@@ -73,7 +83,10 @@ exports.getPracticesWithImp = async (req, res) => {
     );
     res.json(practice);
   } catch (err) {
-    console.log(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({
+      message: "Error occurred while Getting All Practice with Implement.",
+    });
   }
 };
 
@@ -88,7 +101,8 @@ exports.getPractice = async (req, res) => {
     res.json(practice.rows);
     console.log(req.params);
   } catch (err) {
-    console.log(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred while Getting Practice." });
   }
 };
 
@@ -102,14 +116,21 @@ exports.updatePractice = async (req, res) => {
     res.json("Practice was Updated");
     console.log(updateTodo);
   } catch (err) {
-    console.error(err.message);
+    console.error("Async Error:", err.message);
+    res
+      .status(500)
+      .json({ message: "Error occurred while Updating Practice." });
   }
-  console.log("Prac Updated Succesfully");
 };
 
 exports.deletePractice = async (req, res) => {
   try {
-    const { prac_rk } = req.params;
+    const { prac_rk } = req.body;
+
+    const deleteMeasurement = await pool.query(
+      "DELETE FROM measurement WHERE prac_rk = $1",
+      [prac_rk]
+    );
     const deletePractice = await pool.query(
       "DELETE FROM practice WHERE prac_rk = $1",
       [prac_rk]
@@ -117,6 +138,9 @@ exports.deletePractice = async (req, res) => {
 
     res.json("Practice has been Deleted");
   } catch (err) {
-    console.log(err.message);
+    console.error("Async Error:", err.message);
+    res
+      .status(500)
+      .json({ message: "Error occurred while Deleting Practice." });
   }
 };

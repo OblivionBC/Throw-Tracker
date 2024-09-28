@@ -49,6 +49,7 @@ ALTER TABLE EVENT
    FOREIGN KEY (meet_rk) 
    REFERENCES MEET(meet_rk);
 
+
 Create Table EXERCISE (
   EXCR_RK   SERIAL PRIMARY KEY,     
   excr_nm varchar(32) NOT NULL,
@@ -111,4 +112,3 @@ ALTER TABLE TRAINING_PERIOD
    ADD CONSTRAINT fk_prsn
    FOREIGN KEY (prsn_rk) 
    REFERENCES person(prsn_rk);
-

@@ -17,7 +17,8 @@ exports.addMeasurement = async (req, res) => {
 
     res.json(newMeasurement);
   } catch (err) {
-    console.error(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred Adding Measurement." });
   }
 };
 
@@ -32,7 +33,10 @@ exports.getMeasurementsForPrac = async (req, res) => {
     );
     res.json(Measurements);
   } catch (err) {
-    console.log(err.message);
+    console.error("Async Error:", err.message);
+    res
+      .status(500)
+      .json({ message: "Error occurred Getting Measurements For Practice." });
   }
 };
 
@@ -46,6 +50,21 @@ exports.deleteMeasurement = async (req, res) => {
 
     res.json("Measurement has been Deleted");
   } catch (err) {
-    console.log(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred Deleting Measurement." });
+  }
+};
+
+exports.deleteMeasurementsForPrac = async (req, res) => {
+  try {
+    const { prac_rk } = req.body;
+    const deleteMeasurement = await pool.query(
+      "DELETE FROM Measurement WHERE prac_rk = $1",
+      [prac_rk]
+    );
+    res.json("Measurements have been Deleted");
+  } catch (err) {
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred Deleting Measurement." });
   }
 };

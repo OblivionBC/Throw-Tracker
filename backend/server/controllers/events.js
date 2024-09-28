@@ -35,7 +35,8 @@ exports.addEvent = async (req, res) => {
 
     res.json(newEvent);
   } catch (err) {
-    console.error(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred Add Event." });
   }
 };
 
@@ -44,7 +45,8 @@ exports.getAllEvents = async (req, res) => {
     const allEvents = await pool.query("SELECT * FROM Event");
     res.json(allEvents);
   } catch (err) {
-    console.log(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred Getting All Events." });
   }
 };
 
@@ -58,7 +60,8 @@ exports.getEvent = async (req, res) => {
     res.json(Event.rows);
     console.log(req.params);
   } catch (err) {
-    console.log(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred Getting Event." });
   }
 };
 
@@ -91,7 +94,8 @@ exports.updateEvent = async (req, res) => {
     );
     res.json("Event was Updated");
   } catch (err) {
-    console.error(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred Updating Event." });
   }
 };
 
@@ -105,6 +109,7 @@ exports.deleteEvent = async (req, res) => {
 
     res.json("Event has been Deleted");
   } catch (err) {
-    console.log(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred Deleting Event." });
   }
 };

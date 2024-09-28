@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import { useUser } from "../UserContext";
+import { useUser } from "../contexts/UserContext";
 import { useNavigate } from "react-router-dom";
 import "typeface-nunito";
 

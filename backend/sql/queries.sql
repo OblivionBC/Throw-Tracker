@@ -29,3 +29,19 @@ from person p inner join organization o on o.org_rk = p.org_rk where p.prsn_emai
    AND p.prsn_pwrd = crypt('mypass', p.prsn_pwrd);
 
    UPDATE person set prsn_pwrd = crypt('mypassword', gen_salt('bf')) where prsn_email = 'gideon@gmail.com';
+
+BEGIN TRANSACTION;
+
+DELETE FROM measurement WHERE prac_rk = 12;
+DELETE FROM practice WHERE prac_rk = 12;
+
+COMMIT;
+
+
+
+-- get measurables for prac
+select m.* from measurement msrm inner join practice prac on prac.prac_rk = msrm.prac_rk 
+inner join measurable m on m.meas_rk = msrm.meas_rk where msrm.prac_rk = 13;
+
+ SELECT m.*, msrm.msrm_value from measurement msrm inner join measurable m on
+  m.meas_rk = msrm.meas_rk where m.prsn_rk = 12

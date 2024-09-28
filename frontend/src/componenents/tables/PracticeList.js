@@ -4,53 +4,9 @@ import "typeface-nunito";
 import DataTable from "react-data-table-component";
 import dayjs from "dayjs";
 import PracticeDetailsModal from "../modals/PracticeDetailsModal";
+import ConfirmPracDeleteModal from "../modals/ConfirmPracDeleteModal";
 // This is your PracticeItem component
 //Test that this works and add it to the practices component
-const CompWrap = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 95%;
-  height: 100%;
-`;
-const TableWrap = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: auto;
-  padding: 0.2rem;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
-  border-radius: 5px;
-`;
-const Table = styled(DataTable)`
-  width: 100%;
-  .rdt_Table {
-    background-color: white;
-  }
-  .rdt_TableHeadRow {
-    background-color: #a9a5ba;
-    font-weight: bold;
-  }
-  .rdt_TableRow {
-    &:nth-of-type(odd) {
-      background-color: white;
-    }
-    &:nth-of-type(even) {
-      background-color: #eeeeee;
-    }
-  }
-  .rdt_Pagination {
-    background-color: #343a40;
-    color: #fff;
-  }
-`;
-const Title = styled.h1`
-  display: flex;
-  align-self: flex-start;
-  margin: 0;
-  padding: 0 5px 5px;
-`;
-
-const Detail = styled.button``;
 
 const TableStyles = {
   pagination: {
@@ -71,6 +27,7 @@ const TableStyles = {
 const Practices = () => {
   const [practiceData, setPracticeData] = useState([]);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [confirmPracDelete, setConfirmPracDelete] = useState(false);
   const [selectedPrac, setSelectedPrac] = useState({});
 
   const getPracticeData = async () => {
@@ -131,10 +88,18 @@ const Practices = () => {
           Details
         </Detail>
       ),
-      //width: "13%",
     },
     {
-      cell: (row) => <button>Delete</button>,
+      cell: (row) => (
+        <button
+          onClick={() => {
+            setConfirmPracDelete(true);
+            setSelectedPrac(row);
+          }}
+        >
+          Delete
+        </button>
+      ),
     },
   ];
   return (
@@ -142,6 +107,11 @@ const Practices = () => {
       <PracticeDetailsModal
         open={detailModalOpen}
         onClose={() => setDetailModalOpen(false)}
+        pracObj={selectedPrac}
+      />
+      <ConfirmPracDeleteModal
+        open={confirmPracDelete}
+        onClose={() => setConfirmPracDelete(false)}
         pracObj={selectedPrac}
       />
       <Title>Practices</Title>
@@ -163,5 +133,51 @@ const Practices = () => {
     </CompWrap>
   );
 };
+
+const CompWrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 95%;
+  height: 100%;
+`;
+const TableWrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: auto;
+  padding: 0.2rem;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  border-radius: 5px;
+`;
+const Table = styled(DataTable)`
+  width: 100%;
+  .rdt_Table {
+    background-color: white;
+  }
+  .rdt_TableHeadRow {
+    background-color: #a9a5ba;
+    font-weight: bold;
+  }
+  .rdt_TableRow {
+    &:nth-of-type(odd) {
+      background-color: white;
+    }
+    &:nth-of-type(even) {
+      background-color: #eeeeee;
+    }
+  }
+  .rdt_Pagination {
+    background-color: #343a40;
+    color: #fff;
+  }
+`;
+const Title = styled.h1`
+  display: flex;
+  align-self: flex-start;
+  margin: 0;
+  padding: 0 5px 5px;
+`;
+
+const Detail = styled.button``;
 
 export default Practices;

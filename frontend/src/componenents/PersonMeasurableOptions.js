@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { Formik, Field, Form, ErrorMessage, FieldArray } from "formik";
 import { useEffect, useState } from "react";
-import { useUser } from "./UserContext";
+import { useUser } from "./contexts/UserContext";
 
 const PersonMeasurableOptions = ({ state, prsn_rk, name }) => {
   const [measurables, setMeasurables] = useState([]);
@@ -33,7 +33,7 @@ const PersonMeasurableOptions = ({ state, prsn_rk, name }) => {
       setLoading(false);
     };
     fetchMeasurables();
-  }, [state]);
+  }, []);
 
   if (loading) return <div>Loading...</div>;
   return (

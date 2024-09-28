@@ -17,7 +17,8 @@ exports.addMeet = async (req, res) => {
 
     res.json(newMeet);
   } catch (err) {
-    console.error(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred Adding Meet." });
   }
 };
 
@@ -26,7 +27,8 @@ exports.getAllMeets = async (req, res) => {
     const allMeets = await pool.query("SELECT * FROM Meet");
     res.json(allMeets);
   } catch (err) {
-    console.log(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred Getting All Meets." });
   }
 };
 
@@ -40,7 +42,8 @@ exports.getMeet = async (req, res) => {
     res.json(Meet.rows);
     console.log(req.params);
   } catch (err) {
-    console.log(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred Getting Meets." });
   }
 };
 
@@ -54,7 +57,8 @@ exports.updateMeet = async (req, res) => {
     );
     res.json("Meet was Updated");
   } catch (err) {
-    console.error(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred Updating Meet." });
   }
 };
 
@@ -67,6 +71,7 @@ exports.deleteMeet = async (req, res) => {
 
     res.json("Meet has been Deleted");
   } catch (err) {
-    console.log(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred Deleting Meet." });
   }
 };

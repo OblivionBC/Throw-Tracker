@@ -1,16 +1,14 @@
 import React, { useState } from "react";
-import { Formik, Form, Field, ErrorMessage, FieldArray } from "formik";
+import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import styled from "styled-components";
-import { useUser } from "../UserContext";
+import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
-import PersonMeasurableOptions from "../PersonMeasurableOptions";
 import { MeasurableFieldArray } from "../MeasurableFieldArray";
 
 //Grab the initial values
-const addMeasurement = async (measurable) => {
-  //msrm_value, prac_rk, meas_rk
-  console.log(measurable);
+const addMeasurement = async (measurable, prac_rk) => {
+  console.log(measurable.meas_rk);
   const response = await fetch(`http://localhost:5000/api/add-measurement`, {
     method: "POST",
     headers: {
@@ -19,13 +17,31 @@ const addMeasurement = async (measurable) => {
     body: JSON.stringify({
       meas_rk: measurable.meas_rk,
       msrm_value: measurable.msrm_value,
-      prac_rk: measurable.prac_rk,
+      prac_rk: prac_rk,
     }),
   });
   const jsonData = await response.json();
   console.log(jsonData);
 };
-const PracticeEditForm = ({ prac, on }) => {
+
+const deleteMeasurements = async (prac_rk) => {
+  const response = await fetch(
+    `http://localhost:5000/api//delete-measurements-for-practice`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        prac_rk: prac_rk,
+      }),
+    }
+  );
+  const jsonData = await response.json();
+  console.log(jsonData);
+};
+
+const PracticeEditForm = ({ prac, on, goToDetails }) => {
   const [failed, setFailed] = useState(false);
   const initialValues = {
     trpe: "",
@@ -41,11 +57,12 @@ const PracticeEditForm = ({ prac, on }) => {
     measurables: Yup.array()
       .of(
         Yup.object().shape({
-          meas_rk: Yup.number().required("Required"),
-          prac_rk: Yup.number().required("Required"),
-          msrm_value: Yup.number()
-            .required("Required")
-            .notOneOf([-1], "Please Choose the Measurable"),
+          meas_rk: Yup.number("Must be a number")
+            .typeError("Must Be Number")
+            .required(),
+          msrm_value: Yup.number("Must be a Number")
+            .typeError("Must Be Number")
+            .required(),
         })
       )
       .required("Must have measurables")
@@ -54,7 +71,7 @@ const PracticeEditForm = ({ prac, on }) => {
   const handleSubmit = async (values, { setSubmitting }) => {
     // Handle form submission here
     //Make call on submit to update practice, and delete all measurments in for the prac, then create a new one for each in the array
-    console.log(values);
+
     setSubmitting(true);
     try {
       const response = await fetch(
@@ -72,14 +89,20 @@ const PracticeEditForm = ({ prac, on }) => {
         }
       );
 
+      deleteMeasurements(prac.prac_rk);
       values.measurables.forEach((element) => {
-        addMeasurement(element);
+        addMeasurement(element, prac.prac_rk);
         console.log("POSTING");
       });
+
       alert("Practice Updated Successfully");
+      goToDetails();
+      setSubmitting(false);
+      return;
     } catch (error) {
       setFailed(true);
       console.error(error.message);
+      console.log(this.props.errors);
       return false;
     }
     setSubmitting(false);
@@ -90,6 +113,8 @@ const PracticeEditForm = ({ prac, on }) => {
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
+        validateOnChange={false}
+        validateOnBlur={false}
         onSubmit={handleSubmit}
       >
         {({ handleSubmit, isSubmitting, values, setFieldValue }) => (
@@ -123,20 +148,13 @@ const PracticeEditForm = ({ prac, on }) => {
             </Field>
             <ErrorMessage name="date" component={SubmitError} />
 
-            <FieldArray name="measurables">
-              {({ field }) => (
-                <FieldOutputContainer>
-                  <FieldLabel>Measurables:</FieldLabel>
-                  <MeasurableFieldArray
-                    array={values.measurables}
-                    values={values}
-                    setFieldValue={setFieldValue}
-                    prac_rk={prac.prac_rk}
-                  />
-                </FieldOutputContainer>
-              )}
-            </FieldArray>
+            <MeasurableFieldArray />
             <ErrorMessage name="measurables" component={SubmitError} />
+            <ErrorMessage name="measurables.meas_rk" component={SubmitError} />
+            <ErrorMessage
+              name="measurables.msrm_value"
+              component={SubmitError}
+            />
 
             <StyledButton type="submit" disabled={isSubmitting}>
               Save

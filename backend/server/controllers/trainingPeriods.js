@@ -17,7 +17,10 @@ exports.addTrainingPeriod = async (req, res) => {
 
     res.json(newTrainingPeriod);
   } catch (err) {
-    console.error(err.message);
+    console.error("Async Error:", err.message);
+    res
+      .status(500)
+      .json({ message: "Error occurred while Adding Training Period." });
   }
 };
 
@@ -26,7 +29,8 @@ exports.getAllTrainingPeriods = async (req, res) => {
     const allTrainingPeriod = await pool.query("SELECT * FROM training_period");
     res.json(allTrainingPeriod);
   } catch (err) {
-    console.log(err.message);
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred while Getting All TRPE." });
   }
 };
 
@@ -41,7 +45,10 @@ exports.getTrainingPeriod = async (req, res) => {
     res.json(TrainingPeriod.rows);
     console.log(req.params);
   } catch (err) {
-    console.log(err.message);
+    console.error("Async Error:", err.message);
+    res
+      .status(500)
+      .json({ message: "Error occurred while Getting Training Period." });
   }
 };
 
@@ -55,7 +62,10 @@ exports.updateTrainingPeriod = async (req, res) => {
     );
     res.json("TrainingPeriod was Updated");
   } catch (err) {
-    console.error(err.message);
+    console.error("Async Error:", err.message);
+    res
+      .status(500)
+      .json({ message: "Error occurred while Updating Training Period." });
   }
 };
 
@@ -72,6 +82,9 @@ exports.deleteTrainingPeriod = async (req, res) => {
     );
     res.json("TrainingPeriod has been Deleted");
   } catch (err) {
-    console.log(err.message);
+    console.error("Async Error:", err.message);
+    res
+      .status(500)
+      .json({ message: "Error occurred while Deleting Training Period." });
   }
 };

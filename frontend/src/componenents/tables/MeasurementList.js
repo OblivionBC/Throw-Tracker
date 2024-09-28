@@ -12,9 +12,7 @@ const Content = styled.div`
 const TableWrap = styled.div`
   display: flex;
   flex-direction: column;
-  width: 100%;
-  height: auto;
-  padding: 0.2rem;
+  padding: 0.3rem;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
   border-radius: 5px;
 `;
@@ -104,7 +102,7 @@ const MeasurementList = ({ prac_rk }) => {
   if (loading) return <div>Loading</div>;
   return (
     <Content>
-      Measurables
+      Measurements
       <TableWrap>
         <Table
           columns={columns}

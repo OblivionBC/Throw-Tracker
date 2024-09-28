@@ -14,6 +14,10 @@ const PracticeDetailsModal = ({ open, onClose, pracObj }) => {
     return (
       <>
         <RowContainer>
+          <FieldName>Practice Row Key:</FieldName>
+          <p>{pracObj.prac_rk}</p>
+        </RowContainer>
+        <RowContainer>
           <FieldName>Date:</FieldName>
           <p>{dayjs(pracObj.prac_dt).format("MMM D YYYY")}</p>
         </RowContainer>
@@ -40,7 +44,11 @@ const PracticeDetailsModal = ({ open, onClose, pracObj }) => {
             Close
           </CloseButton>
           <Content>
-            <PracticeEditForm prac={pracObj} on={editing} />
+            <PracticeEditForm
+              prac={pracObj}
+              on={editing}
+              goToDetails={() => setEditing(!editing)}
+            />
             <Details />
           </Content>
           <EditButton onClick={() => setEditing(!editing)}>
@@ -57,7 +65,7 @@ const Modal = styled.div`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 1;
+  z-index: 2;
   padding: 12px 24px;
   width: 100%;
   height: 100%;

@@ -3,20 +3,14 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import { UserProvider } from "./componenents/UserContext";
+import { UserProvider } from "./componenents/contexts/UserContext";
+import { DataChangeProvider } from "./componenents/contexts/DataChangeContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <UserProvider
-      value={{
-        prsn_first_nm: "Connor",
-        prsn_last_nm: "Hengstler",
-        prsn_email: "connor.hengstler@gmail.com",
-        org_name: "UBC",
-        prsn_role: "ATHLETE",
-      }}
-    >
+    <UserProvider value={{}}>
+      <DataChangeProvider />
       <App />
     </UserProvider>
   </React.StrictMode>

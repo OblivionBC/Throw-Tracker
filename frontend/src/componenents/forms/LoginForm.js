@@ -3,7 +3,7 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "../UserContext";
+import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
 
 const LoginForm = ({ on, off }) => {
