@@ -7,18 +7,12 @@ const { pool } = require(".././db");
 exports.addPractice = async (req, res) => {
   try {
     console.log(req.body);
-    const {
-      prac_best,
-      prac_implement,
-      prac_implement_weight,
-      prac_dt,
-      trpe_rk,
-    } = req.body;
+    const { prac_dt, trpe_rk } = req.body;
     //$1 is the variable to add in the db, runs sql query in quotes which is same as in the CLI
     //Returning * returns back the data
     const newPractice = await pool.query(
-      "INSERT INTO practice (prac_best, prac_implement, prac_implement_weight, prac_dt, trpe_rk) VALUES($1, $2, $3, $4, $5) RETURNING *",
-      [prac_best, prac_implement, prac_implement_weight, prac_dt, trpe_rk]
+      "INSERT INTO practice (prac_dt, trpe_rk) VALUES($1, $2) RETURNING *",
+      [prac_dt, trpe_rk]
     );
 
     res.json(newPractice);
@@ -30,8 +24,10 @@ exports.addPractice = async (req, res) => {
 
 exports.getAllPractices = async (req, res) => {
   try {
+    const { prsn_rk } = req.body;
     const allPractice = await pool.query(
-      "SELECT  p.prac_rk, p.prac_dt, p.trpe_rk, COUNT(m.msrm_rk) AS measurement_count FROM practice p LEFT JOIN measurement m ON p.prac_rk = m.prac_rk GROUP BY p.prac_rk ORDER BY p.prac_rk"
+      "SELECT  p.prac_rk, p.prac_dt, p.trpe_rk, COUNT(m.msrm_rk) AS measurement_count FROM practice p LEFT JOIN measurement m ON p.prac_rk = m.prac_rk inner join training_period tp on tp.trpe_rk = p.trpe_rk where tp.prsn_rk = $1 GROUP BY p.prac_rk ORDER BY p.prac_rk",
+      [prsn_rk]
     );
     res.json(allPractice);
   } catch (err) {

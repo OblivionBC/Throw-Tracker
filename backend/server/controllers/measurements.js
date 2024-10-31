@@ -40,6 +40,23 @@ exports.getMeasurementsForPrac = async (req, res) => {
   }
 };
 
+exports.getmeasurementsForTRPEs = async (req, res) => {
+  try {
+    const decodedArray = decodeURIComponent(req.query.keys);
+    const keys = JSON.parse(decodedArray);
+    const measurements = await pool.query(
+      "SELECT msrm.msrm_rk, msrm.prac_rk, m.meas_id, msrm.msrm_value, m.meas_unit, m.prsn_rk, p.prac_rk, p.trpe_rk from measurement msrm inner join measurable m on m.meas_rk = msrm.meas_rk  inner join practice p on p.prac_rk = msrm.prac_rk where p.trpe_rk = ANY($1);",
+      [keys]
+    );
+    res.json(measurements);
+  } catch (err) {
+    console.error("Async Error:", err.message);
+    res.status(500).json({
+      message: "Error occurred while Getting Measurements in the TRPE.",
+    });
+  }
+};
+
 exports.deleteMeasurement = async (req, res) => {
   try {
     const { msrm_rk } = req.params;

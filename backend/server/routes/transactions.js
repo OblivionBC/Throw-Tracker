@@ -69,6 +69,7 @@ const {
   getMeasurementsForPrac,
   deleteMeasurement,
   deleteMeasurementsForPrac,
+  getmeasurementsForTRPEs,
 } = require("../controllers/measurements");
 
 router
@@ -81,7 +82,7 @@ router
 
   .post("/add-practice", addPractice)
   .get("/get-practice/:prac_rk", getPractice)
-  .get("/get-all-practices", getAllPractices)
+  .post("/get-all-practices", getAllPractices)
   .get("/get-last-practice", getLastPractice)
   .get("/get-practicesInTrpe", getPracticesInTrpe)
   .get("/get-practicesWithImp/:prac_implement", getPracticesWithImp)
@@ -108,6 +109,7 @@ router
   .put("/update-measurable/:meas_rk", updateMeasurable)
 
   .post("/add-measurement", addMeasurement)
+  .get("/get-measurementsForTRPEs", getmeasurementsForTRPEs)
   .get("/get-measurementsForPrac", getMeasurementsForPrac)
   .delete("/delete-measurement/:meas_rk", deleteMeasurement)
   .delete("/delete-measurements-for-practice", deleteMeasurementsForPrac)

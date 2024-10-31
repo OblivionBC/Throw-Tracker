@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import styled from "styled-components";
-import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
 import { MeasurableFieldArray } from "./MeasurableFieldArray";
 
@@ -21,34 +20,39 @@ const addMeasurement = async (measurable, prac_rk) => {
     }),
   });
   const jsonData = await response.json();
-  console.log(jsonData);
+  if (response.ok === false) {
+    console.log("ERROR HAS OCCURRED ", response.statusText);
+  }
 };
 
-const deleteMeasurements = async (prac_rk) => {
-  const response = await fetch(
-    `http://localhost:5000/api//delete-measurements-for-practice`,
-    {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        prac_rk: prac_rk,
-      }),
-    }
-  );
+const addPractice = async (prac_dt, trpe_rk) => {
+  console.log(prac_dt);
+  const response = await fetch(`http://localhost:5000/api//add-practice`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      prac_dt: prac_dt,
+      trpe_rk: trpe_rk,
+    }),
+  });
+  console.log(response);
   const jsonData = await response.json();
   console.log(jsonData);
+  if (response.ok === false) {
+    console.log("ERROR HAS OCCURRED ", response.statusText);
+  }
+  return jsonData.rows[0].prac_rk;
 };
 
-const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
+const AddPracticeForm = ({ close, refresh }) => {
   const [failed, setFailed] = useState(false);
   const initialValues = {
     trpe: "",
     date: "",
     measurables: [],
   };
-  const { user } = useUser();
   const validationSchema = Yup.object().shape({
     trpe: Yup.number("Must be a number").required(
       "Training Period is a required field"
@@ -73,39 +77,21 @@ const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
     //Make call on submit to update practice, and delete all measurments in for the prac, then create a new one for each in the array
     setSubmitting(true);
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/update-practice`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            trpe_rk: values.trpe,
-            prac_dt: values.date,
-            prac_rk: prac.prac_rk,
-          }),
-        }
-      );
-
-      deleteMeasurements(prac.prac_rk);
+      const prac_rk = await addPractice(values.date, values.trpe);
       values.measurables.forEach((element) => {
-        addMeasurement(element, prac.prac_rk);
-        console.log("POSTING");
+        addMeasurement(element, prac_rk);
       });
+      alert("Practice Added Successfully");
+      close();
       refresh();
-      goToDetails();
       setSubmitting(false);
-      alert("Practice Updated Successfully");
       return;
     } catch (error) {
       setFailed(true);
       console.error(error.message);
-      console.log(this.props.errors);
       return false;
     }
   };
-  if (!on) return null;
   return (
     <>
       <Formik
@@ -118,13 +104,13 @@ const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
         {({ handleSubmit, isSubmitting, values, setFieldValue }) => (
           //date, training period, wind, notes, measurables
           <StyledForm onSubmit={handleSubmit}>
-            <Field name="trpe">
+            <Field name="trpe" type="number">
               {({ field }) => (
                 <FieldOutputContainer>
                   <FieldLabel>Training Period:</FieldLabel>
                   <StyledInput
-                    type="number"
-                    placeholder={prac.trpe_rk}
+                    type="text"
+                    placeholder={"Number Here"}
                     {...field}
                   />
                 </FieldOutputContainer>
@@ -136,11 +122,7 @@ const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
               {({ field }) => (
                 <FieldOutputContainer>
                   <FieldLabel>Date:</FieldLabel>
-                  <StyledInput
-                    type="date"
-                    placeholder={prac.prac_dt}
-                    {...field}
-                  />
+                  <StyledInput type="date" {...field} />
                 </FieldOutputContainer>
               )}
             </Field>
@@ -180,12 +162,26 @@ const StyledInput = styled.input`
 `;
 
 const StyledButton = styled.button`
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
+  background: linear-gradient(45deg, darkblue 30%, skyblue 95%);
   border: none;
-  border-radius: 4px;
+  border-radius: 25px;
+  color: white;
+  padding: 5px 10px;
+  margin-top: 10px;
+  font-size: 14px;
   cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transform: translateY(0);
+  }
 `;
 const SubmitError = styled.div`
   font-size: 18;
@@ -203,4 +199,4 @@ const FieldOutputContainer = styled.div`
 const FieldLabel = styled.h3`
   margin-right: 10px;
 `;
-export default PracticeEditForm;
+export default AddPracticeForm;

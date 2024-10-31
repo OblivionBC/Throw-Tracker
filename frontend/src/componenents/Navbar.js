@@ -57,6 +57,14 @@ const NavPath = styled(NavLink)`
   text-decoration: none;
   font-family: "Nunito", sans-serif;
   font-weight: 600;
+
+  &:hover {
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+    font-weight: 800;
+    color: #2b81e2;
+    transition: 200ms;
+  }
 `;
 
 const Logo = styled.img`

@@ -26,6 +26,7 @@ exports.addMeasurable = async (req, res) => {
 
 exports.getAllMeasurablesForPerson = async (req, res) => {
   try {
+    console.log("Finding");
     const { prsn_rk } = req.body;
 
     const measurables = await pool.query(

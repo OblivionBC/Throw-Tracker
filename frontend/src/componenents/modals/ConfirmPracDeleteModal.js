@@ -1,11 +1,9 @@
 import React from "react";
 import styled from "styled-components";
-import { useState } from "react";
 import dayjs from "dayjs";
 import MeasurementList from "../tables/MeasurementList";
 
-const ConfirmPracDeleteModal = ({ open, onClose, pracObj }) => {
-  const [login, setLogin] = useState(true);
+const ConfirmPracDeleteModal = ({ open, onClose, pracObj, refresh }) => {
   async function deletePrac(prac_rk) {
     alert("PRAC DELETED");
     try {
@@ -22,6 +20,7 @@ const ConfirmPracDeleteModal = ({ open, onClose, pracObj }) => {
         }
       );
       onClose();
+      refresh();
     } catch (error) {
       alert(error.message);
     }
