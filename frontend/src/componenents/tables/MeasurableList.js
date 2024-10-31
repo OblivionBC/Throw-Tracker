@@ -26,17 +26,22 @@ const TableStyles = {
   },
 };
 
-const Practices = () => {
+const Measurables = () => {
   const [practiceData, setPracticeData] = useState([]);
   const [addPracticeOpen, setAddPracticeOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [confirmPracDelete, setConfirmPracDelete] = useState(false);
   const [selectedPrac, setSelectedPrac] = useState({});
   const { user } = useUser();
-  const getPracticeData = async () => {
+  const getMeasurableData = async () => {
     try {
+      console.log("REFRESH");
+      const params = new URLSearchParams({
+        keys: JSON.stringify(user),
+      });
+
       const response = await fetch(
-        `http://localhost:5000/api/get-all-practices`,
+        `http://localhost:5000/api//get-all-measurablesForPrsn`,
         {
           method: "POST",
           headers: {
@@ -57,7 +62,7 @@ const Practices = () => {
 
   useEffect(() => {
     try {
-      getPracticeData();
+      getMeasurableData();
     } catch (error) {
       console.error(error.message);
     }
@@ -121,23 +126,23 @@ const Practices = () => {
         open={detailModalOpen}
         onClose={() => setDetailModalOpen(false)}
         pracObj={selectedPrac}
-        refresh={() => getPracticeData()}
+        refresh={() => getMeasurableData()}
       />
       <ConfirmPracDeleteModal
         open={confirmPracDelete}
         onClose={() => setConfirmPracDelete(false)}
         pracObj={selectedPrac}
-        refresh={() => getPracticeData()}
+        refresh={() => getMeasurableData()}
       />
       <AddPracticeModal
         open={addPracticeOpen}
         onClose={() => setAddPracticeOpen(false)}
-        refresh={() => getPracticeData()}
+        refresh={() => getMeasurableData()}
       />
       <RowDiv>
-        <Title>Practices</Title>
+        <Title>Measurables</Title>
         <AddButton onClick={() => setAddPracticeOpen(true)}>Add</AddButton>
-        <AddButton onClick={() => getPracticeData()}>Refresh</AddButton>
+        <AddButton onClick={() => getMeasurableData()}>Refresh</AddButton>
       </RowDiv>
 
       <TableWrap>
@@ -272,4 +277,4 @@ const AddButton = styled.button`
   }
 `;
 
-export default Practices;
+export default Measurables;

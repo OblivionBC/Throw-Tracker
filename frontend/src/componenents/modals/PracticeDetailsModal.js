@@ -6,7 +6,7 @@ import MeasurablesList from "../tables/MeasurementList";
 import "typeface-nunito";
 import dayjs from "dayjs";
 
-const PracticeDetailsModal = ({ open, onClose, pracObj }) => {
+const PracticeDetailsModal = ({ open, onClose, pracObj, refresh }) => {
   const [editing, setEditing] = useState(false);
 
   const Details = () => {
@@ -48,6 +48,7 @@ const PracticeDetailsModal = ({ open, onClose, pracObj }) => {
               prac={pracObj}
               on={editing}
               goToDetails={() => setEditing(!editing)}
+              refresh={() => refresh()}
             />
             <Details />
           </Content>
@@ -93,6 +94,7 @@ const ModalContainer = styled.div`
   background-color: white;
   border-radius: 15px;
   padding-bottom: 10px;
+  padding-top: 10px;
 `;
 const Content = styled.div`
   width: 90%;
@@ -111,9 +113,46 @@ const FieldName = styled.h3`
   margin: 0 10px 0 0;
   padding: 0;
 `;
-const EditButton = styled.button``;
+const EditButton = styled.button`
+  background: linear-gradient(45deg, #808080 30%, black 95%);
+  border: none;
+  border-radius: 25px;
+  color: white;
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transform: translateY(0);
+  }
+`;
 const CloseButton = styled.button`
-  margin: 10px 0 0 0;
-  padding: 3px;
+  background: linear-gradient(45deg, black 30%, #808080 95%);
+  border: none;
+  border-radius: 25px;
+  color: white;
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transform: translateY(0);
+  }
 `;
 export default PracticeDetailsModal;

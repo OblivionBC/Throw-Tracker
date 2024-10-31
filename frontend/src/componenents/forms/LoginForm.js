@@ -118,12 +118,25 @@ const StyledInput = styled.input`
 `;
 
 const StyledButton = styled.button`
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
+  background: linear-gradient(45deg, black 30%, #808080 95%);
   border: none;
-  border-radius: 4px;
+  border-radius: 25px;
+  color: white;
+  padding: 5px 10px;
+  font-size: 12px;
   cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transform: translateY(0);
+  }
 `;
 const Blab = styled.div`
   font-family: "Nunito", sans-serif;

@@ -1,13 +1,14 @@
 // components/BarChart.js
-import React, { useState, useEffect, act } from "react";
+import React, { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
 import { Chart as ChartJS } from "chart.js/auto";
 import { Tooltip } from "chart.js/auto";
 import styled from "styled-components";
 ChartJS.register(Tooltip);
 
-function LineChart({ activeTRPE, data }) {
+function MeasurementChart({ activeTRPE }) {
   const [selectedImplement, setSelectedImplement] = useState("Discus");
+  const [selectedMeasurable, setSelectedMeasurable] = useState("");
   const [loading, setLoading] = useState(true);
   const [chartData, setChartData] = useState({
     labels: [],
@@ -21,30 +22,61 @@ function LineChart({ activeTRPE, data }) {
       },
     ],
   });
+  const [dataMap, setDataMap] = useState(new Map());
 
+  //This Use effect will be for when the selected TRPEs change
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      var jsonData;
-      if (activeTRPE.length < 1) {
-        const response = await fetch(
-          `http://localhost:5000/api/get-practicesWithImp/${selectedImplement}`
-        );
-        jsonData = await response.json();
-      } else {
-        const params = new URLSearchParams({
-          keys: JSON.stringify(activeTRPE),
-        });
-        const response = await fetch(
-          `http://localhost:5000/api//get-practicesInTrpe?${params}`
-        );
-        jsonData = await response.json();
-      }
-      const currData = jsonData.rows.filter(
-        (item) => item.prac_implement === selectedImplement
+      console.log("REFRESH");
+      const params = new URLSearchParams({
+        keys: JSON.stringify(activeTRPE),
+      });
+      //Returns msrm_rk | prac_rk |          meas_id           | meas_unit | prsn_rk | prac_rk | trpe_rk
+      const response = await fetch(
+        `http://localhost:5000/api//get-measurementsForTRPEs?${params}`
       );
-      const labels = currData.map((item) => item.prac_rk); // Adjust according to your data structure
-      const values = currData.map((item) => item.prac_best); // Adjust according to your data structure
+      const jsonData = await response.json();
+      console.log(jsonData.rows);
+      let newDataMap = new Map();
+      jsonData.rows.forEach((element) => {
+        if (!newDataMap.has(element.meas_id)) {
+          newDataMap.set(element.meas_id, [
+            {
+              prac_rk: element.prac_rk,
+              msrm_rk: element.msrm_rk,
+              msrm_value: element.msrm_value,
+            },
+          ]);
+        } else {
+          newDataMap.get(element.meas_id).push({
+            prac_rk: element.prac_rk,
+            msrm_rk: element.msrm_rk,
+            msrm_value: element.msrm_value,
+          });
+        }
+      });
+      setDataMap(newDataMap);
+      const firstKey = Array.from(dataMap.keys())[0];
+      setSelectedMeasurable(firstKey);
+      setLoading(false);
+    };
+    fetchData();
+  }, [activeTRPE]);
+
+  useEffect(() => {
+    console.log(dataMap);
+    console.log(selectedMeasurable);
+    let iterator = 0;
+    if (selectedMeasurable !== "") {
+      const labels = dataMap.get(selectedMeasurable).map((item) => {
+        iterator++;
+        return iterator;
+      });
+
+      const values = dataMap
+        .get(selectedMeasurable)
+        .map((item) => item.msrm_value); // Adjust according to your data structure
       setChartData({
         labels: labels,
         datasets: [
@@ -58,10 +90,26 @@ function LineChart({ activeTRPE, data }) {
           },
         ],
       });
-      setLoading(false);
-    };
-    fetchData();
-  }, [selectedImplement, activeTRPE]);
+    } else {
+      const labels = [];
+
+      const values = [];
+      setChartData({
+        labels: labels,
+        datasets: [
+          {
+            //Label is the block at the top that you can click to filter
+            label: `${selectedImplement} Legend`,
+            data: values,
+            pointRadius: 5,
+            pointHoverRadius: 8, // Increase the hover radius
+            pointHitRadius: 5, // Increase the hit radius
+          },
+        ],
+      });
+    }
+    setLoading(false);
+  }, [selectedMeasurable]);
 
   //Selected dropdown value changes the selected implement, then changing the data given
   const handleDatasetChange = (event) => {
@@ -118,13 +166,11 @@ function LineChart({ activeTRPE, data }) {
       <Row>
         <Title>Chart of Practices</Title>
         <ImplementSelect
-          onChange={handleDatasetChange}
-          value={selectedImplement}
+          onChange={(e) => setSelectedMeasurable(e.target.value)}
         >
-          <option value="Javelin">Javelin</option>
-          <option value="Discus">Discus</option>
-          <option value="Shot Put">Shotput</option>
-          <option value="Hammer Throw">Hammer</option>
+          {[...dataMap.keys()].map((key) => (
+            <option value={key}>{key}</option>
+          ))}
         </ImplementSelect>
       </Row>
       <ResponsiveLineChart data={chartData} options={options} />
@@ -176,4 +222,4 @@ const Row = styled.div`
   margin: 0;
   padding: 0;
 `;
-export default LineChart;
+export default MeasurementChart;

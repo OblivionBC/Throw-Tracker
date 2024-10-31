@@ -37,6 +37,9 @@ DELETE FROM practice WHERE prac_rk = 12;
 
 COMMIT;
 
+--Make not null column nullable
+ALTER TABLE practice
+ALTER COLUMN prac_implement_weight DROP NOT NULL;
 
 
 -- get measurables for prac
@@ -45,3 +48,11 @@ inner join measurable m on m.meas_rk = msrm.meas_rk where msrm.prac_rk = 13;
 
  SELECT m.*, msrm.msrm_value from measurement msrm inner join measurable m on
   m.meas_rk = msrm.meas_rk where m.prsn_rk = 12
+
+SELECT msrm.msrm_rk, msrm.prac_rk, msrm.msrm_value, m.meas_id, m.meas_unit, m.prsn_rk, p.prac_rk, p.trpe_rk
+from measurement msrm
+inner join measurable m on m.meas_rk = msrm.meas_rk 
+inner join practice p on p.prac_rk = msrm.prac_rk 
+where p.trpe_rk = ANY(ARRAY[1, 2])
+order by p.prac_rk
+;
