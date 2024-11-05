@@ -2,11 +2,9 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import "typeface-nunito";
 import DataTable from "react-data-table-component";
-import dayjs from "dayjs";
-import PracticeDetailsModal from "../modals/PracticeDetailsModal";
 import ConfirmPracDeleteModal from "../modals/ConfirmPracDeleteModal";
-import AddPracticeModal from "../modals/AddPracticeModal";
 import { useUser } from "../contexts/UserContext";
+import AddMeasurableModal from "../modals/AddMeasurableModal";
 // This is your PracticeItem component
 //Test that this works and add it to the practices component
 
@@ -27,11 +25,10 @@ const TableStyles = {
 };
 
 const Measurables = () => {
-  const [practiceData, setPracticeData] = useState([]);
-  const [addPracticeOpen, setAddPracticeOpen] = useState(false);
-  const [detailModalOpen, setDetailModalOpen] = useState(false);
-  const [confirmPracDelete, setConfirmPracDelete] = useState(false);
-  const [selectedPrac, setSelectedPrac] = useState({});
+  const [measurableData, setMeasurableData] = useState([]);
+  const [addMeasurableOpen, setaddMeasurableOpen] = useState(false);
+  const [confirmMeasDelete, setConfirmMeasDelete] = useState(false);
+  const [selectedMeas, setSelectedMeas] = useState({});
   const { user } = useUser();
   const getMeasurableData = async () => {
     try {
@@ -54,7 +51,8 @@ const Measurables = () => {
       );
 
       const jsonData = await response.json();
-      setPracticeData(jsonData.rows);
+      setMeasurableData(jsonData.rows);
+      console.log(measurableData);
     } catch (error) {
       console.error(error.message);
     }
@@ -71,39 +69,31 @@ const Measurables = () => {
   const columns = [
     {
       name: "ID",
-      selector: (row) => row.prac_rk,
+      selector: (row) => row.meas_rk,
       sortable: true,
       //width: "9%",
     },
     {
-      name: "Date",
-      cell: (row) => <div>{dayjs(row.prac_dt).format("MMM D YYYY")}</div>,
-      selector: (row) => row.prac_dt,
+      name: "Name",
+      selector: (row) => row.meas_id,
       sortable: true,
       //width: "15%",
     },
     {
-      name: "Measurables",
-      selector: (row) => row.measurement_count,
+      name: "Units",
+      selector: (row) => row.meas_unit,
       sortable: true,
       //width: "15%",
-    },
-    {
-      name: "TRPE",
-      selector: (row) => row.trpe_rk,
-      sortable: true,
-      //width: "10%",
     },
     {
       cell: (row) => (
-        <Detail
+        <Detail // Swap to a edit modal for the measurables
           onClick={() => {
-            setDetailModalOpen(true);
-            setSelectedPrac(row);
+            setConfirmMeasDelete(true);
+            setSelectedMeas(row);
           }}
-          style={{ display: "block" }}
         >
-          Details
+          Edit
         </Detail>
       ),
     },
@@ -111,8 +101,8 @@ const Measurables = () => {
       cell: (row) => (
         <DeleteButton
           onClick={() => {
-            setConfirmPracDelete(true);
-            setSelectedPrac(row);
+            setConfirmMeasDelete(true);
+            setSelectedMeas(row);
           }}
         >
           Delete
@@ -122,33 +112,27 @@ const Measurables = () => {
   ];
   return (
     <CompWrap>
-      <PracticeDetailsModal
-        open={detailModalOpen}
-        onClose={() => setDetailModalOpen(false)}
-        pracObj={selectedPrac}
+      <ConfirmPracDeleteModal //Swap to confirm delete modal of Measurable
+        open={confirmMeasDelete}
+        onClose={() => setConfirmMeasDelete(false)}
+        pracObj={selectedMeas}
         refresh={() => getMeasurableData()}
       />
-      <ConfirmPracDeleteModal
-        open={confirmPracDelete}
-        onClose={() => setConfirmPracDelete(false)}
-        pracObj={selectedPrac}
-        refresh={() => getMeasurableData()}
-      />
-      <AddPracticeModal
-        open={addPracticeOpen}
-        onClose={() => setAddPracticeOpen(false)}
+      <AddMeasurableModal
+        open={addMeasurableOpen}
+        onClose={() => setaddMeasurableOpen(false)}
         refresh={() => getMeasurableData()}
       />
       <RowDiv>
         <Title>Measurables</Title>
-        <AddButton onClick={() => setAddPracticeOpen(true)}>Add</AddButton>
+        <AddButton onClick={() => setaddMeasurableOpen(true)}>Add</AddButton>
         <AddButton onClick={() => getMeasurableData()}>Refresh</AddButton>
       </RowDiv>
 
       <TableWrap>
         <Table
           columns={columns}
-          data={practiceData}
+          data={measurableData}
           fixedHeader
           pagination
           paginationPerPage={8}
