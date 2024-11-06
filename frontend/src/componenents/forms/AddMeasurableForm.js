@@ -2,18 +2,20 @@ import React, { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import styled from "styled-components";
+import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
-const addMeasurable = async (meas_id, meas_typ, meas_unit) => {
+const addMeasurable = async (meas_id, meas_typ, meas_unit, prsn_rk) => {
   console.log(meas_id);
-  const response = await fetch(`http://localhost:5000/api//add-practice`, {
+  const response = await fetch(`http://localhost:5000/api//add-measurable`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-    },
+    }, //meas_id, meas_typ, meas_unit, prsn_rk
     body: JSON.stringify({
       meas_id: meas_id,
       meas_typ: meas_typ,
       meas_unit: meas_unit,
+      prsn_rk: prsn_rk,
     }),
   });
   console.log(response);
@@ -29,36 +31,35 @@ const AddMeasurableForm = ({ close, refresh }) => {
   const [failed, setFailed] = useState(false);
   const initialValues = {
     meas_id: "",
-    date: "",
-    measurables: [],
+    meas_unit: "",
+    meas_typ: "",
   };
+  const { user } = useUser();
   const validationSchema = Yup.object().shape({
-    meas_id: Yup.number("Must be a number").required(
-      "Training Period is a required field"
-    ),
-    date: Yup.date().required(),
-    measurables: Yup.array()
-      .of(
-        Yup.object().shape({
-          meas_rk: Yup.number("Must be a number")
-            .typeError("Must Be Number")
-            .required(),
-          msrm_value: Yup.number("Must be a Number")
-            .typeError("Must Be Number")
-            .required(),
-        })
-      )
-      .required("Must have measurables")
-      .min(1, "Minimum of 1 measurable"),
+    meas_id: Yup.string()
+      .min(3, "Measurable Name must be at least 5 characters long")
+      .required("Measurable Name is required"),
+    meas_unit: Yup.string()
+      .min(1, "Measurable Unit must be at least 1 characters long")
+      .max(15, "Measurable Unit must be 10 characters or less")
+      .required("Measurable Unit is required"),
+    meas_typ: Yup.string().required("Measurable Type is required"),
   });
+
   const handleSubmit = async (values, { setSubmitting }) => {
     // Handle form submission here
     //Make call on submit to update practice, and delete all measurments in for the prac, then create a new one for each in the array
+    console.log(values);
     setSubmitting(true);
     try {
-      const prac_rk = await addMeasurable(values.date, values.meas_id);
-
-      alert("Practice Added Successfully");
+      const measurable = await addMeasurable(
+        values.meas_id,
+        values.meas_typ,
+        values.meas_unit,
+        user.prsn_rk
+      );
+      console.log(measurable);
+      alert("Measurable Added Successfully");
       close();
       refresh();
       setSubmitting(false);
@@ -84,7 +85,7 @@ const AddMeasurableForm = ({ close, refresh }) => {
             <Field name="meas_id" type="text">
               {({ field }) => (
                 <FieldOutputContainer>
-                  <FieldLabel>Measurable:</FieldLabel>
+                  <FieldLabel>Measurable Name:</FieldLabel>
                   <StyledInput
                     type="text"
                     placeholder={"Name Here"}
@@ -107,7 +108,7 @@ const AddMeasurableForm = ({ close, refresh }) => {
                 </FieldOutputContainer>
               )}
             </Field>
-            <ErrorMessage name="meas_id" component={SubmitError} />
+            <ErrorMessage name="meas_unit" component={SubmitError} />
 
             <Field name="meas_typ" type="text">
               {({ field }) => (
@@ -118,7 +119,8 @@ const AddMeasurableForm = ({ close, refresh }) => {
                     placeholder={"Type of Measurable"}
                     {...field}
                   >
-                    <option value="ompetitive">Competitive</option>
+                    <option value={-1}></option>
+                    <option value="Competitive">Competitive</option>
                     <option value="Specific Prepatory">
                       Specific Prepatory
                     </option>

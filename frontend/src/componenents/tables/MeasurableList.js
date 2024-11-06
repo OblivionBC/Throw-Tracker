@@ -5,6 +5,7 @@ import DataTable from "react-data-table-component";
 import ConfirmPracDeleteModal from "../modals/ConfirmPracDeleteModal";
 import { useUser } from "../contexts/UserContext";
 import AddMeasurableModal from "../modals/AddMeasurableModal";
+import ConfirmMeasurableDeleteModal from "../modals/ConfirmMeasurableDeleteModal";
 // This is your PracticeItem component
 //Test that this works and add it to the practices component
 
@@ -112,10 +113,10 @@ const Measurables = () => {
   ];
   return (
     <CompWrap>
-      <ConfirmPracDeleteModal //Swap to confirm delete modal of Measurable
+      <ConfirmMeasurableDeleteModal
         open={confirmMeasDelete}
         onClose={() => setConfirmMeasDelete(false)}
-        pracObj={selectedMeas}
+        measObj={selectedMeas}
         refresh={() => getMeasurableData()}
       />
       <AddMeasurableModal
