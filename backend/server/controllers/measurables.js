@@ -16,6 +16,12 @@ exports.addMeasurable = async (req, res) => {
     );
 
     res.json(newMeasurable);
+    console.log(
+      "Adding a measurable with name " +
+        meas_id +
+        " for the prsn in row " +
+        prsn_rk
+    );
   } catch (err) {
     console.error("Async Error:", err.message);
     res.status(500).json({
