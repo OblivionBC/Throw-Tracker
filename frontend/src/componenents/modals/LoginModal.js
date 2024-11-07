@@ -2,8 +2,24 @@ import React from "react";
 import styled from "styled-components";
 import { useState } from "react";
 import LoginForm from "../forms/LoginForm";
-import logo from "../../images/ThrowLogo.png";
+import logo from "../../images/ThrowSpace.png";
 import SignUpForm from "../forms/SignUpForm";
+
+const LoginModal = ({ open, onClose, pracObj }) => {
+  const [login, setLogin] = useState(true);
+  return (
+    <Modal>
+      <Overlay>
+        <ModalContainer>
+          <Logo src={logo} alt="Throw Logo" />
+
+          <LoginForm on={login} off={() => setLogin(false)} />
+          <SignUpForm on={!login} off={() => setLogin(true)} />
+        </ModalContainer>
+      </Overlay>
+    </Modal>
+  );
+};
 
 const Modal = styled.div`
   position: fixed;
@@ -42,23 +58,6 @@ const ModalContainer = styled.div`
 `;
 
 const Logo = styled.img`
-  height: 100px;
+  height: 250px;
 `;
-
-const LoginModal = ({ open, onClose, pracObj }) => {
-  const [login, setLogin] = useState(true);
-  return (
-    <Modal>
-      <Overlay>
-        <ModalContainer>
-          <Logo src={logo} alt="Throw Logo" />
-
-          <LoginForm on={login} off={() => setLogin(false)} />
-          <SignUpForm on={!login} off={() => setLogin(true)} />
-        </ModalContainer>
-      </Overlay>
-    </Modal>
-  );
-};
-
 export default LoginModal;

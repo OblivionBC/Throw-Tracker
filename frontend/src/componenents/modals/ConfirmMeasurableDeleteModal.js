@@ -7,7 +7,7 @@ const ConfirmMeasurableDeleteModal = ({ open, onClose, measObj, refresh }) => {
     try {
       //Fix the route
       const response = await fetch(
-        `http://localhost:5000/api//delete-measurable/:meas_rk`,
+        `http://localhost:5000/api//delete-measurable`,
         {
           method: "DELETE",
           headers: {
@@ -18,6 +18,7 @@ const ConfirmMeasurableDeleteModal = ({ open, onClose, measObj, refresh }) => {
           }),
         }
       );
+      console.log(response);
       onClose();
       refresh();
     } catch (error) {
@@ -30,9 +31,21 @@ const ConfirmMeasurableDeleteModal = ({ open, onClose, measObj, refresh }) => {
     <Modal>
       <Overlay>
         <ModalContainer>
-          <h4>Are you sure you want to delete Practice {measObj.meas_id}</h4>
-          <h4>Type: {measObj.meas_typ}</h4>
-          <h4>Units: {measObj.meas_unit}</h4>
+          <FieldContainer>
+            <FieldLabel>
+              Are you sure you want to delete Measurable:{" "}
+            </FieldLabel>
+            <h2>{measObj.meas_id}</h2>
+          </FieldContainer>
+          <FieldContainer>
+            <FieldLabel>Type:</FieldLabel>
+            <h2>{measObj.meas_typ}</h2>
+          </FieldContainer>
+          <FieldContainer>
+            <FieldLabel>Units:</FieldLabel>
+            <h2>{measObj.meas_unit}</h2>
+          </FieldContainer>
+
           <ButtonContainer>
             <StyledButton onClick={() => deleteMeas(measObj.meas_rk)}>
               Delete
@@ -105,5 +118,17 @@ const ButtonContainer = styled.div`
   flex-direction: row;
   justify-content: space-evenly;
   align-items: center;
+`;
+
+const FieldContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+`;
+
+const FieldLabel = styled.h4`
+  color: grey;
+  margin-right: 20px;
 `;
 export default ConfirmMeasurableDeleteModal;

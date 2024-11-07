@@ -83,7 +83,7 @@ exports.updateMeasurable = async (req, res) => {
 
 exports.deleteMeasurable = async (req, res) => {
   try {
-    const { meas_rk } = req.params;
+    const { meas_rk } = req.body;
     const deleteMeasurable = await pool.query(
       "DELETE FROM Measurable WHERE meas_rk = $1",
       [meas_rk]

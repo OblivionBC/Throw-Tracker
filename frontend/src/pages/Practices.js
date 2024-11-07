@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import PracticeList from "../componenents/tables/PracticeList";
 import TrainingPeriodList from "../componenents/tables/TrainingPeriodList";
-import LineChart from "../componenents/Chart";
 import MeasurementChart from "../componenents/MeasurementChart";
 import "typeface-rubik";
 import ErrorBoundary from "../componenents/ErrorBoundary";
@@ -62,11 +61,5 @@ const RightColumn = styled.div`
   width: 50%;
   height: 100%;
   overflow: hidden;
-`;
-const Title = styled.h1`
-  display: flex;
-  align-self: flex-start;
-  margin: 0;
-  padding: 0 5px 5px;
 `;
 export default Practices;

@@ -1,5 +1,31 @@
 CREATE DATABASE trackApp;
 
+17.3, .68
+
+SELECT
+    tc.constraint_name,
+    tc.table_name,
+    kcu.column_name,
+    ccu.table_name AS foreign_table_name,
+    ccu.column_name AS foreign_column_name
+FROM
+    information_schema.table_constraints AS tc
+    JOIN information_schema.key_column_usage AS kcu
+      ON tc.constraint_name = kcu.constraint_name
+    JOIN information_schema.constraint_column_usage AS ccu
+      ON ccu.constraint_name = tc.constraint_name
+WHERE
+    tc.constraint_type = 'FOREIGN KEY' AND tc.table_name = 'exercise';
+
+
+Gotta make sure that the keys do cascade delete
+ALTER TABLE child DROP CONSTRAINT child_parent_id_fkey;
+Add New Constraint with Cascading Deletes:
+
+ALTER TABLE child
+ADD CONSTRAINT child_parent_id_fkey FOREIGN KEY (parent_id)
+REFERENCES parent (id)
+ON DELETE CASCADE;
 
 CREATE TABLE PERSON (
 PRSN_RK  SERIAL PRIMARY KEY,

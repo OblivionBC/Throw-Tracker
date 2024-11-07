@@ -49,6 +49,7 @@ exports.getmeasurementsForTRPEs = async (req, res) => {
       [keys]
     );
     res.json(measurements);
+    console.log("Getting Measurements for TrainingPeriod");
   } catch (err) {
     console.error("Async Error:", err.message);
     res.status(500).json({

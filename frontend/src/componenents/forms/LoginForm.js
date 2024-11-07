@@ -17,9 +17,7 @@ const LoginForm = ({ on, off }) => {
 
   const validationSchema = Yup.object().shape({
     username: Yup.string().email("Invalid Email").required("Email is required"),
-    password: Yup.string()
-      .min(8, "Password must be at least 8 characters")
-      .required("Password is required"),
+    password: Yup.string().required("Password is required"),
   });
 
   const handleSubmit = async (values, { setSubmitting }) => {
@@ -44,7 +42,6 @@ const LoginForm = ({ on, off }) => {
   }
   return (
     <>
-      <Title>Login</Title>
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
