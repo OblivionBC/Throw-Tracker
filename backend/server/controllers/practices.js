@@ -70,22 +70,6 @@ exports.getLastPractice = async (req, res) => {
   }
 };
 
-exports.getPracticesWithImp = async (req, res) => {
-  try {
-    const { prac_implement } = req.params;
-    const practice = await pool.query(
-      "SELECT * FROM practice where prac_implement = $1",
-      [prac_implement]
-    );
-    res.json(practice);
-  } catch (err) {
-    console.error("Async Error:", err.message);
-    res.status(500).json({
-      message: "Error occurred while Getting All Practice with Implement.",
-    });
-  }
-};
-
 exports.getPractice = async (req, res) => {
   try {
     const { prac_rk } = req.params;
@@ -122,17 +106,13 @@ exports.updatePractice = async (req, res) => {
 exports.deletePractice = async (req, res) => {
   try {
     const { prac_rk } = req.body;
-
-    const deleteMeasurement = await pool.query(
-      "DELETE FROM measurement WHERE prac_rk = $1",
-      [prac_rk]
-    );
     const deletePractice = await pool.query(
       "DELETE FROM practice WHERE prac_rk = $1",
       [prac_rk]
     );
 
     res.json("Practice has been Deleted");
+    console.log("Practice " + prac_rk + " has been Deleted");
   } catch (err) {
     console.error("Async Error:", err.message);
     res

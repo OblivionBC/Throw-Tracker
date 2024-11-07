@@ -7,7 +7,6 @@ import styled from "styled-components";
 ChartJS.register(Tooltip);
 
 function MeasurementChart({ activeTRPE }) {
-  const [selectedImplement, setSelectedImplement] = useState("Discus");
   const [selectedMeasurable, setSelectedMeasurable] = useState("");
   const [loading, setLoading] = useState(true);
   const [chartData, setChartData] = useState({
@@ -29,37 +28,39 @@ function MeasurementChart({ activeTRPE }) {
     const fetchData = async () => {
       setLoading(true);
       console.log("REFRESH");
-      const params = new URLSearchParams({
-        keys: JSON.stringify(activeTRPE),
-      });
-      //Returns msrm_rk | prac_rk |          meas_id           | meas_unit | prsn_rk | prac_rk | trpe_rk
-      const response = await fetch(
-        `http://localhost:5000/api//get-measurementsForTRPEs?${params}`
-      );
-      const jsonData = await response.json();
-      console.log(jsonData.rows);
-      let newDataMap = new Map();
-      jsonData.rows.forEach((element) => {
-        if (!newDataMap.has(element.meas_id)) {
-          newDataMap.set(element.meas_id, [
-            {
+      if (activeTRPE.length > 0) {
+        const params = new URLSearchParams({
+          keys: JSON.stringify(activeTRPE),
+        });
+        //Returns msrm_rk | prac_rk |          meas_id           | meas_unit | prsn_rk | prac_rk | trpe_rk
+        const response = await fetch(
+          `http://localhost:5000/api//get-measurementsForTRPEs?${params}`
+        );
+        const jsonData = await response.json();
+        console.log(jsonData.rows);
+        let newDataMap = new Map();
+        jsonData.rows.forEach((element) => {
+          if (!newDataMap.has(element.meas_id)) {
+            newDataMap.set(element.meas_id, [
+              {
+                prac_rk: element.prac_rk,
+                msrm_rk: element.msrm_rk,
+                msrm_value: element.msrm_value,
+              },
+            ]);
+          } else {
+            newDataMap.get(element.meas_id).push({
               prac_rk: element.prac_rk,
               msrm_rk: element.msrm_rk,
               msrm_value: element.msrm_value,
-            },
-          ]);
-        } else {
-          newDataMap.get(element.meas_id).push({
-            prac_rk: element.prac_rk,
-            msrm_rk: element.msrm_rk,
-            msrm_value: element.msrm_value,
-          });
-        }
-      });
-      setDataMap(newDataMap);
-      const firstKey = Array.from(dataMap.keys())[0];
-      setSelectedMeasurable(firstKey);
-      setLoading(false);
+            });
+          }
+        });
+        setDataMap(newDataMap);
+        const firstKey = Array.from(dataMap.keys())[0];
+        setSelectedMeasurable(firstKey);
+        setLoading(false);
+      }
     };
     fetchData();
   }, [activeTRPE]);
@@ -67,54 +68,52 @@ function MeasurementChart({ activeTRPE }) {
   useEffect(() => {
     console.log(dataMap);
     console.log(selectedMeasurable);
-    let iterator = 0;
-    if (selectedMeasurable !== "") {
-      const labels = dataMap.get(selectedMeasurable).map((item) => {
-        iterator++;
-        return iterator;
-      });
+    if (activeTRPE.length > 0) {
+      let iterator = 0;
+      if (selectedMeasurable !== "" && selectedMeasurable !== undefined) {
+        const labels = dataMap?.get(selectedMeasurable).map((item) => {
+          iterator++;
+          return iterator;
+        });
+        console.log(dataMap.get(selectedMeasurable));
+        const values = dataMap
+          .get(selectedMeasurable)
+          .map((item) => item.msrm_value); // Adjust according to your data structure
+        setChartData({
+          labels: labels,
+          datasets: [
+            {
+              //Label is the block at the top that you can click to filter
+              label: `${selectedMeasurable.meas_id} Legend`,
+              data: values,
+              pointRadius: 5,
+              pointHoverRadius: 8, // Increase the hover radius
+              pointHitRadius: 5, // Increase the hit radius
+            },
+          ],
+        });
+      } else {
+        const labels = [];
 
-      const values = dataMap
-        .get(selectedMeasurable)
-        .map((item) => item.msrm_value); // Adjust according to your data structure
-      setChartData({
-        labels: labels,
-        datasets: [
-          {
-            //Label is the block at the top that you can click to filter
-            label: `${selectedImplement} Legend`,
-            data: values,
-            pointRadius: 5,
-            pointHoverRadius: 8, // Increase the hover radius
-            pointHitRadius: 5, // Increase the hit radius
-          },
-        ],
-      });
-    } else {
-      const labels = [];
-
-      const values = [];
-      setChartData({
-        labels: labels,
-        datasets: [
-          {
-            //Label is the block at the top that you can click to filter
-            label: `${selectedImplement} Legend`,
-            data: values,
-            pointRadius: 5,
-            pointHoverRadius: 8, // Increase the hover radius
-            pointHitRadius: 5, // Increase the hit radius
-          },
-        ],
-      });
+        const values = [];
+        setChartData({
+          labels: labels,
+          datasets: [
+            {
+              //Label is the block at the top that you can click to filter
+              label: `Legend`,
+              data: values,
+              pointRadius: 5,
+              pointHoverRadius: 8, // Increase the hover radius
+              pointHitRadius: 5, // Increase the hit radius
+            },
+          ],
+        });
+      }
     }
     setLoading(false);
   }, [selectedMeasurable]);
 
-  //Selected dropdown value changes the selected implement, then changing the data given
-  const handleDatasetChange = (event) => {
-    setSelectedImplement(event.target.value);
-  };
   const options = {
     responsive: true,
     showLine: true,
@@ -168,7 +167,8 @@ function MeasurementChart({ activeTRPE }) {
         <ImplementSelect
           onChange={(e) => setSelectedMeasurable(e.target.value)}
         >
-          {[...dataMap.keys()].map((key) => (
+          <option value="">Choose A Measurable</option>
+          {[...dataMap?.keys()].map((key) => (
             <option value={key}>{key}</option>
           ))}
         </ImplementSelect>
@@ -197,7 +197,7 @@ const ImplementSelect = styled.select`
   border-width: 2px;
   font-family: "Nunito", sans-serif;
   align-text: center;
-  width: 100px;
+  width: 200px;
   font-weight: 700;
   margin: 0;
   padding: 0;
