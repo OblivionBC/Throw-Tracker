@@ -87,7 +87,7 @@ exports.deletePerson = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
-    console.log(req.body);
+    console.log("Attempting Login as User: " + username);
     //$1 is the variable to add in the db, runs sql query in quotes which is same as in the CLI
     //Returning * returns back the data
     const result = await pool.query(
@@ -96,6 +96,7 @@ exports.login = async (req, res) => {
     );
     if (result.rows.length == 0) {
       res.status(404).json("Record does not exist");
+      console.log("Unsuccessful Login as User: " + username);
       return;
     }
     console.log(result.rows);

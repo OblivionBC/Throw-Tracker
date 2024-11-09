@@ -8,12 +8,20 @@ exports.addTrainingPeriod = async (req, res) => {
   try {
     console.log(req.body);
     const { trpe_start_dt, trpe_end_dt, prsn_rk } = req.body;
+    var newTrainingPeriod;
     //$1 is the variable to add in the db, runs sql query in quotes which is same as in the CLI
     //Returning * returns back the data
-    const newTrainingPeriod = await pool.query(
-      "INSERT INTO training_period (trpe_start_dt, trpe_end_dt, prsn_rk) VALUES($1, $2, $3) RETURNING *",
-      [trpe_start_dt, trpe_end_dt, prsn_rk]
-    );
+    if (trpe_end_dt === "") {
+      newTrainingPeriod = await pool.query(
+        "INSERT INTO training_period (trpe_start_dt, prsn_rk) VALUES($1, $2) RETURNING *",
+        [trpe_start_dt, prsn_rk]
+      );
+    } else {
+      newTrainingPeriod = await pool.query(
+        "INSERT INTO training_period (trpe_start_dt, prsn_rk) VALUES($1, $2, $3) RETURNING *",
+        [trpe_start_dt, trpe_end_dt, prsn_rk]
+      );
+    }
 
     res.json(newTrainingPeriod);
   } catch (err) {
@@ -26,8 +34,14 @@ exports.addTrainingPeriod = async (req, res) => {
 
 exports.getAllTrainingPeriods = async (req, res) => {
   try {
-    const allTrainingPeriod = await pool.query("SELECT * FROM training_period");
+    const { prsn_rk } = req.body;
+    console.log("Getting");
+    const allTrainingPeriod = await pool.query(
+      "SELECT * FROM training_period where training_period.prsn_rk = $1",
+      [prsn_rk]
+    );
     res.json(allTrainingPeriod);
+    console.log("Finding Training Periods For Person " + prsn_rk);
   } catch (err) {
     console.error("Async Error:", err.message);
     res.status(500).json({ message: "Error occurred while Getting All TRPE." });
@@ -52,6 +66,25 @@ exports.getTrainingPeriod = async (req, res) => {
   }
 };
 
+exports.endDateMostRecentTrainingPeriod = async (req, res) => {
+  try {
+    console.log("Setting the End Date");
+    const { prsn_rk, trpe_end_dt, date } = req.body;
+    console.log(req.body);
+    const TrainingPeriod = await pool.query(
+      "UPDATE training_period SET trpe_end_dt = $1 WHERE trpe_rk = ( SELECT trpe_rk FROM training_period where prsn_rk = $2 ORDER BY trpe_start_dt DESC LIMIT 1)",
+      [trpe_end_dt, prsn_rk]
+    );
+
+    res.json(TrainingPeriod.rows);
+    console.log("End Dating Most Recent Training Period");
+  } catch (err) {
+    console.error("Async Error:", err.message);
+    res.status(500).json({
+      message: "Error occurred while End Dating Most Recent Training Period.",
+    });
+  }
+};
 exports.updateTrainingPeriod = async (req, res) => {
   try {
     const { trpe_rk } = req.params;
@@ -71,16 +104,13 @@ exports.updateTrainingPeriod = async (req, res) => {
 
 exports.deleteTrainingPeriod = async (req, res) => {
   try {
-    const { trpe_rk } = req.params;
-    const deleteRelatedPractices = await pool.query(
-      "DELETE FROM practice WHERE trpe_rk = $1",
-      [trpe_rk]
-    );
+    const { trpe_rk } = req.body;
     const deleteTrainingPeriod = await pool.query(
       "DELETE FROM training_period WHERE trpe_rk = $1",
       [trpe_rk]
     );
     res.json("TrainingPeriod has been Deleted");
+    console.log("Training Period with row key " + trpe_rk + " deleted");
   } catch (err) {
     console.error("Async Error:", err.message);
     res
