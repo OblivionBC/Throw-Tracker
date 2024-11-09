@@ -1,6 +1,9 @@
 CREATE DATABASE trackApp;
+   UPDATE person set prsn_pwrd = crypt('mypassword', gen_salt('bf')) where prsn_email = 'gideon@gmail.com';
 
-17.3, .68
+UPDATE training_period 
+SET trpe_end_dt = null WHERE trpe_rk = 
+( SELECT trpe_rk FROM training_period where prsn_rk = 12 ORDER BY trpe_start_dt DESC LIMIT 1)
 
 SELECT
     tc.constraint_name,

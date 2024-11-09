@@ -29,6 +29,7 @@ const {
   getAllTrainingPeriods,
   deleteTrainingPeriod,
   updateTrainingPeriod,
+  endDateMostRecentTrainingPeriod,
 } = require("../controllers/trainingPeriods");
 
 const {
@@ -90,9 +91,10 @@ router
 
   .post("/add-trainingPeriod", addTrainingPeriod)
   .get("/get-trainingPeriod/:trpe_rk", getTrainingPeriod)
-  .get("/get-all-trainingPeriods", getAllTrainingPeriods)
-  .delete("/delete-trainingPeriod/:trpe_rk", deleteTrainingPeriod)
+  .post("/get-all-trainingPeriods", getAllTrainingPeriods)
+  .delete("/delete-trainingPeriod", deleteTrainingPeriod)
   .put("/update-trainingPeriod/:trpe_rk", updateTrainingPeriod)
+  .post("/endDateMostRecent_trainingPeriod", endDateMostRecentTrainingPeriod)
 
   .post("/add-excersise", addExercise)
   .get("/get-excersise/:excr_rk", getExercise)

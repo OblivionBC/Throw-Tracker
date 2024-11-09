@@ -28,11 +28,13 @@ function MeasurementChart({ activeTRPE }) {
     const fetchData = async () => {
       setLoading(true);
       console.log("REFRESH");
+
+      //First case is that the user has selected the training period, meaning we will set new data
       if (activeTRPE.length > 0) {
         const params = new URLSearchParams({
           keys: JSON.stringify(activeTRPE),
         });
-        //Returns msrm_rk | prac_rk |          meas_id           | meas_unit | prsn_rk | prac_rk | trpe_rk
+        //Returns msrm_rk | prac_rk | meas_id | meas_unit | prsn_rk | prac_rk | trpe_rk
         const response = await fetch(
           `http://localhost:5000/api//get-measurementsForTRPEs?${params}`
         );
@@ -59,10 +61,31 @@ function MeasurementChart({ activeTRPE }) {
         setDataMap(newDataMap);
         const firstKey = Array.from(dataMap.keys())[0];
         setSelectedMeasurable(firstKey);
-        setLoading(false);
+        //Second case is that there are no active TRPEs, in which we want to reset the data
+      } else {
+        let newDataMap = new Map();
+        setDataMap(newDataMap);
+        const labels = [];
+
+        const values = [];
+        setChartData({
+          labels: labels,
+          datasets: [
+            {
+              //Label is the block at the top that you can click to filter
+              label: `Legend`,
+              data: values,
+              pointRadius: 5,
+              pointHoverRadius: 8, // Increase the hover radius
+              pointHitRadius: 5, // Increase the hit radius
+            },
+          ],
+        });
       }
+      console.log("Loading false " + loading);
     };
     fetchData();
+    setLoading(false);
   }, [activeTRPE]);
 
   useEffect(() => {
@@ -92,24 +115,21 @@ function MeasurementChart({ activeTRPE }) {
             },
           ],
         });
-      } else {
-        const labels = [];
-
-        const values = [];
-        setChartData({
-          labels: labels,
-          datasets: [
-            {
-              //Label is the block at the top that you can click to filter
-              label: `Legend`,
-              data: values,
-              pointRadius: 5,
-              pointHoverRadius: 8, // Increase the hover radius
-              pointHitRadius: 5, // Increase the hit radius
-            },
-          ],
-        });
       }
+    } else {
+      console.log("CHANGING DATA WHEN NO ACTIVE TRPE");
+      setChartData({
+        labels: [],
+        datasets: [
+          {
+            label: "",
+            data: [],
+            backgroundColor: "",
+            borderColor: "",
+            borderWidth: 0,
+          },
+        ],
+      });
     }
     setLoading(false);
   }, [selectedMeasurable]);
@@ -162,6 +182,10 @@ function MeasurementChart({ activeTRPE }) {
   }
   return (
     <ChartWrap>
+      <Message>
+        {activeTRPE.length === 0 ? "Please Select a Training Period" : ""}
+      </Message>
+
       <Row>
         <Title>Chart of Practices</Title>
         <ImplementSelect
@@ -177,6 +201,21 @@ function MeasurementChart({ activeTRPE }) {
     </ChartWrap>
   );
 }
+
+const Message = styled.div`
+  position: relative;
+  padding: 0;
+  margin: 0;
+  top: 50%;
+  left: 20%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  padding: 12px 24px;
+  color: black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
 
 const ChartWrap = styled.div`
   display: flex;

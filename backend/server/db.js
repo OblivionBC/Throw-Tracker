@@ -8,9 +8,9 @@ const PASS = process.env.DB_USER_PASS;
 //new pool creates a DB connection using the params
 const pool = new Pool({
   user: "postgres",
-  password: "pokemonbeach1",
+  password: PASS,
   host: "localhost",
-  port: 5432,
+  port: PORT,
   database: "trackapp",
 });
 
