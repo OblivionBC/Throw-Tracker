@@ -90,7 +90,7 @@ exports.updatePractice = async (req, res) => {
   try {
     const { prac_rk, prac_dt, trpe_rk } = req.body;
     const updateTodo = await pool.query(
-      "UPDATE practice SET prac_best = 0, prac_implement = 'null', prac_implement_weight = 0, prac_dt = $1, trpe_rk = $2 WHERE prac_rk = $3",
+      "UPDATE practice SET prac_dt = $1, trpe_rk = $2 WHERE prac_rk = $3",
       [prac_dt, trpe_rk, prac_rk]
     );
     res.json("Practice was Updated");

@@ -1,4 +1,48 @@
 update person set org_rk = 1 where prsn_rk > 0;
+Update person set prsn_pwrd = crypt('pokemonbeach1', gen_salt('bf')) where prsn_rk = 11;
+--Insert into practice
+INSERT INTO practice (prac_dt, trpe_rk) VALUES
+('2024-09-23', 10),
+('2024-09-24', 10),
+('2024-09-26', 10),
+('2024-09-27', 10),
+('2024-10-01', 10),
+('2024-10-03', 10),
+('2024-10-07', 10),
+('2024-10-08', 10),
+('2024-10-10', 10),
+('2024-10-11', 10),
+('2024-10-16', 10),
+('2024-10-17', 10);
+
+--Insert into measurements
+INSERT INTO measurement (msrm_value, meas_rk, prac_rk) VALUES
+(1.35, 13, 34),
+(1.48, 13, 35),
+(1.27, 13, 36),
+(1.45, 13, 37),
+(1.44, 13, 38),
+(1.4, 13, 39),
+(1.44, 13, 40),
+(1.37, 13, 41),
+(1.37, 13, 42),
+(1.22, 13, 43);
+
+INSERT INTO measurement (msrm_value, meas_rk, prac_rk) VALUES
+(1.34, 14, 34),
+(1.34, 14, 35),
+(1.23, 14, 36),
+(1.38, 14, 37),
+(1.39, 14, 38),
+(1.35, 14, 39),
+(1.33, 14, 40),
+(1.3, 14, 41),
+(1.29, 14, 42),
+(1.17, 14, 43),
+(1.36, 14, 44);
+
+
+
 
 INSERT INTO person (prsn_first_nm, prsn_last_nm, prsn_email, prsn_pwrd, org_rk, prsn_role) 
 VALUES('Gideon', 'Charles', 'gideon@gmail.com', crypt('mypass', gen_salt('bf')), 1, 'ATHLETE') RETURNING *

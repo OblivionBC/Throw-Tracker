@@ -87,11 +87,10 @@ exports.endDateMostRecentTrainingPeriod = async (req, res) => {
 };
 exports.updateTrainingPeriod = async (req, res) => {
   try {
-    const { trpe_rk } = req.params;
-    const { trpe_start_dt, trpe_end_dt, prsn_rk } = req.body;
+    const { trpe_rk, trpe_start_dt, trpe_end_dt } = req.body;
     const updateTodo = await pool.query(
-      "UPDATE training_period SET trpe_start_dt = $1, trpe_end_dt = $2, prsn_rk = $3 WHERE trpe_rk = $4",
-      [trpe_start_dt, trpe_end_dt, prsn_rk, trpe_rk]
+      "UPDATE training_period SET trpe_start_dt = $1, trpe_end_dt = $2 WHERE trpe_rk = $3",
+      [trpe_start_dt, trpe_end_dt, trpe_rk]
     );
     res.json("TrainingPeriod was Updated");
   } catch (err) {
