@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
 import { Chart as ChartJS } from "chart.js/auto";
 import { Tooltip } from "chart.js/auto";
+import dayjs from "dayjs";
 import styled from "styled-components";
 ChartJS.register(Tooltip);
 
@@ -22,119 +23,7 @@ function MeasurementChart({ activeTRPE }) {
     ],
   });
   const [dataMap, setDataMap] = useState(new Map());
-
-  //This Use effect will be for when the selected TRPEs change
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      console.log("REFRESH");
-
-      //First case is that the user has selected the training period, meaning we will set new data
-      if (activeTRPE.length > 0) {
-        const params = new URLSearchParams({
-          keys: JSON.stringify(activeTRPE),
-        });
-        //Returns msrm_rk | prac_rk | meas_id | meas_unit | prsn_rk | prac_rk | trpe_rk
-        const response = await fetch(
-          `http://localhost:5000/api//get-measurementsForTRPEs?${params}`
-        );
-        const jsonData = await response.json();
-        console.log(jsonData.rows);
-        let newDataMap = new Map();
-        jsonData.rows.forEach((element) => {
-          if (!newDataMap.has(element.meas_id)) {
-            newDataMap.set(element.meas_id, [
-              {
-                prac_rk: element.prac_rk,
-                msrm_rk: element.msrm_rk,
-                msrm_value: element.msrm_value,
-              },
-            ]);
-          } else {
-            newDataMap.get(element.meas_id).push({
-              prac_rk: element.prac_rk,
-              msrm_rk: element.msrm_rk,
-              msrm_value: element.msrm_value,
-            });
-          }
-        });
-        setDataMap(newDataMap);
-        const firstKey = Array.from(dataMap.keys())[0];
-        setSelectedMeasurable(firstKey);
-        //Second case is that there are no active TRPEs, in which we want to reset the data
-      } else {
-        let newDataMap = new Map();
-        setDataMap(newDataMap);
-        const labels = [];
-
-        const values = [];
-        setChartData({
-          labels: labels,
-          datasets: [
-            {
-              //Label is the block at the top that you can click to filter
-              label: `Legend`,
-              data: values,
-              pointRadius: 5,
-              pointHoverRadius: 8, // Increase the hover radius
-              pointHitRadius: 5, // Increase the hit radius
-            },
-          ],
-        });
-      }
-      console.log("Loading false " + loading);
-    };
-    fetchData();
-    setLoading(false);
-  }, [activeTRPE]);
-
-  useEffect(() => {
-    console.log(dataMap);
-    console.log(selectedMeasurable);
-    if (activeTRPE.length > 0) {
-      let iterator = 0;
-      if (selectedMeasurable !== "" && selectedMeasurable !== undefined) {
-        const labels = dataMap?.get(selectedMeasurable).map((item) => {
-          iterator++;
-          return iterator;
-        });
-        console.log(dataMap.get(selectedMeasurable));
-        const values = dataMap
-          .get(selectedMeasurable)
-          .map((item) => item.msrm_value); // Adjust according to your data structure
-        setChartData({
-          labels: labels,
-          datasets: [
-            {
-              //Label is the block at the top that you can click to filter
-              label: `${selectedMeasurable.meas_id} Legend`,
-              data: values,
-              pointRadius: 5,
-              pointHoverRadius: 8, // Increase the hover radius
-              pointHitRadius: 5, // Increase the hit radius
-            },
-          ],
-        });
-      }
-    } else {
-      console.log("CHANGING DATA WHEN NO ACTIVE TRPE");
-      setChartData({
-        labels: [],
-        datasets: [
-          {
-            label: "",
-            data: [],
-            backgroundColor: "",
-            borderColor: "",
-            borderWidth: 0,
-          },
-        ],
-      });
-    }
-    setLoading(false);
-  }, [selectedMeasurable]);
-
-  const options = {
+  const [options, setOptions] = useState({
     responsive: true,
     showLine: true,
     plugins: {
@@ -172,11 +61,179 @@ function MeasurementChart({ activeTRPE }) {
       y: {
         title: {
           display: true,
-          text: "Distance in Meters",
+          text: "Measurement in ",
         },
       },
     },
-  };
+  });
+
+  //This Use effect will be for when the selected TRPEs change
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      console.log("REFRESH");
+
+      //First case is that the user has selected the training period, meaning we will set new data
+      if (activeTRPE.length > 0) {
+        const params = new URLSearchParams({
+          keys: JSON.stringify(activeTRPE),
+        });
+        //Returns msrm_rk | prac_rk | meas_id | meas_unit | prsn_rk | prac_rk | trpe_rk
+        const response = await fetch(
+          `http://localhost:5000/api//get-measurementsForTRPEs?${params}`
+        );
+        const jsonData = await response.json();
+        console.log(jsonData.rows);
+        let newDataMap = new Map();
+        jsonData.rows.forEach((element) => {
+          if (!newDataMap.has(element.meas_id)) {
+            newDataMap.set(element.meas_id, [
+              {
+                prac_rk: element.prac_rk,
+                msrm_rk: element.msrm_rk,
+                meas_unit: element.meas_unit,
+                msrm_value: element.msrm_value,
+                prac_dt: element.prac_dt,
+              },
+            ]);
+          } else {
+            newDataMap.get(element.meas_id).push({
+              prac_rk: element.prac_rk,
+              msrm_rk: element.msrm_rk,
+              meas_unit: element.meas_unit,
+              msrm_value: element.msrm_value,
+              prac_dt: element.prac_dt,
+            });
+          }
+        });
+        setDataMap(newDataMap);
+        const firstKey = Array.from(dataMap.keys())[0];
+        setSelectedMeasurable(firstKey);
+        //Second case is that there are no active TRPEs, in which we want to reset the data
+      } else {
+        let newDataMap = new Map();
+        setDataMap(newDataMap);
+        const labels = [];
+
+        const values = [];
+        setChartData({
+          labels: labels,
+          datasets: [
+            {
+              //Label is the block at the top that you can click to filter
+              label: `Legend`,
+              data: values,
+              pointRadius: 5,
+              pointHoverRadius: 8, // Increase the hover radius
+              pointHitRadius: 5, // Increase the hit radius
+            },
+          ],
+        });
+      }
+      console.log("Loading false " + loading);
+    };
+    fetchData();
+    setLoading(false);
+  }, [activeTRPE]);
+
+  useEffect(() => {
+    if (activeTRPE.length > 0) {
+      //let iterator = 0;
+      if (selectedMeasurable !== "" && selectedMeasurable !== undefined) {
+        const labels = dataMap?.get(selectedMeasurable).map((item) => {
+          //iterator++;
+          return item.prac_rk;
+        });
+        console.log(dataMap.get(selectedMeasurable));
+        const values = dataMap
+          .get(selectedMeasurable)
+          .map((item) => item.msrm_value); // Adjust according to your data structure
+
+        setChartData({
+          labels: labels,
+          datasets: [
+            {
+              //Label is the block at the top that you can click to filter
+              label: `${selectedMeasurable.meas_id} Legend`,
+              data: values,
+              pointRadius: 5,
+              pointHoverRadius: 8, // Increase the hover radius
+              pointHitRadius: 5, // Increase the hit radius
+            },
+          ],
+        });
+        console.log(dataMap.get(selectedMeasurable));
+        setOptions({
+          responsive: true,
+          showLine: true,
+          plugins: {
+            legend: {
+              display: false,
+            },
+            tooltip: {
+              mode: "nearest",
+              intersect: false,
+              callbacks: {
+                label: function (tooltipItem) {
+                  let prac = dataMap.get(selectedMeasurable)?.find((obj) => {
+                    return obj.prac_rk == tooltipItem.label;
+                  });
+                  console.log(prac);
+                  //
+                  return `${tooltipItem.raw}${prac.meas_unit}, Prac ${
+                    tooltipItem.label
+                  } on ${dayjs(prac.prac_dt).format("MMM D YYYY")}  `;
+                },
+              },
+            },
+          },
+          hover: {
+            mode: "point",
+            intersect: false,
+            onHover: function (event, chartElement) {
+              event.native.target.style.cursor = chartElement[0]
+                ? "pointer"
+                : "default";
+            },
+          },
+          scales: {
+            x: {
+              type: "linear",
+              position: "bottom",
+              title: {
+                display: true,
+                text: "Practice Number",
+              },
+            },
+            y: {
+              title: {
+                display: true,
+                text: `Measurement in ${
+                  dataMap.get(selectedMeasurable)[0].meas_unit
+                }  `,
+              },
+            },
+          },
+        });
+      }
+    } else {
+      console.log("CHANGING DATA WHEN NO ACTIVE TRPE");
+      setChartData({
+        labels: [],
+        datasets: [
+          {
+            label: "",
+            data: [],
+            backgroundColor: "",
+            borderColor: "",
+            borderWidth: 0,
+          },
+        ],
+      });
+    }
+    setLoading(false);
+  }, [selectedMeasurable]);
+
   if (loading) {
     return <ChartWrap>Loading...</ChartWrap>;
   }

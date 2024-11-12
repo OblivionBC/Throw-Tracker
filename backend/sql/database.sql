@@ -4,7 +4,6 @@ CREATE DATABASE trackApp;
 UPDATE training_period 
 SET trpe_end_dt = null WHERE trpe_rk = 
 ( SELECT trpe_rk FROM training_period where prsn_rk = 12 ORDER BY trpe_start_dt DESC LIMIT 1)
-
 SELECT
     tc.constraint_name,
     tc.table_name,
@@ -18,8 +17,9 @@ FROM
     JOIN information_schema.constraint_column_usage AS ccu
       ON ccu.constraint_name = tc.constraint_name
 WHERE
-    tc.constraint_type = 'FOREIGN KEY' AND tc.table_name = 'exercise';
+    tc.constraint_type = 'FOREIGN KEY' AND tc.table_name = 'excersise';
 
+alter table practice drop column prac_best;
 
 Gotta make sure that the keys do cascade delete
 ALTER TABLE child DROP CONSTRAINT child_parent_id_fkey;
@@ -28,6 +28,13 @@ Add New Constraint with Cascading Deletes:
 ALTER TABLE child
 ADD CONSTRAINT child_parent_id_fkey FOREIGN KEY (parent_id)
 REFERENCES parent (id)
+ON DELETE CASCADE;
+
+ALTER TABLE exercise DROP CONSTRAINT trpe_rk;
+--Add New Constraint with Cascading Deletes:
+ALTER TABLE practice
+ADD CONSTRAINT trpe_rk FOREIGN KEY (trpe_rk)
+REFERENCES training_period (trpe_rk)
 ON DELETE CASCADE;
 
 CREATE TABLE PERSON (

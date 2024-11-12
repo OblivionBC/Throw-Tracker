@@ -93,7 +93,7 @@ router
   .get("/get-trainingPeriod/:trpe_rk", getTrainingPeriod)
   .post("/get-all-trainingPeriods", getAllTrainingPeriods)
   .delete("/delete-trainingPeriod", deleteTrainingPeriod)
-  .put("/update-trainingPeriod/:trpe_rk", updateTrainingPeriod)
+  .put("/update-trainingPeriod", updateTrainingPeriod)
   .post("/endDateMostRecent_trainingPeriod", endDateMostRecentTrainingPeriod)
 
   .post("/add-excersise", addExercise)

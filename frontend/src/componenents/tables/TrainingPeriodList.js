@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import ConfirmTRPEDelete from "../modals/ConfirmTRPEDelete";
 import AddTRPEModal from "../modals/AddTRPEModal";
 import { useUser } from "../contexts/UserContext";
+import TrainingPeriodEditModal from "../modals/TrainingPeriodEditModal";
 
 const TableStyles = {
   pagination: {
@@ -26,6 +27,7 @@ const TrainingPeriodList = ({ sharedState, setSharedState }) => {
   const [trpeData, setTrpeData] = useState([]);
   const [addTRPEOpen, setAddTRPEOpen] = useState(false);
   const [deleteTRPEOpen, setDeleteTRPEOpen] = useState(false);
+  const [editTRPEOpen, setEditTRPEOpen] = useState(false);
   const [selectedTRPE, setSelectedTRPE] = useState({});
   const { user } = useUser();
   const getTRPEData = async () => {
@@ -94,6 +96,18 @@ const TrainingPeriodList = ({ sharedState, setSharedState }) => {
       cell: (row) => (
         <DeleteButton
           onClick={() => {
+            setEditTRPEOpen(true);
+            setSelectedTRPE(row);
+          }}
+        >
+          Edit
+        </DeleteButton>
+      ),
+    },
+    {
+      cell: (row) => (
+        <DeleteButton
+          onClick={() => {
             setDeleteTRPEOpen(true);
             setSelectedTRPE(row);
           }}
@@ -117,7 +131,12 @@ const TrainingPeriodList = ({ sharedState, setSharedState }) => {
         onClose={() => setAddTRPEOpen(false)}
         refresh={() => getTRPEData()}
       />
-
+      <TrainingPeriodEditModal
+        open={editTRPEOpen}
+        onClose={() => setEditTRPEOpen(false)}
+        refresh={() => getTRPEData()}
+        trpeObj={selectedTRPE}
+      />
       <RowDiv>
         <Title>Training Periods</Title>
         <AddButton onClick={() => setAddTRPEOpen(true)}>Add</AddButton>
