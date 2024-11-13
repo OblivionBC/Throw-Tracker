@@ -3,7 +3,9 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import styled from "styled-components";
 import "typeface-nunito";
+import { useUser } from "../contexts/UserContext";
 import { MeasurableFieldArray } from "./MeasurableFieldArray";
+import TrainingPeriodOptions from "../formHelpers/TrainingPeriodOptions";
 
 //Grab the initial values
 const addMeasurement = async (measurable, prac_rk) => {
@@ -69,8 +71,7 @@ const AddPracticeForm = ({ close, refresh }) => {
             .required(),
         })
       )
-      .required("Must have measurables")
-      .min(1, "Minimum of 1 measurable"),
+      .required("Must have measurables"),
   });
   const handleSubmit = async (values, { setSubmitting }) => {
     // Handle form submission here
@@ -108,10 +109,9 @@ const AddPracticeForm = ({ close, refresh }) => {
               {({ field }) => (
                 <FieldOutputContainer>
                   <FieldLabel>Training Period:</FieldLabel>
-                  <StyledInput
-                    type="text"
-                    placeholder={"Number Here"}
-                    {...field}
+                  <TrainingPeriodOptions
+                    prsn_rk={useUser.prsn_rk}
+                    name="trpe"
                   />
                 </FieldOutputContainer>
               )}

@@ -57,7 +57,7 @@ const AddTRPEForm = ({ close, refresh }) => {
   const initialValues = {
     trpe_start_dt: "",
     trpe_end_dt: "",
-    endDateRecent: true,
+    endDateRecent: false,
   };
   const { user } = useUser();
   const validationSchema = Yup.object().shape({

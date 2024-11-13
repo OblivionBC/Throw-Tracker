@@ -3,6 +3,7 @@ import styled from "styled-components";
 import PracticeList from "../componenents/tables/PracticeList";
 import TrainingPeriodList from "../componenents/tables/TrainingPeriodList";
 import MeasurementChart from "../componenents/MeasurementChart";
+import Measurables from "../componenents/tables/MeasurableList";
 import "typeface-rubik";
 import ErrorBoundary from "../componenents/ErrorBoundary";
 
@@ -29,7 +30,10 @@ const Practices = () => {
       </LeftColumn>
       <RightColumn>
         <ErrorBoundary>
+          <Block />
           <PracticeList />
+          <Block />
+          <Measurables paginationNum={3} />
         </ErrorBoundary>
       </RightColumn>
     </Page>
@@ -52,7 +56,9 @@ const LeftColumn = styled.div`
   width: 50%;
   height: 100%;
 `;
-
+const Block = styled.div`
+  height: 15px;
+`;
 const RightColumn = styled.div`
   display: flex;
   align-items: center;
