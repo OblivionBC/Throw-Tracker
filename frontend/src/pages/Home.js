@@ -4,7 +4,6 @@ import CurrentExcersiseList from "../componenents/tables/CurrentExerciseList";
 import LastPractice from "../componenents/LastPractice";
 import "typeface-rubik";
 import Measurables from "../componenents/tables/MeasurableList";
-import MeasurementChart from "../componenents/MeasurementChart";
 import ErrorBoundary from "../componenents/ErrorBoundary";
 import MeetList from "../componenents/tables/MeetList";
 
@@ -16,7 +15,7 @@ const Home = () => {
     <Page>
       <LeftColumn>
         <ErrorBoundary>
-          <Measurables />
+          <Measurables paginationNum={8} />
         </ErrorBoundary>
 
         <ErrorBoundary>

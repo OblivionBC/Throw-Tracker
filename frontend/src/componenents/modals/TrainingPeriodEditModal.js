@@ -2,9 +2,9 @@ import React from "react";
 import styled from "styled-components";
 import { useState } from "react";
 import PracticeEditForm from "../forms/PracticeEditForm";
-import MeasurablesList from "../tables/MeasurementList";
 import "typeface-nunito";
 import dayjs from "dayjs";
+import EditTRPEForm from "../forms/EditTRPEForm";
 
 const TrainingPeriodEditModal = ({ open, onClose, trpeObj, refresh }) => {
   const [editing, setEditing] = useState(false);
@@ -12,22 +12,27 @@ const TrainingPeriodEditModal = ({ open, onClose, trpeObj, refresh }) => {
   const Details = () => {
     if (editing) return null;
     return (
-      <>
-        <RowContainer>
-          <FieldName>Training Period Row Key:</FieldName>
-          <p>{trpeObj.trpe_rk}</p>
-        </RowContainer>
-        <RowContainer>
-          <FieldName>Start Date:</FieldName>
-          <p>{dayjs(trpeObj.trpe_start_dt).format("MMM D YYYY")}</p>
-        </RowContainer>
-        <RowContainer>
-          <FieldName>End Date:</FieldName>
-          {trpeObj.trpe_end_dt === undefined ? null : (
-            <p>{dayjs(trpeObj.trpe_start_dt).format("MMM D YYYY")}</p>
-          )}
-        </RowContainer>
-      </>
+      <Modal>
+        <Overlay>
+          <ModalContainer>
+            <CloseButton
+              onClick={() => {
+                onClose();
+                setEditing(false);
+              }}
+            >
+              Close
+            </CloseButton>
+            <Content>
+              <EditTRPEForm
+                trpe={trpeObj}
+                close={() => onClose()}
+                refresh={refresh}
+              />
+            </Content>
+          </ModalContainer>
+        </Overlay>
+      </Modal>
     );
   };
 
@@ -45,12 +50,6 @@ const TrainingPeriodEditModal = ({ open, onClose, trpeObj, refresh }) => {
             Close
           </CloseButton>
           <Content>
-            <PracticeEditForm
-              prac={trpeObj}
-              on={editing}
-              goToDetails={() => setEditing(!editing)}
-              refresh={() => refresh()}
-            />
             <Details />
           </Content>
           <EditButton onClick={() => setEditing(!editing)}>

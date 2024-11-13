@@ -8,6 +8,8 @@ exports.addMeasurable = async (req, res) => {
   try {
     console.log(req.body);
     const { meas_id, meas_typ, meas_unit, prsn_rk } = req.body;
+    console.log("Attempting Add Measurables for person " + prsn_rk);
+
     //$1 is the variable to add in the db, runs sql query in quotes which is same as in the CLI
     //Returning * returns back the data
     const newMeasurable = await pool.query(

@@ -1,10 +1,9 @@
 import React from "react";
-import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
+import { Field, FieldArray } from "formik";
 import styled from "styled-components";
 import { useEffect, useState } from "react";
 import { useUser } from "../contexts/UserContext";
 import PersonMeasurableOptions from "./PersonMeasurableOptions";
-import { v4 as uuidv4 } from "uuid";
 
 // Here is an example of a form with an editable list.
 // Next to each input are buttons for insert and remove.
@@ -48,7 +47,7 @@ export const MeasurableFieldArray = () => {
                 <DeleteButton
                   type="button"
                   onClick={() => {
-                    remove({ index });
+                    remove(index);
                     console.log(values.measurables);
                   }}
                 >

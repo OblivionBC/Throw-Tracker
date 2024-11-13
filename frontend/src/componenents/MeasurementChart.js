@@ -162,7 +162,6 @@ function MeasurementChart({ activeTRPE }) {
             },
           ],
         });
-        console.log(dataMap.get(selectedMeasurable));
         setOptions({
           responsive: true,
           showLine: true,
@@ -179,10 +178,10 @@ function MeasurementChart({ activeTRPE }) {
                     return obj.prac_rk == tooltipItem.label;
                   });
                   console.log(prac);
-                  //
-                  return `${tooltipItem.raw}${prac.meas_unit}, Prac ${
-                    tooltipItem.label
-                  } on ${dayjs(prac.prac_dt).format("MMM D YYYY")}  `;
+
+                  return `${tooltipItem.raw}${prac.meas_unit}, ${dayjs(
+                    prac.prac_dt
+                  ).format("MMM D YYYY")}  `;
                 },
               },
             },

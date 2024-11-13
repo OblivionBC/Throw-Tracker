@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import "typeface-nunito";
 import DataTable from "react-data-table-component";
-import ConfirmPracDeleteModal from "../modals/ConfirmPracDeleteModal";
 import { useUser } from "../contexts/UserContext";
 import AddMeasurableModal from "../modals/AddMeasurableModal";
 import ConfirmMeasurableDeleteModal from "../modals/ConfirmMeasurableDeleteModal";
@@ -25,7 +24,8 @@ const TableStyles = {
   },
 };
 
-const Measurables = () => {
+const Measurables = ({ paginationNum }) => {
+  if (!paginationNum) paginationNum = 8;
   const [measurableData, setMeasurableData] = useState([]);
   const [addMeasurableOpen, setaddMeasurableOpen] = useState(false);
   const [confirmMeasDelete, setConfirmMeasDelete] = useState(false);
@@ -136,7 +136,7 @@ const Measurables = () => {
           data={measurableData}
           fixedHeader
           pagination
-          paginationPerPage={8}
+          paginationPerPage={paginationNum}
           paginationComponentOptions={{
             rowsPerPageText: "Rows per page:",
             rangeSeparatorText: "of",

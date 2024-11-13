@@ -4,9 +4,8 @@ import * as Yup from "yup";
 import styled from "styled-components";
 import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
-import { MeasurableFieldArray } from "./MeasurableFieldArray";
 
-const EditTRPEForm = ({ trpe, on, goToDetails, refresh }) => {
+const EditTRPEForm = ({ trpe, refresh, close }) => {
   const [failed, setFailed] = useState(false);
   const initialValues = {
     trpe_start_dt: "",
@@ -21,6 +20,9 @@ const EditTRPEForm = ({ trpe, on, goToDetails, refresh }) => {
     // Handle form submission here
     //Make call on submit to update trpetice, and delete all measurments in for the trpe, then create a new one for each in the array
     setSubmitting(true);
+    if (values.trpe_end_dt === "") {
+      values.trpe_end_dt = null;
+    }
     try {
       const response = await fetch(
         `http://localhost:5000/api/update-trainingPeriod`,
@@ -39,6 +41,7 @@ const EditTRPEForm = ({ trpe, on, goToDetails, refresh }) => {
       refresh();
       setSubmitting(false);
       alert("Training Period Updated Successfully");
+      close();
       return;
     } catch (error) {
       setFailed(true);
@@ -60,10 +63,10 @@ const EditTRPEForm = ({ trpe, on, goToDetails, refresh }) => {
           //date, training period, wind, notes, measurables
           <StyledForm onSubmit={handleSubmit}>
             <h4>Training Period: {trpe.trpe_rk}</h4>
-            <Field type="trpe_start_dt" name="date">
+            <Field type="date" name="trpe_start_dt">
               {({ field }) => (
                 <FieldOutputContainer>
-                  <FieldLabel>Date:</FieldLabel>
+                  <FieldLabel>Start Date:</FieldLabel>
                   <StyledInput
                     type="date"
                     placeholder={trpe.trpe_dt}
@@ -74,15 +77,11 @@ const EditTRPEForm = ({ trpe, on, goToDetails, refresh }) => {
             </Field>
             <ErrorMessage name="trpe_start_dt" component={SubmitError} />
 
-            <Field type="trpe_end_dt" name="date">
+            <Field type="date" name="trpe_end_dt">
               {({ field }) => (
                 <FieldOutputContainer>
-                  <FieldLabel>Date:</FieldLabel>
-                  <StyledInput
-                    type="date"
-                    placeholder={trpe.trpe_dt}
-                    {...field}
-                  />
+                  <FieldLabel>End Date:</FieldLabel>
+                  <StyledInput type="date" {...field} />
                 </FieldOutputContainer>
               )}
             </Field>
