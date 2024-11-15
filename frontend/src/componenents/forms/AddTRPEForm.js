@@ -4,6 +4,9 @@ import * as Yup from "yup";
 import styled from "styled-components";
 import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+
 const AddTRPE = async (trpe_start_dt, trpe_end_dt, prsn_rk, endDateRecent) => {
   console.log(endDateRecent);
   if (endDateRecent) {
@@ -105,7 +108,14 @@ const AddTRPEForm = ({ close, refresh }) => {
               {({ field }) => (
                 <FieldOutputContainer>
                   <FieldLabel>Training Period Start Date:</FieldLabel>
-                  <StyledInput type="date" {...field} />
+                  <DatePicker
+                    {...field}
+                    selected={values.trpe_start_dt}
+                    onChange={(trpe_start_dt) =>
+                      setFieldValue("trpe_start_dt", trpe_start_dt)
+                    }
+                    dateFormat="yyyy-MM-dd"
+                  />
                 </FieldOutputContainer>
               )}
             </Field>
@@ -115,7 +125,14 @@ const AddTRPEForm = ({ close, refresh }) => {
               {({ field }) => (
                 <FieldOutputContainer>
                   <FieldLabel>Training Period End Date:</FieldLabel>
-                  <StyledInput type="date" {...field} />
+                  <DatePicker
+                    {...field}
+                    selected={values.trpe_end_dt}
+                    onChange={(trpe_end_dt) =>
+                      setFieldValue("trpe_end_dt", trpe_end_dt)
+                    }
+                    dateFormat="yyyy-MM-dd"
+                  />
                 </FieldOutputContainer>
               )}
             </Field>

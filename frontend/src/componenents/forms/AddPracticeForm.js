@@ -6,6 +6,8 @@ import "typeface-nunito";
 import { useUser } from "../contexts/UserContext";
 import { MeasurableFieldArray } from "./MeasurableFieldArray";
 import TrainingPeriodOptions from "../formHelpers/TrainingPeriodOptions";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 //Grab the initial values
 const addMeasurement = async (measurable, prac_rk) => {
@@ -118,11 +120,16 @@ const AddPracticeForm = ({ close, refresh }) => {
             </Field>
             <ErrorMessage name="trpe" component={SubmitError} />
 
-            <Field type="date" name="date">
+            <Field name="date">
               {({ field }) => (
                 <FieldOutputContainer>
                   <FieldLabel>Date:</FieldLabel>
-                  <StyledInput type="date" {...field} />
+                  <DatePicker
+                    {...field}
+                    selected={values.date}
+                    onChange={(date) => setFieldValue("date", date)}
+                    dateFormat="yyyy-MM-dd"
+                  />
                 </FieldOutputContainer>
               )}
             </Field>
