@@ -1,7 +1,8 @@
 // components/BarChart.js
 import React, { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
-import { Chart as ChartJS } from "chart.js/auto";
+import { Chart as ChartJS, registerables } from "chart.js/auto";
+import "chartjs-adapter-date-fns";
 import { Tooltip } from "chart.js/auto";
 import dayjs from "dayjs";
 import styled from "styled-components";
@@ -16,6 +17,7 @@ function MeasurementChart({ activeTRPE }) {
       {
         label: "",
         data: [],
+        spanGaps: false,
         backgroundColor: "",
         borderColor: "",
         borderWidth: 0,
@@ -83,7 +85,8 @@ function MeasurementChart({ activeTRPE }) {
           `http://localhost:5000/api//get-measurementsForTRPEs?${params}`
         );
         const jsonData = await response.json();
-        console.log(jsonData.rows);
+
+        //Make a map and add each unique meas_id from the Query Results as a key with and array as the value
         let newDataMap = new Map();
         jsonData.rows.forEach((element) => {
           if (!newDataMap.has(element.meas_id)) {
@@ -96,6 +99,7 @@ function MeasurementChart({ activeTRPE }) {
                 prac_dt: element.prac_dt,
               },
             ]);
+            //There is already an array, so we just need to push to it
           } else {
             newDataMap.get(element.meas_id).push({
               prac_rk: element.prac_rk,
@@ -107,14 +111,12 @@ function MeasurementChart({ activeTRPE }) {
           }
         });
         setDataMap(newDataMap);
-        const firstKey = Array.from(dataMap.keys())[0];
-        setSelectedMeasurable(firstKey);
+
         //Second case is that there are no active TRPEs, in which we want to reset the data
       } else {
         let newDataMap = new Map();
         setDataMap(newDataMap);
         const labels = [];
-
         const values = [];
         setChartData({
           labels: labels,
@@ -123,6 +125,7 @@ function MeasurementChart({ activeTRPE }) {
               //Label is the block at the top that you can click to filter
               label: `Legend`,
               data: values,
+              spanGaps: false,
               pointRadius: 5,
               pointHoverRadius: 8, // Increase the hover radius
               pointHitRadius: 5, // Increase the hit radius
@@ -138,30 +141,36 @@ function MeasurementChart({ activeTRPE }) {
 
   useEffect(() => {
     if (activeTRPE.length > 0) {
-      //let iterator = 0;
+      //Make sure the selected measurable is a real measurable
       if (selectedMeasurable !== "" && selectedMeasurable !== undefined) {
-        const labels = dataMap?.get(selectedMeasurable).map((item) => {
-          //iterator++;
-          return item.prac_rk;
+        //Sort the array of measurements by date
+        let newArray = dataMap.get(selectedMeasurable);
+        newArray.sort(
+          (a, b) =>
+            new Date(a.prac_dt).getTime() - new Date(b.prac_dt).getTime()
+        );
+        //Set the Lables (y values) as the practice dates without the timestamps
+        const labels = newArray?.map((item) => {
+          return item.prac_dt.split("T")[0];
         });
-        console.log(dataMap.get(selectedMeasurable));
-        const values = dataMap
-          .get(selectedMeasurable)
-          .map((item) => item.msrm_value); // Adjust according to your data structure
-
+        //Set the values (x values) as the measurement value
+        const values = newArray?.map((item) => item.msrm_value); // Adjust according to your data structure
+        //Update the chart data to this
         setChartData({
           labels: labels,
           datasets: [
             {
-              //Label is the block at the top that you can click to filter
+              //Label is the block at the top that you can click to filter, not using this yet
               label: `${selectedMeasurable.meas_id} Legend`,
               data: values,
               pointRadius: 5,
+              spanGaps: false,
               pointHoverRadius: 8, // Increase the hover radius
               pointHitRadius: 5, // Increase the hit radius
             },
           ],
         });
+        //Set the options for the tooltip
         setOptions({
           responsive: true,
           showLine: true,
@@ -175,13 +184,12 @@ function MeasurementChart({ activeTRPE }) {
               callbacks: {
                 label: function (tooltipItem) {
                   let prac = dataMap.get(selectedMeasurable)?.find((obj) => {
-                    return obj.prac_rk == tooltipItem.label;
+                    return obj.prac_dt.split("T")[0] == tooltipItem.label;
                   });
-                  console.log(prac);
 
                   return `${tooltipItem.raw}${prac.meas_unit}, ${dayjs(
                     prac.prac_dt
-                  ).format("MMM D YYYY")}  `;
+                  ).format("YYYY-MM-DD")}  `;
                 },
               },
             },
@@ -197,11 +205,18 @@ function MeasurementChart({ activeTRPE }) {
           },
           scales: {
             x: {
-              type: "linear",
+              type: "category",
+              time: {
+                unit: "day",
+                tooltipFormat: "yyyy-MM-dd",
+                displayFormats: { day: "yyyy-MM-dd" },
+                distribution: "series",
+              },
               position: "bottom",
-              title: {
-                display: true,
-                text: "Practice Number",
+              title: { display: true, text: "Date" },
+              ticks: {
+                source: "data",
+                autoSkip: true,
               },
             },
             y: {
@@ -223,6 +238,7 @@ function MeasurementChart({ activeTRPE }) {
           {
             label: "",
             data: [],
+            spanGaps: false,
             backgroundColor: "",
             borderColor: "",
             borderWidth: 0,

@@ -3,9 +3,7 @@ import styled from "styled-components";
 
 const ConfirmMeasurableDeleteModal = ({ open, onClose, measObj, refresh }) => {
   async function deleteMeas(meas_rk) {
-    alert("PRAC DELETED");
     try {
-      //Fix the route
       const response = await fetch(
         `http://localhost:5000/api//delete-measurable`,
         {
@@ -18,6 +16,7 @@ const ConfirmMeasurableDeleteModal = ({ open, onClose, measObj, refresh }) => {
           }),
         }
       );
+      alert("Meas DELETED");
       console.log(response);
       onClose();
       refresh();

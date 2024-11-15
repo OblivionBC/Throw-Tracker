@@ -27,11 +27,17 @@ const MeasurementList = ({ prac_rk }) => {
     const fetchMeasurables = async () => {
       setLoading(true);
       try {
-        const params = new URLSearchParams({
-          key: JSON.stringify(prac_rk),
-        });
         const response = await fetch(
-          `http://localhost:5000/api//get-measurementsForPrac?${params}`
+          `http://localhost:5000/api//get-measurementsForPrac`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              prac_rk: prac_rk,
+            }),
+          }
         );
         const jsonData = await response.json();
         setMeasurables(jsonData.rows);

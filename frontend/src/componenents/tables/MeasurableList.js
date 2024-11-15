@@ -5,6 +5,7 @@ import DataTable from "react-data-table-component";
 import { useUser } from "../contexts/UserContext";
 import AddMeasurableModal from "../modals/AddMeasurableModal";
 import ConfirmMeasurableDeleteModal from "../modals/ConfirmMeasurableDeleteModal";
+import MeasurableEditModal from "../modals/MeasurableEditModal";
 // This is your PracticeItem component
 //Test that this works and add it to the practices component
 
@@ -29,6 +30,8 @@ const Measurables = ({ paginationNum }) => {
   const [measurableData, setMeasurableData] = useState([]);
   const [addMeasurableOpen, setaddMeasurableOpen] = useState(false);
   const [confirmMeasDelete, setConfirmMeasDelete] = useState(false);
+  const [editMeas, setEditMeas] = useState(false);
+
   const [selectedMeas, setSelectedMeas] = useState({});
   const { user } = useUser();
   const getMeasurableData = async () => {
@@ -81,22 +84,29 @@ const Measurables = ({ paginationNum }) => {
       //width: "15%",
     },
     {
+      name: "Type",
+      selector: (row) => row.meas_typ,
+      sortable: true,
+      width: "auto",
+    },
+    {
       name: "Units",
       selector: (row) => row.meas_unit,
       sortable: true,
-      //width: "15%",
+      width: "10%",
     },
     {
       cell: (row) => (
         <Detail // Swap to a edit modal for the measurables
           onClick={() => {
-            setConfirmMeasDelete(true);
+            setEditMeas(true);
             setSelectedMeas(row);
           }}
         >
           Edit
         </Detail>
       ),
+      width: "10%",
     },
     {
       cell: (row) => (
@@ -122,6 +132,12 @@ const Measurables = ({ paginationNum }) => {
       <AddMeasurableModal
         open={addMeasurableOpen}
         onClose={() => setaddMeasurableOpen(false)}
+        refresh={() => getMeasurableData()}
+      />
+      <MeasurableEditModal
+        open={editMeas}
+        onClose={() => setEditMeas(false)}
+        measObj={selectedMeas}
         refresh={() => getMeasurableData()}
       />
       <RowDiv>
