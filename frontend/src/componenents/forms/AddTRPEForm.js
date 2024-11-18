@@ -7,56 +7,94 @@ import "typeface-nunito";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-const AddTRPE = async (trpe_start_dt, trpe_end_dt, prsn_rk, endDateRecent) => {
-  console.log(endDateRecent);
-  if (endDateRecent) {
-    let newDate = new Date(trpe_start_dt);
-    const firstDayOfMonth = new Date(
-      newDate.getFullYear(),
-      newDate.getMonth(),
-      1
-    );
-    firstDayOfMonth.setDate(firstDayOfMonth.getDate() - 1);
+const AddTRPE = async (
+  trpe_start_dt,
+  trpe_end_dt,
+  prsn_rk,
+  endDateRecent,
+  setErrors
+) => {
+  const NotOverlap = await ValidateOverlaps(trpe_start_dt, prsn_rk);
+  if (NotOverlap) {
+    console.log("IT WAS TRUE");
+    if (endDateRecent) {
+      let newDate = new Date(trpe_start_dt);
+      const firstDayOfMonth = new Date(
+        newDate.getFullYear(),
+        newDate.getMonth(),
+        1
+      );
+      firstDayOfMonth.setDate(firstDayOfMonth.getDate() - 1);
+
+      const response = await fetch(
+        `http://localhost:5000/api//endDateMostRecent_trainingPeriod`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          }, //meas_id, meas_typ, meas_unit, prsn_rk
+          body: JSON.stringify({
+            prsn_rk: prsn_rk,
+            trpe_end_dt: firstDayOfMonth,
+          }),
+        }
+      );
+    }
 
     const response = await fetch(
-      `http://localhost:5000/api//endDateMostRecent_trainingPeriod`,
+      `http://localhost:5000/api//add-trainingPeriod`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         }, //meas_id, meas_typ, meas_unit, prsn_rk
         body: JSON.stringify({
+          trpe_start_dt: trpe_start_dt,
+          trpe_end_dt: trpe_end_dt,
           prsn_rk: prsn_rk,
-          trpe_end_dt: firstDayOfMonth,
         }),
       }
     );
+    const jsonData = await response.json();
+    console.log(jsonData);
+    if (response.ok === false) {
+      console.log("ERROR HAS OCCURRED ", response.statusText);
+      return false;
+    }
+    return true;
   }
+  setErrors(
+    "Your Start Date is between an Existing End Dated Training Period, please choose a different date or edit the overlapped training period"
+  );
+  return false;
+};
 
+async function ValidateOverlaps(trpe_start_dt, prsn_rk) {
   const response = await fetch(
-    `http://localhost:5000/api//add-trainingPeriod`,
+    `http://localhost:5000/api//TRPEDoesNotOverlap`,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       }, //meas_id, meas_typ, meas_unit, prsn_rk
       body: JSON.stringify({
-        trpe_start_dt: trpe_start_dt,
-        trpe_end_dt: trpe_end_dt,
+        date: trpe_start_dt,
         prsn_rk: prsn_rk,
       }),
     }
   );
   const jsonData = await response.json();
+  console.log("VALIDATIONS");
   console.log(jsonData);
-  if (response.ok === false) {
-    console.log("ERROR HAS OCCURRED ", response.statusText);
+  if (jsonData.rows.length > 0) {
+    return false;
+  } else {
+    return true;
   }
-  return jsonData.rows[0].prac_rk;
-};
-
+}
 const AddTRPEForm = ({ close, refresh }) => {
   const [failed, setFailed] = useState(false);
+  const [errors, setErrors] = useState("");
   const initialValues = {
     trpe_start_dt: "",
     trpe_end_dt: "",
@@ -74,16 +112,19 @@ const AddTRPEForm = ({ close, refresh }) => {
     console.log(values);
     setSubmitting(true);
     try {
-      const trpe = await AddTRPE(
+      const bAdded = await AddTRPE(
         values.trpe_start_dt,
         values.trpe_end_dt,
         user.prsn_rk,
-        values.endDateRecent
+        values.endDateRecent,
+        setErrors
       );
-      console.log(trpe);
-      alert("Training Period Added Successfully");
-      close();
-      refresh();
+      if (bAdded) {
+        alert("Training Period Added Successfully");
+        close();
+        refresh();
+        setErrors("");
+      }
       setSubmitting(false);
       return;
     } catch (error) {
@@ -94,6 +135,7 @@ const AddTRPEForm = ({ close, refresh }) => {
   };
   return (
     <>
+      <Error>{errors}</Error>
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
@@ -120,23 +162,6 @@ const AddTRPEForm = ({ close, refresh }) => {
               )}
             </Field>
             <ErrorMessage name="trpe_start_dt" component={SubmitError} />
-
-            <Field name="trpe_end_dt" type="date">
-              {({ field }) => (
-                <FieldOutputContainer>
-                  <FieldLabel>Training Period End Date:</FieldLabel>
-                  <DatePicker
-                    {...field}
-                    selected={values.trpe_end_dt}
-                    onChange={(trpe_end_dt) =>
-                      setFieldValue("trpe_end_dt", trpe_end_dt)
-                    }
-                    dateFormat="yyyy-MM-dd"
-                  />
-                </FieldOutputContainer>
-              )}
-            </Field>
-            <ErrorMessage name="trpe_end_dt" component={SubmitError} />
 
             <FieldOutputContainer>
               <FieldLabel>End date the most recent training period?</FieldLabel>
@@ -165,7 +190,10 @@ const StyledForm = styled(Form)`
   justify-content: center;
   padding: 20px;
 `;
-
+const Error = styled.p`
+  color: red;
+  font-weight; 10px;
+`;
 const StyledInput = styled.input`
   padding: 10px;
   border: 1px solid #ccc;

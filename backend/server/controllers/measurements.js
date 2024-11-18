@@ -24,12 +24,11 @@ exports.addMeasurement = async (req, res) => {
 
 exports.getMeasurementsForPrac = async (req, res) => {
   try {
-    const decodedArray = decodeURIComponent(req.query.key);
-    const key = JSON.parse(decodedArray);
+    const { prac_rk } = req.body;
 
     const Measurements = await pool.query(
       "SELECT m.*, msrm.msrm_value from measurement msrm inner join measurable m on m.meas_rk = msrm.meas_rk inner join practice p on p.prac_rk = msrm.prac_rk where msrm.prac_rk = $1",
-      [key]
+      [prac_rk]
     );
     res.json(Measurements);
   } catch (err) {

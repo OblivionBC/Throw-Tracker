@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import styled from "styled-components";
 import CurrentExcersiseList from "../componenents/tables/CurrentExerciseList";
 import LastPractice from "../componenents/LastPractice";
@@ -8,9 +8,6 @@ import ErrorBoundary from "../componenents/ErrorBoundary";
 import MeetList from "../componenents/tables/MeetList";
 
 const Home = () => {
-  const [activeTRPE, setActiveTRPE] = useState([]);
-  const [activePRAC, setActivePRAC] = useState([]);
-
   return (
     <Page>
       <LeftColumn>

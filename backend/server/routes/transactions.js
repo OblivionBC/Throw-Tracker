@@ -19,7 +19,6 @@ const {
   getLastPractice,
   deletePractice,
   updatePractice,
-  getPracticesWithImp,
   getPracticesInTrpe,
 } = require("../controllers/practices");
 
@@ -73,6 +72,11 @@ const {
   getmeasurementsForTRPEs,
 } = require("../controllers/measurements");
 
+const {
+  PracDateWithinTRPE,
+  TRPEDoesNotOverlap,
+} = require("../controllers/rules");
+
 router
   .post("/add-person", addPerson)
   .get("/get-person/:prsn_rk", getPerson)
@@ -85,7 +89,7 @@ router
   .get("/get-practice/:prac_rk", getPractice)
   .post("/get-all-practices", getAllPractices)
   .get("/get-last-practice", getLastPractice)
-  .get("/get-practicesInTrpe", getPracticesInTrpe)
+  .post("/get-practicesInTrpe", getPracticesInTrpe)
   .delete("/delete-practice", deletePractice)
   .put("/update-practice", updatePractice)
 
@@ -111,7 +115,7 @@ router
 
   .post("/add-measurement", addMeasurement)
   .get("/get-measurementsForTRPEs", getmeasurementsForTRPEs)
-  .get("/get-measurementsForPrac", getMeasurementsForPrac)
+  .post("/get-measurementsForPrac", getMeasurementsForPrac)
   .delete("/delete-measurement/:meas_rk", deleteMeasurement)
   .delete("/delete-measurements-for-practice", deleteMeasurementsForPrac)
 
@@ -125,5 +129,8 @@ router
   .get("/get-event/:even_rk", getEvent)
   .get("/get-all-event", getAllEvents)
   .delete("/delete-event/:even_rk", deleteEvent)
-  .put("/update-event/:even_rk", updateEvent);
+  .put("/update-event/:even_rk", updateEvent)
+
+  .post("/PracDateWithinTRPE", PracDateWithinTRPE)
+  .post("/TRPEDoesNotOverlap", TRPEDoesNotOverlap);
 module.exports = router;
