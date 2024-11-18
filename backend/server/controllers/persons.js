@@ -107,3 +107,32 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: "Error occurred while Logging In." });
   }
 };
+
+exports.updatePassword = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    console.log("Attempting Update Password as User: " + username);
+    //$1 is the variable to add in the db, runs sql query in quotes which is same as in the CLI
+    //Returning * returns back the data
+    const result = await pool.query(
+      "Update person p set p.prsn_pwrd crypt($2, gen_salt('bf')) where prsn_email = $1",
+      [username, password]
+    );
+
+    console.log(result);
+    if (result.rows.length == 0) {
+      res.status(404).json("Record does not exist");
+      console.log("Unsuccessful Login as User: " + username);
+      return;
+    }
+    console.log(result.rows);
+    res.json(result);
+  } catch (err) {
+    console.error("Async Error:", err.message);
+    res
+      .status(500)
+      .json({
+        message: "Error occurred while Updating Password for User: " + username,
+      });
+  }
+};

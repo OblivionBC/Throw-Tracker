@@ -220,10 +220,8 @@ const TableWrap = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 90%;
-  padding: 0;
-  margin: 0;
   height: auto;
+  padding: 0.2rem;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
   border-radius: 5px;
 `;

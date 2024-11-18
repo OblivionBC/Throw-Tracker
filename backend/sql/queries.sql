@@ -56,3 +56,13 @@ inner join practice p on p.prac_rk = msrm.prac_rk
 where p.trpe_rk = ANY(ARRAY[1, 2])
 order by p.prac_rk
 ;
+
+--Training Period Start Date does not overlap Existing Training Periods
+
+
+select * from training_period trpe where trpe.prsn_rk = $2 and trpe_start_dt <= $1 and trpe_end_dt >= $1;
+
+select * from training_period trpe 
+where trpe.prsn_rk = 11
+    and trpe_start_dt <= '2023-09-21'
+    and trpe_end_dt >= '2023-09-21';

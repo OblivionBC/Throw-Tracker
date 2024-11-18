@@ -1,10 +1,9 @@
 import React from "react";
 import styled from "styled-components";
 import { useState } from "react";
-import PracticeEditForm from "../forms/PracticeEditForm";
 import "typeface-nunito";
-import dayjs from "dayjs";
 import EditTRPEForm from "../forms/EditTRPEForm";
+import Practices from "../tables/PracticeList";
 
 const TrainingPeriodEditModal = ({ open, onClose, trpeObj, refresh }) => {
   const [editing, setEditing] = useState(false);
@@ -29,6 +28,7 @@ const TrainingPeriodEditModal = ({ open, onClose, trpeObj, refresh }) => {
                 close={() => onClose()}
                 refresh={refresh}
               />
+              <Practices trpe_rk={trpeObj.trpe_rk} paginationNum={4} />
             </Content>
           </ModalContainer>
         </Overlay>
@@ -136,6 +136,7 @@ const EditButton = styled.button`
 `;
 const CloseButton = styled.button`
   background: linear-gradient(45deg, black 30%, #808080 95%);
+  margin: 5px;
   border: none;
   border-radius: 25px;
   color: white;
