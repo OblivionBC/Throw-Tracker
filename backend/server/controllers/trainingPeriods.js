@@ -7,18 +7,19 @@ const { pool } = require(".././db");
 exports.addTrainingPeriod = async (req, res) => {
   try {
     const { trpe_start_dt, trpe_end_dt, prsn_rk } = req.body;
-    var newTrainingPeriod;
-    if (trpe_end_dt === "") {
-      newTrainingPeriod = await pool.query(
-        "INSERT INTO training_period tp (tp.trpe_start_dt, tp.trpe_end_dt, tp.prsn_rk) VALUES($1, $2, $3) RETURNING *",
-        [trpe_start_dt, trpe_end_dt, prsn_rk]
-      );
-    } else {
-      newTrainingPeriod = await pool.query(
-        "INSERT INTO training_period (trpe_start_dt, trpe_end_dt, prsn_rk) VALUES($1, $2, $3) RETURNING *",
-        [trpe_start_dt, trpe_end_dt, prsn_rk]
-      );
+    let end = null;
+    if (trpe_end_dt !== "") {
+      end = trpe_end_dt;
     }
+    var newTrainingPeriod;
+    //$1 is the variable to add in the db, runs sql query in quotes which is same as in the CLI
+    //Returning * returns back the data
+
+    console.log("Adding with End Date");
+    newTrainingPeriod = await pool.query(
+      "INSERT INTO training_period (trpe_start_dt, trpe_end_dt, prsn_rk) VALUES($1, $2, $3) RETURNING *",
+      [trpe_start_dt, end, prsn_rk]
+    );
 
     res.json(newTrainingPeriod);
     console.log("Added training period to person " + prsn_rk);

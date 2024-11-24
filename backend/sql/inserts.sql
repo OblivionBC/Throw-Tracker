@@ -41,9 +41,6 @@ INSERT INTO measurement (msrm_value, meas_rk, prac_rk) VALUES
 (1.17, 14, 43),
 (1.36, 14, 44);
 
-
-
-
 INSERT INTO person (prsn_first_nm, prsn_last_nm, prsn_email, prsn_pwrd, org_rk, prsn_role) 
 VALUES('Gideon', 'Charles', 'gideon@gmail.com', crypt('mypass', gen_salt('bf')), 1, 'ATHLETE') RETURNING *
 

@@ -88,13 +88,11 @@ const Measurables = ({ paginationNum }) => {
       name: "Type",
       selector: (row) => row.meas_typ,
       sortable: true,
-      width: "auto",
     },
     {
       name: "Units",
       selector: (row) => row.meas_unit,
       sortable: true,
-      width: "10%",
     },
     {
       cell: (row) => (
@@ -107,7 +105,6 @@ const Measurables = ({ paginationNum }) => {
           Edit
         </Detail>
       ),
-      width: "10%",
     },
     {
       cell: (row) => (

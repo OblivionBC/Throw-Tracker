@@ -26,7 +26,7 @@ const TableStyles = {
   },
 };
 
-const Practices = () => {
+const Practices = ({ trpe_rk, paginationNum, bAdd, bDetail, bDelete }) => {
   const [practiceData, setPracticeData] = useState([]);
   const [addPracticeOpen, setAddPracticeOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
@@ -35,9 +35,25 @@ const Practices = () => {
   const { user } = useUser();
   const getPracticeData = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/get-all-practices`,
-        {
+      let response;
+      //If the training period was passed in, we want to get the practices only from the training period
+      if (trpe_rk) {
+        response = await fetch(
+          `http://localhost:5000/api/get-practicesInTrpe`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              trpe_rk: trpe_rk,
+            }),
+          }
+        );
+      } else {
+        //No Training Period was specified so get all for the person
+        console.log("Getting All for Person");
+        response = await fetch(`http://localhost:5000/api/get-all-practices`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -45,8 +61,8 @@ const Practices = () => {
           body: JSON.stringify({
             prsn_rk: user.prsn_rk,
           }),
-        }
-      );
+        });
+      }
 
       const jsonData = await response.json();
       setPracticeData(jsonData.rows);
@@ -63,6 +79,7 @@ const Practices = () => {
     }
   }, []);
 
+  if (paginationNum <= 0) paginationNum = 8;
   const columns = [
     {
       name: "ID",
@@ -89,7 +106,10 @@ const Practices = () => {
       sortable: true,
       //width: "10%",
     },
-    {
+  ];
+
+  if (bDetail)
+    columns.push({
       cell: (row) => (
         <Detail
           onClick={() => {
@@ -101,8 +121,9 @@ const Practices = () => {
           Details
         </Detail>
       ),
-    },
-    {
+    });
+  if (bDelete)
+    columns.push({
       cell: (row) => (
         <DeleteButton
           onClick={() => {
@@ -113,8 +134,7 @@ const Practices = () => {
           Delete
         </DeleteButton>
       ),
-    },
-  ];
+    });
   return (
     <CompWrap>
       <PracticeDetailsModal
@@ -136,7 +156,9 @@ const Practices = () => {
       />
       <RowDiv>
         <Title>Practices</Title>
-        <AddButton onClick={() => setAddPracticeOpen(true)}>Add</AddButton>
+        {bAdd ? (
+          <AddButton onClick={() => setAddPracticeOpen(true)}>Add</AddButton>
+        ) : null}
         <AddButton onClick={() => getPracticeData()}>Refresh</AddButton>
       </RowDiv>
 
@@ -146,7 +168,7 @@ const Practices = () => {
           data={practiceData}
           fixedHeader
           pagination
-          paginationPerPage={8}
+          paginationPerPage={paginationNum}
           paginationComponentOptions={{
             rowsPerPageText: "Rows per page:",
             rangeSeparatorText: "of",
