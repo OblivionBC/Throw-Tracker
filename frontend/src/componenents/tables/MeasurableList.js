@@ -34,6 +34,7 @@ const Measurables = ({ paginationNum }) => {
 
   const [selectedMeas, setSelectedMeas] = useState({});
   const { user } = useUser();
+  console.log(useUser());
   const getMeasurableData = async () => {
     try {
       console.log("REFRESH");

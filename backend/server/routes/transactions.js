@@ -10,6 +10,7 @@ const {
   deletePerson,
   updatePerson,
   login,
+  athletes,
 } = require("../controllers/persons");
 
 const {
@@ -80,6 +81,7 @@ router
   .delete("/delete-person/:prsn_rk", deletePerson)
   .put("/update-person/:prsn_rk", updatePerson)
   .post("/login", login)
+  .post("/athletes", athletes)
 
   .post("/add-practice", addPractice)
   .get("/get-practice/:prac_rk", getPractice)
@@ -107,11 +109,11 @@ router
   .get("/get-measurableForPrac", getMeasurablesForPrac)
   .post("/get-all-measurablesForPrsn", getAllMeasurablesForPerson)
   .delete("/delete-measurable", deleteMeasurable)
-  .put("/update-measurable/:meas_rk", updateMeasurable)
+  .put("/update-measurable", updateMeasurable)
 
   .post("/add-measurement", addMeasurement)
   .get("/get-measurementsForTRPEs", getmeasurementsForTRPEs)
-  .get("/get-measurementsForPrac", getMeasurementsForPrac)
+  .post("/get-measurementsForPrac", getMeasurementsForPrac)
   .delete("/delete-measurement/:meas_rk", deleteMeasurement)
   .delete("/delete-measurements-for-practice", deleteMeasurementsForPrac)
 

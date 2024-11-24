@@ -7,6 +7,7 @@ const UserContext = createContext();
 export const UserProvider = ({ children }) => {
   // set to not null for testing
   const [user, setUser] = useState({});
+  const [selectedAthlete, setSelectedAthlete] = useState("");
 
   const loginComplete = (userData) => {
     setUser(userData);
@@ -43,13 +44,23 @@ export const UserProvider = ({ children }) => {
   };
   return (
     <UserContext.Provider
-      value={{ user, useUser, signOut, login, loginComplete }}
+      value={{
+        user,
+        useUser,
+        selectedAthlete,
+        setSelectedAthlete,
+        signOut,
+        login,
+        loginComplete,
+      }}
     >
       {children}
     </UserContext.Provider>
   );
 };
-
+export const setSelectedAthlete = ({ athlete }) => {
+  setSelectedAthlete(athlete);
+};
 // Custom hook to use the UserContext
 export const useUser = () => {
   return useContext(UserContext);

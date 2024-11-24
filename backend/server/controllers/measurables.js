@@ -42,8 +42,12 @@ exports.getAllMeasurablesForPerson = async (req, res) => {
       [prsn_rk]
     );
     res.json(measurables);
+    console.log("Got all Measurables for Person " + prsn_rk);
   } catch (err) {
-    console.error("Async Error:", err.message);
+    console.error(
+      "Error occurred retreiving All Measurables for Person Async Error:",
+      err.message
+    );
     res.status(500).json({
       message: "Error occurred retreiving All Measurables for Person.",
     });
@@ -60,8 +64,12 @@ exports.getMeasurablesForPrac = async (req, res) => {
       [key]
     );
     res.json(measurables);
+    console.log("Retreived Measurables for Practice " + key);
   } catch (err) {
-    console.error("Async Error:", err.message);
+    console.error(
+      "Error occurred retreiving Getting Measurables for Practice Async Error:",
+      err.message
+    );
     res.status(500).json({
       message: "Error occurred retreiving Getting Measurables for Practice.",
     });
@@ -70,15 +78,18 @@ exports.getMeasurablesForPrac = async (req, res) => {
 
 exports.updateMeasurable = async (req, res) => {
   try {
-    const { meas_rk } = req.params;
-    const { meas_id, meas_typ, meas_unit, prac_rk } = req.body;
+    const { meas_id, meas_typ, meas_unit, meas_rk, prsn_rk } = req.body;
     const updateTodo = await pool.query(
       "UPDATE Measurable SET meas_id = $1, meas_typ = $2, meas_unit = $3, prsn_rk = $4 WHERE meas_rk = $5",
       [meas_id, meas_typ, meas_unit, prsn_rk, meas_rk]
     );
     res.json("Measurable was Updated");
+    console.log("Measurable " + meas_rk + " Was Updated");
   } catch (err) {
-    console.error("Async Error:", err.message);
+    console.error(
+      "Error occurred updating Measurable Async Error:",
+      err.message
+    );
     res.status(500).json({ message: "Error occurred updating Measurable." });
   }
 };
@@ -90,10 +101,13 @@ exports.deleteMeasurable = async (req, res) => {
       "DELETE FROM Measurable WHERE meas_rk = $1",
       [meas_rk]
     );
-
+    console.log("Measurable " + meas_rk + " Has been deleted");
     res.json("Measurable has been Deleted");
   } catch (err) {
-    console.error("Async Error:", err.message);
+    console.error(
+      "Error occurred Deleting Measurable Async Error:",
+      err.message
+    );
     res.status(500).json({ message: "Error occurred Deleting Measurable." });
   }
 };

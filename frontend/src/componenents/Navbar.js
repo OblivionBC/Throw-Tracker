@@ -6,11 +6,13 @@ import logo from "../images/LogoIcon.png";
 import text from "../images/LogoText.png";
 import "typeface-nunito";
 import AccountDetailsModal from "./modals/AccountDetailModal";
+import AthleteSelect from "./formHelpers/AthleteSelect";
+import { useUser } from "./contexts/UserContext";
 
 const Navbar = () => {
   const [profile, setProfile] = useState(false);
   // Example of updating user data
-
+  const { user } = useUser();
   return (
     <NavWrap>
       <NavLeft>
@@ -23,6 +25,7 @@ const Navbar = () => {
         <NavPath to="/meets">Meets</NavPath>
       </NavCenter>
       <NavRight>
+        <AthleteSelect prsn_rk={user.prsn_rk} org_name={user.org_name} />
         <Profile onClick={() => setProfile(!profile)}>
           <UserIcon />
           <AccountDetailsModal on={profile} />
