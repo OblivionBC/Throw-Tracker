@@ -6,18 +6,14 @@ const { pool } = require(".././db");
 
 exports.addTrainingPeriod = async (req, res) => {
   try {
-    console.log(req.body);
     const { trpe_start_dt, trpe_end_dt, prsn_rk } = req.body;
     var newTrainingPeriod;
-    //$1 is the variable to add in the db, runs sql query in quotes which is same as in the CLI
-    //Returning * returns back the data
     if (trpe_end_dt === "") {
       newTrainingPeriod = await pool.query(
         "INSERT INTO training_period tp (tp.trpe_start_dt, tp.trpe_end_dt, tp.prsn_rk) VALUES($1, $2, $3) RETURNING *",
         [trpe_start_dt, trpe_end_dt, prsn_rk]
       );
     } else {
-      console.log("Adding with End Date");
       newTrainingPeriod = await pool.query(
         "INSERT INTO training_period (trpe_start_dt, trpe_end_dt, prsn_rk) VALUES($1, $2, $3) RETURNING *",
         [trpe_start_dt, trpe_end_dt, prsn_rk]
@@ -27,7 +23,10 @@ exports.addTrainingPeriod = async (req, res) => {
     res.json(newTrainingPeriod);
     console.log("Added training period to person " + prsn_rk);
   } catch (err) {
-    console.error("Async Error:", err.message);
+    console.error(
+      "While adding training period to person Async Error:",
+      err.message
+    );
     res
       .status(500)
       .json({ message: "Error occurred while Adding Training Period." });
@@ -45,7 +44,10 @@ exports.getAllTrainingPeriods = async (req, res) => {
     res.json(allTrainingPeriod);
     console.log("Finding Training Periods For Person " + prsn_rk);
   } catch (err) {
-    console.error("Async Error:", err.message);
+    console.error(
+      "Error occurred while Getting All TRPE Async Error:",
+      err.message
+    );
     res.status(500).json({ message: "Error occurred while Getting All TRPE." });
   }
 };
@@ -59,9 +61,12 @@ exports.getTrainingPeriod = async (req, res) => {
     );
 
     res.json(TrainingPeriod.rows);
-    console.log(req.params);
+    console.log("Getting Training Period " + trpe_rk);
   } catch (err) {
-    console.error("Async Error:", err.message);
+    console.error(
+      "Error occurred while Getting Training Period Async Error:",
+      err.message
+    );
     res
       .status(500)
       .json({ message: "Error occurred while Getting Training Period." });
@@ -70,20 +75,25 @@ exports.getTrainingPeriod = async (req, res) => {
 
 exports.endDateMostRecentTrainingPeriod = async (req, res) => {
   try {
-    console.log("Setting the End Date");
-    const { prsn_rk, trpe_end_dt, date } = req.body;
-    console.log(req.body);
+    const { prsn_rk, trpe_end_dt } = req.body;
     const TrainingPeriod = await pool.query(
       "UPDATE training_period SET trpe_end_dt = $1 WHERE trpe_rk = ( SELECT trpe_rk FROM training_period where prsn_rk = $2 ORDER BY trpe_start_dt DESC LIMIT 1)",
       [trpe_end_dt, prsn_rk]
     );
 
     res.json(TrainingPeriod.rows);
-    console.log("End Dating Most Recent Training Period");
+    console.log("End Dating Most Recent Training Period for person " + prsn_rk);
   } catch (err) {
-    console.error("Async Error:", err.message);
+    console.error(
+      "Error occurred while End Dating Most Recent Training Period for person" +
+        prsn_rk +
+        " Async Error:",
+      err.message
+    );
     res.status(500).json({
-      message: "Error occurred while End Dating Most Recent Training Period.",
+      message:
+        "Error occurred while End Dating Most Recent Training Period for person " +
+        prsn_rk,
     });
   }
 };
@@ -95,8 +105,14 @@ exports.updateTrainingPeriod = async (req, res) => {
       [trpe_start_dt, trpe_end_dt, trpe_rk]
     );
     res.json("TrainingPeriod was Updated");
+    console.log("Updated Training Period " + trpe_rk);
   } catch (err) {
-    console.error("Async Error:", err.message);
+    console.error(
+      "Error occurred while Updating Training Period " +
+        trpe_rk +
+        " Async Error:",
+      err.message
+    );
     res
       .status(500)
       .json({ message: "Error occurred while Updating Training Period." });
@@ -113,7 +129,12 @@ exports.deleteTrainingPeriod = async (req, res) => {
     res.json("TrainingPeriod has been Deleted");
     console.log("Training Period with row key " + trpe_rk + " deleted");
   } catch (err) {
-    console.error("Async Error:", err.message);
+    console.error(
+      "Error occurred while Deleting Training Period" +
+        trpe_rk +
+        " Async Error:",
+      err.message
+    );
     res
       .status(500)
       .json({ message: "Error occurred while Deleting Training Period." });

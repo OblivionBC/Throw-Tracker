@@ -49,7 +49,7 @@ org_rk  SERIAL PRIMARY KEY,
 org_name varchar(64) NOT NULL,
 org_type varchar(24)
 );
-ALTER TABLE PERSON ADD COLUMN org_rk INTEGER;
+ALTER TABLE PERSON ADD COLUMN coach_prsn_rk INTEGER;
 ALTER TABLE PERSON 
    ADD CONSTRAINT fk_org
    FOREIGN KEY (org_rk) 

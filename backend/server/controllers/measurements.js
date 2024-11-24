@@ -14,26 +14,31 @@ exports.addMeasurement = async (req, res) => {
       "INSERT INTO Measurement (msrm_value, prac_rk, meas_rk) VALUES($1, $2, $3) RETURNING *",
       [msrm_value, prac_rk, meas_rk]
     );
-
+    console.log("Added Measurement for practice " + prac_rk);
     res.json(newMeasurement);
   } catch (err) {
-    console.error("Async Error:", err.message);
+    console.error(
+      "Error occurred Adding Measurement Async Error:",
+      err.message
+    );
     res.status(500).json({ message: "Error occurred Adding Measurement." });
   }
 };
 
 exports.getMeasurementsForPrac = async (req, res) => {
   try {
-    const decodedArray = decodeURIComponent(req.query.key);
-    const key = JSON.parse(decodedArray);
-
+    const { prac_rk } = req.body;
     const Measurements = await pool.query(
       "SELECT m.*, msrm.msrm_value from measurement msrm inner join measurable m on m.meas_rk = msrm.meas_rk inner join practice p on p.prac_rk = msrm.prac_rk where msrm.prac_rk = $1",
-      [key]
+      [prac_rk]
     );
     res.json(Measurements);
+    console.log("Got Measurements for Practice " + prac_rk);
   } catch (err) {
-    console.error("Async Error:", err.message);
+    console.error(
+      "Error occurred Getting Measurements For Practice Async Error:",
+      err.message
+    );
     res
       .status(500)
       .json({ message: "Error occurred Getting Measurements For Practice." });
@@ -49,9 +54,12 @@ exports.getmeasurementsForTRPEs = async (req, res) => {
       [keys]
     );
     res.json(measurements);
-    console.log("Getting Measurements for TrainingPeriod");
+    console.log("Getting Measurements for TrainingPeriods " + keys);
   } catch (err) {
-    console.error("Async Error:", err.message);
+    console.error(
+      "Error occurred while Getting Measurements in the TRPE Async Error:",
+      err.message
+    );
     res.status(500).json({
       message: "Error occurred while Getting Measurements in the TRPE.",
     });
@@ -66,9 +74,12 @@ exports.deleteMeasurement = async (req, res) => {
       [msrm_rk]
     );
 
-    res.json("Measurement has been Deleted");
+    res.json("Measurement " + msrm_rk + " has been Deleted");
   } catch (err) {
-    console.error("Async Error:", err.message);
+    console.error(
+      "Error occurred Deleting Measurement Async Error:",
+      err.message
+    );
     res.status(500).json({ message: "Error occurred Deleting Measurement." });
   }
 };
@@ -80,9 +91,12 @@ exports.deleteMeasurementsForPrac = async (req, res) => {
       "DELETE FROM Measurement WHERE prac_rk = $1",
       [prac_rk]
     );
-    res.json("Measurements have been Deleted");
+    res.json("Measurements have been Deleted for practice" + prac_rk);
   } catch (err) {
-    console.error("Async Error:", err.message);
+    console.error(
+      "Error occurred Deleting Measurements for prac Async Error:",
+      err.message
+    );
     res.status(500).json({ message: "Error occurred Deleting Measurement." });
   }
 };

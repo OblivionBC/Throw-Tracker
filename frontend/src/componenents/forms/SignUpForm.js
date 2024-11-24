@@ -7,13 +7,17 @@ import "typeface-nunito";
 const SignUpForm = ({ on, off }) => {
   const [failed, setFailed] = useState(false);
   const initialValues = {
+    fname: "",
+    lname: "",
     username: "",
     password: "",
+    org: "",
+    role: "",
   };
 
   const validationSchema = Yup.object().shape({
     fname: Yup.string().required("First name is required"),
-    lname: Yup.string().required("Password is required"),
+    lname: Yup.string().required("Last Name is required"),
     username: Yup.string().email("Invalid Email").required("Email is required"),
     password: Yup.string()
       .min(8, "Password must be at least 8 characters")
@@ -21,13 +25,17 @@ const SignUpForm = ({ on, off }) => {
     org: Yup.number("Must be a Valid Number").required("Org Key is required"),
     confirmPassword: Yup.string()
       .min(8, "Password must be at least 8 characters")
-      .oneOf([Yup.ref("password"), null], "Passwords must match")
+      .oneOf([Yup.ref("password")], "Passwords must match")
       .required("Password is required"),
+    role: Yup.string()
+      .required("Role is Required")
+      .oneOf(["COACH", "ATHLETE"], "Invalid Role"),
   });
 
   const handleSubmit = async (values, { setSubmitting }) => {
     // Handle form submission here
     // For example, you could make an API call to authenticate the user\
+    console.log(values);
     setSubmitting(true);
     try {
       const response = await fetch(`http://localhost:5000/api//add-person`, {
@@ -125,6 +133,7 @@ const SignUpForm = ({ on, off }) => {
                 <FieldOutputContainer>
                   <FieldLabel>Role: </FieldLabel>
                   <StyledSelect type="text" placeholder="role" {...field}>
+                    <option value=""></option>
                     <option value="COACH">Coach</option>
                     <option value="ATHLETE">Athlete</option>
                   </StyledSelect>

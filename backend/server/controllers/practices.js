@@ -15,9 +15,13 @@ exports.addPractice = async (req, res) => {
       [prac_dt, trpe_rk]
     );
 
+    console.log("Added Practice for Training Period " + trpe_rk);
     res.json(newPractice);
   } catch (err) {
-    console.error("Async Error:", err.message);
+    console.error(
+      "Error occurred while Adding Practice Async Error:",
+      err.message
+    );
     res.status(500).json({ message: "Error occurred while Adding Practice." });
   }
 };
@@ -29,9 +33,13 @@ exports.getAllPractices = async (req, res) => {
       "SELECT  p.prac_rk, p.prac_dt, p.trpe_rk, COUNT(m.msrm_rk) AS measurement_count FROM practice p LEFT JOIN measurement m ON p.prac_rk = m.prac_rk inner join training_period tp on tp.trpe_rk = p.trpe_rk where tp.prsn_rk = $1 GROUP BY p.prac_rk ORDER BY p.prac_rk",
       [prsn_rk]
     );
+    console.log("Getting All Practices for person " + prsn_rk);
     res.json(allPractice);
   } catch (err) {
-    console.error("Async Error:", err.message);
+    console.error(
+      "Error occurred while Getting All Practice Async Error:",
+      err.message
+    );
     res
       .status(500)
       .json({ message: "Error occurred while Getting All Practice." });
@@ -47,9 +55,13 @@ exports.getPracticesInTrpe = async (req, res) => {
       "SELECT * FROM practice where trpe_rk = ANY($1)",
       [keys]
     );
+    console.log("Getting Practices in the TRPEs" + keys);
     res.json(trpePractice);
   } catch (err) {
-    console.error("Async Error:", err.message);
+    console.error(
+      "Error occurred while Getting Practices in the TRPE Async Error:",
+      err.message
+    );
     res
       .status(500)
       .json({ message: "Error occurred while Getting Practices in the TRPE." });
@@ -62,8 +74,12 @@ exports.getLastPractice = async (req, res) => {
       "SELECT p.prac_dt, p.prac_rk, p.trpe_rk, me.meas_id, me.meas_unit, m.msrm_value FROM practice p join measurement m on m.prac_rk = p.prac_rk join measurable me on me.meas_rk = m.meas_rk order by prac_dt desc fetch first row only"
     );
     res.json(practice);
+    console.log("Getting Last Practice");
   } catch (err) {
-    console.error("Async Error:", err.message);
+    console.error(
+      "Error occurred while Getting Last Practice Async Error:",
+      err.message
+    );
     res
       .status(500)
       .json({ message: "Error occurred while Getting Last Practice." });
@@ -79,9 +95,12 @@ exports.getPractice = async (req, res) => {
     );
 
     res.json(practice.rows);
-    console.log(req.params);
+    console.log("Getting practice " + prac_rk);
   } catch (err) {
-    console.error("Async Error:", err.message);
+    console.error(
+      "Error occurred while Getting Practice Async Error:",
+      err.message
+    );
     res.status(500).json({ message: "Error occurred while Getting Practice." });
   }
 };
@@ -94,9 +113,12 @@ exports.updatePractice = async (req, res) => {
       [prac_dt, trpe_rk, prac_rk]
     );
     res.json("Practice was Updated");
-    console.log(updateTodo);
+    console.log("Updating practice " + prac_rk);
   } catch (err) {
-    console.error("Async Error:", err.message);
+    console.error(
+      "Error occurred while Updating Practice Async Error:",
+      err.message
+    );
     res
       .status(500)
       .json({ message: "Error occurred while Updating Practice." });
@@ -114,7 +136,10 @@ exports.deletePractice = async (req, res) => {
     res.json("Practice has been Deleted");
     console.log("Practice " + prac_rk + " has been Deleted");
   } catch (err) {
-    console.error("Async Error:", err.message);
+    console.error(
+      "Error occurred while Deleting Practice Async Error:",
+      err.message
+    );
     res
       .status(500)
       .json({ message: "Error occurred while Deleting Practice." });
