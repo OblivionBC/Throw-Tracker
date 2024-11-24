@@ -9,10 +9,7 @@ import ErrorBoundary from "../componenents/ErrorBoundary";
 
 const Practices = () => {
   const [activeTRPE, setActiveTRPE] = useState([]);
-  useEffect(() => {
-    console.log("Active TRPE change");
-    console.log(activeTRPE);
-  }, [activeTRPE]);
+  useEffect(() => {}, [activeTRPE]);
 
   return (
     <Page>
@@ -31,7 +28,12 @@ const Practices = () => {
       <RightColumn>
         <ErrorBoundary>
           <Block />
-          <PracticeList />
+          <PracticeList
+            bAdd={true}
+            bDelete={true}
+            bDetail={true}
+            paginationNum={3}
+          />
           <Block />
           <Measurables paginationNum={3} />
         </ErrorBoundary>

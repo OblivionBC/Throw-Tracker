@@ -69,77 +69,67 @@ function MeasurementChart({ activeTRPE }) {
     },
   });
 
-  //This Use effect will be for when the selected TRPEs change
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      console.log("REFRESH");
-
-      //First case is that the user has selected the training period, meaning we will set new data
-      if (activeTRPE.length > 0) {
-        const params = new URLSearchParams({
-          keys: JSON.stringify(activeTRPE),
-        });
-        //Returns msrm_rk | prac_rk | meas_id | meas_unit | prsn_rk | prac_rk | trpe_rk
-        const response = await fetch(
-          `http://localhost:5000/api//get-measurementsForTRPEs?${params}`
-        );
-        const jsonData = await response.json();
-
-        //Make a map and add each unique meas_id from the Query Results as a key with and array as the value
-        let newDataMap = new Map();
-        jsonData.rows.forEach((element) => {
-          if (!newDataMap.has(element.meas_id)) {
-            newDataMap.set(element.meas_id, [
-              {
-                prac_rk: element.prac_rk,
-                msrm_rk: element.msrm_rk,
-                meas_unit: element.meas_unit,
-                msrm_value: element.msrm_value,
-                prac_dt: element.prac_dt,
-              },
-            ]);
-            //There is already an array, so we just need to push to it
-          } else {
-            newDataMap.get(element.meas_id).push({
+  async function GetTrainingPeriodMeasurements() {
+    //First case is that the user has selected the training period, meaning we will set new data
+    if (activeTRPE.length > 0) {
+      const params = new URLSearchParams({
+        keys: JSON.stringify(activeTRPE),
+      });
+      //Returns msrm_rk | prac_rk | meas_id | meas_unit | prsn_rk | prac_rk | trpe_rk
+      const response = await fetch(
+        `http://localhost:5000/api//get-measurementsForTRPEs?${params}`
+      );
+      const jsonData = await response.json();
+      //Make a map and add each unique meas_id from the Query Results as a key with and array as the value
+      let newDataMap = new Map();
+      jsonData.rows.forEach((element) => {
+        if (!newDataMap.has(element.meas_id)) {
+          newDataMap.set(element.meas_id, [
+            {
               prac_rk: element.prac_rk,
               msrm_rk: element.msrm_rk,
               meas_unit: element.meas_unit,
               msrm_value: element.msrm_value,
               prac_dt: element.prac_dt,
-            });
-          }
-        });
-        setDataMap(newDataMap);
-
-        //Second case is that there are no active TRPEs, in which we want to reset the data
-      } else {
-        let newDataMap = new Map();
-        setDataMap(newDataMap);
-        const labels = [];
-        const values = [];
-        setChartData({
-          labels: labels,
-          datasets: [
-            {
-              //Label is the block at the top that you can click to filter
-              label: `Legend`,
-              data: values,
-              spanGaps: false,
-              pointRadius: 5,
-              pointHoverRadius: 8, // Increase the hover radius
-              pointHitRadius: 5, // Increase the hit radius
             },
-          ],
-        });
-      }
-      console.log("Loading false " + loading);
-    };
-    fetchData();
-    setLoading(false);
-  }, [activeTRPE]);
+          ]);
+          //There is already an array, so we just need to push to it
+        } else {
+          newDataMap.get(element.meas_id).push({
+            prac_rk: element.prac_rk,
+            msrm_rk: element.msrm_rk,
+            meas_unit: element.meas_unit,
+            msrm_value: element.msrm_value,
+            prac_dt: element.prac_dt,
+          });
+        }
+      });
+      setDataMap(newDataMap);
 
-  useEffect(() => {
+      //Second case is that there are no active TRPEs, in which we want to reset the data
+    } else {
+      let newDataMap = new Map();
+      setDataMap(newDataMap);
+      const labels = [];
+      const values = [];
+      setChartData({
+        labels: labels,
+        datasets: [
+          {
+            //Label is the block at the top that you can click to filter
+            label: `Legend`,
+            data: values,
+            spanGaps: false,
+            pointRadius: 5,
+            pointHoverRadius: 8, // Increase the hover radius
+            pointHitRadius: 5, // Increase the hit radius
+          },
+        ],
+      });
+    }
+  }
+  async function GetMeasurableMeasurements() {
+    console.log("Getting measurable measurement");
     if (activeTRPE.length > 0) {
       //Make sure the selected measurable is a real measurable
       if (selectedMeasurable !== "" && selectedMeasurable !== undefined) {
@@ -231,7 +221,7 @@ function MeasurementChart({ activeTRPE }) {
         });
       }
     } else {
-      console.log("CHANGING DATA WHEN NO ACTIVE TRPE");
+      //There are no active trpes so reset the data
       setChartData({
         labels: [],
         datasets: [
@@ -246,6 +236,22 @@ function MeasurementChart({ activeTRPE }) {
         ],
       });
     }
+  }
+  //This Use effect will be for when the selected TRPEs change
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      console.log("REFRESH");
+      GetTrainingPeriodMeasurements();
+      console.log("Loading false " + loading);
+    };
+    fetchData();
+    setLoading(false);
+  }, [activeTRPE]);
+
+  useEffect(() => {
+    setLoading(true);
+    GetMeasurableMeasurements();
     setLoading(false);
   }, [selectedMeasurable]);
 
@@ -268,6 +274,9 @@ function MeasurementChart({ activeTRPE }) {
             <option value={key}>{key}</option>
           ))}
         </ImplementSelect>
+        <RefreshButton onClick={() => GetMeasurableMeasurements()}>
+          Refresh
+        </RefreshButton>
       </Row>
       <ResponsiveLineChart data={chartData} options={options} />
     </ChartWrap>
@@ -330,7 +339,32 @@ const Title = styled.h2`
 const Row = styled.div`
   display: flex;
   flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+  width: 100%;
   margin: 0;
   padding: 0;
+`;
+
+const RefreshButton = styled.button`
+  background: linear-gradient(45deg, #808080 30%, white 95%);
+  border: none;
+  border-radius: 25px;
+  color: white;
+  padding: 5px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transform: translateY(0);
+  }
 `;
 export default MeasurementChart;

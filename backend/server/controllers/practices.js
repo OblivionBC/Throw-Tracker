@@ -48,12 +48,10 @@ exports.getAllPractices = async (req, res) => {
 
 exports.getPracticesInTrpe = async (req, res) => {
   try {
-    const decodedArray = decodeURIComponent(req.query.keys);
-    const keys = JSON.parse(decodedArray);
-
+    const { trpe_rk } = req.body;
     const trpePractice = await pool.query(
-      "SELECT * FROM practice where trpe_rk = ANY($1)",
-      [keys]
+      "SELECT * FROM practice where trpe_rk = $1",
+      [trpe_rk]
     );
     console.log("Getting Practices in the TRPEs" + keys);
     res.json(trpePractice);
