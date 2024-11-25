@@ -20,6 +20,7 @@ const AthleteSelect = ({ prsn_rk, org_name }) => {
         });
         const jsonData = await response.json();
         setAthletes(jsonData.rows);
+        console.log("ATHLETES");
         console.log(jsonData.rows);
       } catch (error) {
         console.error(error.message);
@@ -35,7 +36,11 @@ const AthleteSelect = ({ prsn_rk, org_name }) => {
       <option
         value="-1"
         label="Select Athlete"
-        onChange={() => setSelectedAthlete(this.value)}
+        onChange={() => {
+          setSelectedAthlete(this.value);
+          console.log("SELECTED ATHLETE");
+          console.log(this.value);
+        }}
       />
       {athletes?.map((props) => {
         return (

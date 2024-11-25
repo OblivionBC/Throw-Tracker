@@ -25,7 +25,9 @@ const Navbar = () => {
         <NavPath to="/meets">Meets</NavPath>
       </NavCenter>
       <NavRight>
-        <AthleteSelect prsn_rk={user.prsn_rk} org_name={user.org_name} />
+        {user.prsn_role === "ATHLETE" ? null : (
+          <AthleteSelect prsn_rk={user.prsn_rk} org_name={user.org_name} />
+        )}
         <Profile onClick={() => setProfile(!profile)}>
           <UserIcon />
           <AccountDetailsModal on={profile} />
