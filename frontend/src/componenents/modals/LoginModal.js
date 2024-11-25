@@ -26,7 +26,7 @@ const Modal = styled.div`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 1;
+  z-index: 1000;
   padding: 12px 24px;
   width: 100%;
   height: 100%;
@@ -50,14 +50,17 @@ const ModalContainer = styled.div`
   flex-direction: column;
   max-width: 900px;
   width: 100%;
-  position: fixed;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
   background-color: white;
   border-radius: 15px;
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding: 10px;
+  box-sizing: border-box;
 `;
-
 const Logo = styled.img`
-  height: 250px;
+  max-height: 20vh;
+  object-fit: contain;
+  margin-bottom: 20px;
 `;
 export default LoginModal;
