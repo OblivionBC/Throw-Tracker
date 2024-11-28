@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import styled from "styled-components";
 import "typeface-nunito";
+import dayjs from "dayjs";
 import { useUser } from "../contexts/UserContext";
 import { MeasurableFieldArray } from "./MeasurableFieldArray";
 import TrainingPeriodOptions from "../formHelpers/TrainingPeriodOptions";
@@ -29,7 +30,7 @@ const addMeasurement = async (measurable, prac_rk) => {
   }
 };
 
-const addPractice = async (prac_dt, trpe_rk) => {
+const addPractice = async (prac_dt, trpe_rk, prsn_rk) => {
   console.log(prac_dt);
   const response = await fetch(`http://localhost:5000/api//add-practice`, {
     method: "POST",
@@ -39,24 +40,26 @@ const addPractice = async (prac_dt, trpe_rk) => {
     body: JSON.stringify({
       prac_dt: prac_dt,
       trpe_rk: trpe_rk,
+      prsn_rk: prsn_rk,
     }),
   });
-  console.log(response);
   const jsonData = await response.json();
-  console.log(jsonData);
-  if (response.ok === false) {
+  if (!response.ok) {
     console.log("ERROR HAS OCCURRED ", response.statusText);
+    throw new Error(jsonData.message || "Something went wrong");
   }
   return jsonData.rows[0].prac_rk;
 };
 
 const AddPracticeForm = ({ close, refresh }) => {
   const [failed, setFailed] = useState(false);
+  const [dateFieldDisabled, setDateFieldDisabled] = useState(true);
   const initialValues = {
     trpe: "",
     date: "",
     measurables: [],
   };
+  const { getUser } = useUser();
   const validationSchema = Yup.object().shape({
     trpe: Yup.number("Must be a number").required(
       "Training Period is a required field"
@@ -75,12 +78,12 @@ const AddPracticeForm = ({ close, refresh }) => {
       )
       .required("Must have measurables"),
   });
-  const handleSubmit = async (values, { setSubmitting }) => {
+  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     // Handle form submission here
     //Make call on submit to update practice, and delete all measurments in for the prac, then create a new one for each in the array
     setSubmitting(true);
     try {
-      const prac_rk = await addPractice(values.date, values.trpe);
+      const prac_rk = await addPractice(values.date, values.trpe, getUser());
       values.measurables.forEach((element) => {
         addMeasurement(element, prac_rk);
       });
@@ -90,9 +93,10 @@ const AddPracticeForm = ({ close, refresh }) => {
       setSubmitting(false);
       return;
     } catch (error) {
+      setErrors({ submit: error.message });
       setFailed(true);
-      console.error(error.message);
-      return false;
+    } finally {
+      setSubmitting(false);
     }
   };
   return (
@@ -104,17 +108,14 @@ const AddPracticeForm = ({ close, refresh }) => {
         validateOnBlur={false}
         onSubmit={handleSubmit}
       >
-        {({ handleSubmit, isSubmitting, values, setFieldValue }) => (
+        {({ handleSubmit, isSubmitting, values, setFieldValue, errors }) => (
           //date, training period, wind, notes, measurables
           <StyledForm onSubmit={handleSubmit}>
             <Field name="trpe" type="number">
               {({ field }) => (
                 <FieldOutputContainer>
                   <FieldLabel>Training Period:</FieldLabel>
-                  <TrainingPeriodOptions
-                    prsn_rk={useUser.prsn_rk}
-                    name="trpe"
-                  />
+                  <TrainingPeriodOptions prsn_rk={getUser()} name="trpe" />
                 </FieldOutputContainer>
               )}
             </Field>
@@ -127,7 +128,13 @@ const AddPracticeForm = ({ close, refresh }) => {
                   <DatePicker
                     {...field}
                     selected={values.date}
-                    onChange={(date) => setFieldValue("date", date)}
+                    disabled={values.trpe === ""}
+                    onChange={(date) =>
+                      setFieldValue(
+                        "date",
+                        date ? dayjs(date).format("YYYY-MM-DD") : null
+                      )
+                    }
                     dateFormat="yyyy-MM-dd"
                   />
                 </FieldOutputContainer>
@@ -141,6 +148,7 @@ const AddPracticeForm = ({ close, refresh }) => {
             <StyledButton type="submit" disabled={isSubmitting}>
               Save
             </StyledButton>
+            {errors.submit && <SubmitError>{errors.submit}</SubmitError>}
             {failed ? (
               <SubmitError>
                 Something went wrong, please try again later

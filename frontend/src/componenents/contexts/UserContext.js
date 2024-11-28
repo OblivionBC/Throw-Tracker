@@ -7,7 +7,7 @@ const UserContext = createContext();
 export const UserProvider = ({ children }) => {
   // set to not null for testing
   const [user, setUser] = useState({});
-  const [selectedAthlete, setSelectedAthlete] = useState("");
+  const [selectedAthlete, setSelectedAthleteVar] = useState(0);
 
   const loginComplete = (userData) => {
     setUser(userData);
@@ -40,14 +40,23 @@ export const UserProvider = ({ children }) => {
 
   const signOut = async () => {
     setUser({});
+    setSelectedAthlete();
     return;
+  };
+  const setSelectedAthlete = (athlete) => {
+    return setSelectedAthleteVar(athlete);
+  };
+
+  const getUser = () => {
+    if (user.prsn_role === "COACH") return selectedAthlete;
+    else return user.prsn_rk;
   };
   return (
     <UserContext.Provider
       value={{
+        getUser,
         user,
         useUser,
-        selectedAthlete,
         setSelectedAthlete,
         signOut,
         login,
@@ -58,9 +67,7 @@ export const UserProvider = ({ children }) => {
     </UserContext.Provider>
   );
 };
-export const setSelectedAthlete = ({ athlete }) => {
-  setSelectedAthlete(athlete);
-};
+
 // Custom hook to use the UserContext
 export const useUser = () => {
   return useContext(UserContext);

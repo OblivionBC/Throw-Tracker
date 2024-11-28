@@ -5,11 +5,15 @@ import TrainingPeriodList from "../componenents/tables/TrainingPeriodList";
 import MeasurementChart from "../componenents/MeasurementChart";
 import Measurables from "../componenents/tables/MeasurableList";
 import "typeface-rubik";
+import { useUser } from "../componenents/contexts/UserContext";
 import ErrorBoundary from "../componenents/ErrorBoundary";
 
 const Practices = () => {
   const [activeTRPE, setActiveTRPE] = useState([]);
-  useEffect(() => {}, [activeTRPE]);
+  const { getUser } = useUser();
+  useEffect(() => {
+    setActiveTRPE([]);
+  }, [getUser()]);
 
   return (
     <Page>

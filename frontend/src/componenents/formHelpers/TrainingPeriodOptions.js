@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { useUser } from "../contexts/UserContext";
 import dayjs from "dayjs";
 
-const TrainingPeriodOptions = ({ state, prsn_rk, name }) => {
+const TrainingPeriodOptions = ({ name }) => {
   const [trainingPeriods, setTrainingPeriods] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useUser();
+  const { getUser } = useUser();
   useEffect(() => {
     const fetchTrainingPeriods = async () => {
       setLoading(true);
@@ -20,7 +20,7 @@ const TrainingPeriodOptions = ({ state, prsn_rk, name }) => {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              prsn_rk: user.prsn_rk,
+              prsn_rk: getUser(),
             }),
           }
         );
@@ -37,7 +37,7 @@ const TrainingPeriodOptions = ({ state, prsn_rk, name }) => {
   if (loading) return <div>Loading...</div>;
   return (
     <Field as="select" name={name} placeholder="">
-      <option value="-1" label="Select option" />
+      <option value="" label="Select option" />
       {trainingPeriods?.map(({ trpe_rk, trpe_start_dt }) => {
         return (
           <option key={trpe_rk} value={trpe_rk}>

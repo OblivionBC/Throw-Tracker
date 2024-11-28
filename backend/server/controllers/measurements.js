@@ -30,7 +30,7 @@ exports.getMeasurementsForPrac = async (req, res) => {
     const { prac_rk } = req.body;
 
     const Measurements = await pool.query(
-      "SELECT m.*, msrm.msrm_value from measurement msrm inner join measurable m on m.meas_rk = msrm.meas_rk inner join practice p on p.prac_rk = msrm.prac_rk where msrm.prac_rk = $1",
+      "SELECT m.*, msrm.msrm_value from measurement msrm inner join measurable m on m.meas_rk = msrm.meas_rk inner join practice p on p.prac_rk = msrm.prac_rk where msrm.prac_rk = $1 order by p.prac_dt asc",
       [prac_rk]
     );
     res.json(Measurements);

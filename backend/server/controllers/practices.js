@@ -1,15 +1,18 @@
-/*
-  Purpose: practices.js holds all the HTTP Requests for editing the practice Table
-      The table is selected through the SQL Queries
-*/
 const { pool } = require(".././db");
+const rules = require("./rules");
 
 exports.addPractice = async (req, res) => {
   try {
-    console.log(req.body);
-    const { prac_dt, trpe_rk } = req.body;
-    //$1 is the variable to add in the db, runs sql query in quotes which is same as in the CLI
-    //Returning * returns back the data
+    const { prac_dt, trpe_rk, prsn_rk } = req.body;
+    const PracDateWithinTRPE = await rules.PracDateWithinTRPE(
+      prac_dt,
+      prsn_rk,
+      trpe_rk
+    );
+    console.log(PracDateWithinTRPE);
+    if (!PracDateWithinTRPE.pass) {
+      return res.status(400).json({ message: PracDateWithinTRPE.message });
+    }
     const newPractice = await pool.query(
       "INSERT INTO practice (prac_dt, trpe_rk) VALUES($1, $2) RETURNING *",
       [prac_dt, trpe_rk]
@@ -30,7 +33,7 @@ exports.getAllPractices = async (req, res) => {
   try {
     const { prsn_rk } = req.body;
     const allPractice = await pool.query(
-      "SELECT  p.prac_rk, p.prac_dt, p.trpe_rk, COUNT(m.msrm_rk) AS measurement_count FROM practice p LEFT JOIN measurement m ON p.prac_rk = m.prac_rk inner join training_period tp on tp.trpe_rk = p.trpe_rk where tp.prsn_rk = $1 GROUP BY p.prac_rk ORDER BY p.prac_rk",
+      "SELECT  p.prac_rk, p.prac_dt, p.trpe_rk, COUNT(m.msrm_rk) AS measurement_count FROM practice p LEFT JOIN measurement m ON p.prac_rk = m.prac_rk inner join training_period tp on tp.trpe_rk = p.trpe_rk where tp.prsn_rk = $1 GROUP BY p.prac_rk ORDER BY p.prac_dt desc",
       [prsn_rk]
     );
     console.log("Getting All Practices for person " + prsn_rk);
@@ -50,10 +53,10 @@ exports.getPracticesInTrpe = async (req, res) => {
   try {
     const { trpe_rk } = req.body;
     const trpePractice = await pool.query(
-      "SELECT * FROM practice where trpe_rk = $1",
+      "SELECT p.prac_rk, p.prac_dt, COUNT(m.msrm_rk) AS measurement_count FROM practice p LEFT JOIN measurement m ON p.prac_rk = m.prac_rk where p.trpe_rk = $1 GROUP BY p.prac_rk",
       [trpe_rk]
     );
-    console.log("Getting Practices in the TRPEs" + keys);
+    console.log("Getting Practices in the TRPE " + trpe_rk);
     res.json(trpePractice);
   } catch (err) {
     console.error(
@@ -105,7 +108,18 @@ exports.getPractice = async (req, res) => {
 
 exports.updatePractice = async (req, res) => {
   try {
-    const { prac_rk, prac_dt, trpe_rk } = req.body;
+    const { prac_rk, prac_dt, trpe_rk, prsn_rk } = req.body;
+    console.log(prac_dt);
+    const PracDateWithinTRPE = await rules.PracDateWithinTRPE(
+      prac_dt,
+      prsn_rk,
+      trpe_rk
+    );
+    console.log(PracDateWithinTRPE);
+    if (!PracDateWithinTRPE.pass) {
+      return res.status(400).json({ message: PracDateWithinTRPE.message });
+    }
+
     const updateTodo = await pool.query(
       "UPDATE practice SET prac_dt = $1, trpe_rk = $2 WHERE prac_rk = $3",
       [prac_dt, trpe_rk, prac_rk]

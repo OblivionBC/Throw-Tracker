@@ -1,9 +1,10 @@
 import React from "react";
 import { useEffect, useState } from "react";
-import { setSelectedAthlete } from "../contexts/UserContext";
+import { useUser } from "../contexts/UserContext";
 const AthleteSelect = ({ prsn_rk, org_name }) => {
   const [athletes, setAthletes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { setSelectedAthlete, getUser } = useUser();
   useEffect(() => {
     const fetchAthletes = async () => {
       setLoading(true);
@@ -28,20 +29,18 @@ const AthleteSelect = ({ prsn_rk, org_name }) => {
       setLoading(false);
     };
     fetchAthletes();
-  }, []);
+  }, [prsn_rk]);
 
   if (loading) return <div>Loading...</div>;
   return (
-    <select>
-      <option
-        value="-1"
-        label="Select Athlete"
-        onChange={() => {
-          setSelectedAthlete(this.value);
-          console.log("SELECTED ATHLETE");
-          console.log(this.value);
-        }}
-      />
+    <select
+      onChange={(choice) => {
+        setSelectedAthlete(choice.target.value);
+        console.log("SELECTED ATHLETE");
+        console.log(choice.target.value);
+      }}
+    >
+      <option value="-1" label="Select Athlete" />
       {athletes?.map((props) => {
         return (
           <option key={props.prsn_rk} value={props.prsn_rk}>

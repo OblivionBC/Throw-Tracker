@@ -73,11 +73,6 @@ const {
   getmeasurementsForTRPEs,
 } = require("../controllers/measurements");
 
-const {
-  PracDateWithinTRPE,
-  TRPEDoesNotOverlap,
-} = require("../controllers/rules");
-
 router
   .post("/add-person", addPerson)
   .get("/get-person/:prsn_rk", getPerson)
@@ -131,8 +126,6 @@ router
   .get("/get-event/:even_rk", getEvent)
   .get("/get-all-event", getAllEvents)
   .delete("/delete-event/:even_rk", deleteEvent)
-  .put("/update-event/:even_rk", updateEvent)
+  .put("/update-event/:even_rk", updateEvent);
 
-  .post("/PracDateWithinTRPE", PracDateWithinTRPE)
-  .post("/TRPEDoesNotOverlap", TRPEDoesNotOverlap);
 module.exports = router;

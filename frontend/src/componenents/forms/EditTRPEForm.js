@@ -1,30 +1,43 @@
 import React, { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import dayjs from "dayjs";
 import styled from "styled-components";
-import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { useUser } from "../contexts/UserContext";
 
 const EditTRPEForm = ({ trpe, refresh, close }) => {
-  const [failed, setFailed] = useState(false);
+  const { getUser } = useUser();
+  //Trim the dates to make them work better with the date picker
   let startDate = new Date(trpe.trpe_start_dt);
   let trimmedStartDate = startDate.toISOString().split("T")[0];
   let endDate = new Date(trpe.trpe_end_dt);
   let trimmedEndDate = endDate.toISOString().split("T")[0];
+  //Case where there is no end date so we make sure that the end date is not randomized since it was null
+  if (trpe.trpe_end_dt === null) trimmedEndDate = null;
   const initialValues = {
     trpe_start_dt: trimmedStartDate,
     trpe_end_dt: trimmedEndDate,
   };
-  const { user } = useUser();
   const validationSchema = Yup.object().shape({
     trpe_start_dt: Yup.date("Must be a Date").required(
       "Start Date is Required"
     ),
-    trpe_end_dt: Yup.date("Must be a Date"),
+    trpe_end_dt: Yup.date("Must be a Date")
+      .nullable()
+      .test(
+        //Make sure the end date is after the start date
+        "is-greater",
+        "End Date must be greater than Start Date",
+        function (value) {
+          if (!value) return true;
+          return value > endDate;
+        }
+      ),
   });
-  const handleSubmit = async (values, { setSubmitting }) => {
+  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     // Handle form submission here
     //Make call on submit to update trpetice, and delete all measurments in for the trpe, then create a new one for each in the array
     setSubmitting(true);
@@ -43,18 +56,28 @@ const EditTRPEForm = ({ trpe, refresh, close }) => {
             trpe_rk: trpe.trpe_rk,
             trpe_start_dt: values.trpe_start_dt,
             trpe_end_dt: values.trpe_end_dt,
+            prsn_rk: getUser(),
           }),
         }
       );
+      const jsonData = await response.json();
+
+      //Throw error if the response wasn't clean ( Something went wrong in validations?)
+      if (!response.ok) {
+        console.log("ERROR HAS OCCURRED ", response.statusText);
+        throw new Error(jsonData.message || "Something went wrong");
+      }
+
+      //Update the table, and send a success message
       refresh();
       setSubmitting(false);
       alert("Training Period Updated Successfully");
       close();
       return;
     } catch (error) {
-      setFailed(true);
+      //Set error for UI
+      setErrors({ submit: error.message });
       console.error(error.message);
-      console.log(this.props.errors);
       return false;
     }
   };
@@ -67,7 +90,7 @@ const EditTRPEForm = ({ trpe, refresh, close }) => {
         validateOnBlur={false}
         onSubmit={handleSubmit}
       >
-        {({ handleSubmit, isSubmitting, values, setFieldValue }) => (
+        {({ handleSubmit, isSubmitting, values, setFieldValue, errors }) => (
           //date, training period, wind, notes, measurables
           <StyledForm onSubmit={handleSubmit}>
             <h4>Training Period: {trpe.trpe_rk}</h4>
@@ -79,7 +102,12 @@ const EditTRPEForm = ({ trpe, refresh, close }) => {
                     {...field}
                     selected={values.trpe_start_dt}
                     onChange={(trpe_start_dt) =>
-                      setFieldValue("trpe_start_dt", trpe_start_dt)
+                      setFieldValue(
+                        "trpe_start_dt",
+                        trpe_start_dt
+                          ? dayjs(trpe_start_dt).format("YYYY-MM-DD")
+                          : null
+                      )
                     }
                     dateFormat="yyyy-MM-dd"
                   />
@@ -96,7 +124,12 @@ const EditTRPEForm = ({ trpe, refresh, close }) => {
                     {...field}
                     selected={values.trpe_end_dt}
                     onChange={(trpe_end_dt) =>
-                      setFieldValue("trpe_end_dt", trpe_end_dt)
+                      setFieldValue(
+                        "trpe_end_dt",
+                        trpe_end_dt
+                          ? dayjs(trpe_end_dt).format("YYYY-MM-DD")
+                          : null
+                      )
                     }
                     dateFormat="yyyy-MM-dd"
                   />
@@ -108,11 +141,7 @@ const EditTRPEForm = ({ trpe, refresh, close }) => {
             <StyledButton type="submit" disabled={isSubmitting}>
               Save
             </StyledButton>
-            {failed ? (
-              <SubmitError>
-                Something went wrong, please try again later
-              </SubmitError>
-            ) : null}
+            {errors.submit && <SubmitError>{errors.submit}</SubmitError>}
           </StyledForm>
         )}
       </Formik>
@@ -126,13 +155,6 @@ const StyledForm = styled(Form)`
   align-items: center;
   justify-content: center;
   padding: 20px;
-`;
-
-const StyledInput = styled.input`
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  margin-bottom: 10px;
 `;
 
 const StyledButton = styled.button`
@@ -155,7 +177,6 @@ const FieldOutputContainer = styled.div`
   align-items: center;
   justify-content: center;
 `;
-
 const FieldLabel = styled.h3`
   margin-right: 10px;
 `;

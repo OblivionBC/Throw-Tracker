@@ -12,7 +12,7 @@ const EditMeasurableForm = ({ measObj, refresh, close }) => {
     meas_typ: measObj.meas_typ,
     meas_unit: measObj.meas_unit,
   };
-  const { user } = useUser();
+  const { getUser } = useUser();
   const validationSchema = Yup.object().shape({
     meas_id: Yup.string("Must be a string").required(
       "Measurable Name is a Required Field"
@@ -30,7 +30,7 @@ const EditMeasurableForm = ({ measObj, refresh, close }) => {
     console.log(values);
     setSubmitting(true);
     try {
-      console.log(user.prsn_rk);
+      console.log(getUser());
       console.log(values);
 
       const response = await fetch(
@@ -45,7 +45,7 @@ const EditMeasurableForm = ({ measObj, refresh, close }) => {
             meas_typ: values.meas_typ,
             meas_unit: values.meas_unit,
             meas_rk: measObj.meas_rk,
-            prsn_rk: user.prsn_rk,
+            prsn_rk: getUser(),
           }),
         }
       );

@@ -7,7 +7,8 @@ import Practices from "../tables/PracticeList";
 
 const TrainingPeriodEditModal = ({ open, onClose, trpeObj, refresh }) => {
   const [editing, setEditing] = useState(false);
-
+  console.log(trpeObj);
+  console.log({ trpeObj });
   const Details = () => {
     if (editing) return null;
     return (

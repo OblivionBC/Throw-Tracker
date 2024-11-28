@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import DataTable from "react-data-table-component";
 import { useEffect, useState } from "react";
-
+import { useUser } from "../contexts/UserContext";
 const TableStyles = {
   pagination: {
     style: {
@@ -22,7 +22,7 @@ const TableStyles = {
 const MeasurementList = ({ prac_rk }) => {
   const [measurables, setMeasurables] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const { getUser } = useUser();
   useEffect(() => {
     const fetchMeasurables = async () => {
       setLoading(true);
@@ -47,7 +47,7 @@ const MeasurementList = ({ prac_rk }) => {
       setLoading(false);
     };
     fetchMeasurables();
-  }, [prac_rk]);
+  }, [prac_rk, getUser()]);
 
   const columns = [
     {
