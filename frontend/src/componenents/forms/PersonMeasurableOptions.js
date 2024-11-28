@@ -6,7 +6,7 @@ import { useUser } from "../contexts/UserContext";
 const PersonMeasurableOptions = ({ state, prsn_rk, name }) => {
   const [measurables, setMeasurables] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useUser();
+  const { getUser } = useUser();
 
   useEffect(() => {
     const fetchMeasurables = async () => {
@@ -20,7 +20,7 @@ const PersonMeasurableOptions = ({ state, prsn_rk, name }) => {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              prsn_rk: user.prsn_rk,
+              prsn_rk: getUser(),
             }),
           }
         );

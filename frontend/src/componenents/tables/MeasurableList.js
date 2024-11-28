@@ -33,15 +33,10 @@ const Measurables = ({ paginationNum }) => {
   const [editMeas, setEditMeas] = useState(false);
 
   const [selectedMeas, setSelectedMeas] = useState({});
-  const { user } = useUser();
+  const { getUser } = useUser();
   console.log(useUser());
   const getMeasurableData = async () => {
     try {
-      console.log("REFRESH");
-      const params = new URLSearchParams({
-        keys: JSON.stringify(user),
-      });
-
       const response = await fetch(
         `http://localhost:5000/api//get-all-measurablesForPrsn`,
         {
@@ -50,14 +45,13 @@ const Measurables = ({ paginationNum }) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            prsn_rk: user.prsn_rk,
+            prsn_rk: getUser(),
           }),
         }
       );
 
       const jsonData = await response.json();
       setMeasurableData(jsonData.rows);
-      console.log(measurableData);
     } catch (error) {
       console.error(error.message);
     }
@@ -66,10 +60,11 @@ const Measurables = ({ paginationNum }) => {
   useEffect(() => {
     try {
       getMeasurableData();
+      console.log("REFRESHINGGGGG");
     } catch (error) {
       console.error(error.message);
     }
-  }, []);
+  }, [getUser()]);
 
   const columns = [
     {

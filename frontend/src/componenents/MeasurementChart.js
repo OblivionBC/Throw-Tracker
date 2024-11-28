@@ -1,7 +1,7 @@
 // components/BarChart.js
 import React, { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
-import { Chart as ChartJS, registerables } from "chart.js/auto";
+import { Chart as ChartJS } from "chart.js/auto";
 import "chartjs-adapter-date-fns";
 import { Tooltip } from "chart.js/auto";
 import dayjs from "dayjs";
@@ -241,9 +241,7 @@ function MeasurementChart({ activeTRPE }) {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      console.log("REFRESH");
       GetTrainingPeriodMeasurements();
-      console.log("Loading false " + loading);
     };
     fetchData();
     setLoading(false);

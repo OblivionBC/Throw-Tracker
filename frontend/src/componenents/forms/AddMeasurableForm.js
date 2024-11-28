@@ -34,7 +34,7 @@ const AddMeasurableForm = ({ close, refresh }) => {
     meas_unit: "",
     meas_typ: "",
   };
-  const { user } = useUser();
+  const { getUser } = useUser();
   const validationSchema = Yup.object().shape({
     meas_id: Yup.string()
       .min(3, "Measurable Name must be at least 5 characters long")
@@ -56,7 +56,7 @@ const AddMeasurableForm = ({ close, refresh }) => {
         values.meas_id,
         values.meas_typ,
         values.meas_unit,
-        user.prsn_rk
+        getUser()
       );
       console.log(measurable);
       alert("Measurable Added Successfully");

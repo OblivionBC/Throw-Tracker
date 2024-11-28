@@ -32,7 +32,7 @@ const Practices = ({ trpe_rk, paginationNum, bAdd, bDetail, bDelete }) => {
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [confirmPracDelete, setConfirmPracDelete] = useState(false);
   const [selectedPrac, setSelectedPrac] = useState({});
-  const { user } = useUser();
+  const { getUser } = useUser();
   const getPracticeData = async () => {
     try {
       let response;
@@ -59,7 +59,7 @@ const Practices = ({ trpe_rk, paginationNum, bAdd, bDetail, bDelete }) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            prsn_rk: user.prsn_rk,
+            prsn_rk: getUser(),
           }),
         });
       }
@@ -77,7 +77,7 @@ const Practices = ({ trpe_rk, paginationNum, bAdd, bDetail, bDelete }) => {
     } catch (error) {
       console.error(error.message);
     }
-  }, []);
+  }, [getUser()]);
 
   if (paginationNum <= 0) paginationNum = 8;
   const columns = [
@@ -166,7 +166,6 @@ const Practices = ({ trpe_rk, paginationNum, bAdd, bDetail, bDelete }) => {
         <Table
           columns={columns}
           data={practiceData}
-          fixedHeader
           pagination
           paginationPerPage={paginationNum}
           paginationComponentOptions={{

@@ -29,7 +29,8 @@ const TrainingPeriodList = ({ sharedState, setSharedState }) => {
   const [deleteTRPEOpen, setDeleteTRPEOpen] = useState(false);
   const [editTRPEOpen, setEditTRPEOpen] = useState(false);
   const [selectedTRPE, setSelectedTRPE] = useState({});
-  const { user } = useUser();
+  const { getUser } = useUser();
+  console.log(getUser());
   const getTRPEData = async () => {
     try {
       const response = await fetch(
@@ -40,13 +41,13 @@ const TrainingPeriodList = ({ sharedState, setSharedState }) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            prsn_rk: user.prsn_rk,
+            prsn_rk: getUser(),
           }),
         }
       );
       const jsonData = await response.json();
-      console.log(jsonData.rows);
       setTrpeData(jsonData.rows);
+      console.log(trpeData);
     } catch (error) {
       console.error(error.message);
     }
@@ -58,8 +59,7 @@ const TrainingPeriodList = ({ sharedState, setSharedState }) => {
     } catch (error) {
       console.error(error.message);
     }
-    console.log("TRPE data loading Succeeded");
-  }, []);
+  }, [getUser()]);
 
   const handleChange = ({ selectedRows }) => {
     if (selectedRows) {
@@ -77,7 +77,7 @@ const TrainingPeriodList = ({ sharedState, setSharedState }) => {
     },
     {
       name: "Start",
-      selector: (row) => row.prac_dt,
+      selector: (row) => row.trpe_start_dt,
       cell: (row) => <div>{dayjs(row.trpe_start_dt).format("MMM D YYYY")}</div>,
       sortable: true,
     },
@@ -146,7 +146,6 @@ const TrainingPeriodList = ({ sharedState, setSharedState }) => {
         <Table
           columns={columns}
           data={trpeData}
-          fixedHeader
           pagination
           paginationPerPage={6}
           paginationComponentOptions={{
@@ -155,6 +154,8 @@ const TrainingPeriodList = ({ sharedState, setSharedState }) => {
             selectAllRowsItem: false,
           }}
           customStyles={TableStyles}
+          defaultSortFieldId="Start"
+          defaultSortAsc={false}
           selectableRows
           onSelectedRowsChange={handleChange}
         />
@@ -169,6 +170,7 @@ const DeleteButton = styled.button`
   border-radius: 25px;
   color: white;
   padding: 5px 10px;
+  margin: 0px;
   font-size: 12px;
   cursor: pointer;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
