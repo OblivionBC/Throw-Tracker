@@ -3,13 +3,14 @@
       The table is selected through the SQL Queries
 */
 const { pool } = require(".././db");
+const { TRPEDoesNotOverlap } = require("./rules");
 
 exports.addTrainingPeriod = async (req, res) => {
   try {
-    const { trpe_start_dt, trpe_end_dt, prsn_rk } = req.body;
-    let end = null;
-    if (trpe_end_dt !== "") {
-      end = trpe_end_dt;
+    const { trpe_start_dt, prsn_rk } = req.body;
+    const overlap = await TRPEDoesNotOverlap(trpe_start_dt, prsn_rk);
+    if (!overlap.pass) {
+      return res.status(400).json({ message: overlap.message });
     }
     var newTrainingPeriod;
     //$1 is the variable to add in the db, runs sql query in quotes which is same as in the CLI
@@ -17,8 +18,8 @@ exports.addTrainingPeriod = async (req, res) => {
 
     console.log("Adding with End Date");
     newTrainingPeriod = await pool.query(
-      "INSERT INTO training_period (trpe_start_dt, trpe_end_dt, prsn_rk) VALUES($1, $2, $3) RETURNING *",
-      [trpe_start_dt, end, prsn_rk]
+      "INSERT INTO training_period (trpe_start_dt, prsn_rk) VALUES($1, $2) RETURNING *",
+      [trpe_start_dt, prsn_rk]
     );
 
     res.json(newTrainingPeriod);
@@ -39,7 +40,7 @@ exports.getAllTrainingPeriods = async (req, res) => {
     const { prsn_rk } = req.body;
     console.log("Getting");
     const allTrainingPeriod = await pool.query(
-      "SELECT * FROM training_period where training_period.prsn_rk = $1",
+      "SELECT * FROM training_period where training_period.prsn_rk = $1 order by training_period.trpe_start_dt desc",
       [prsn_rk]
     );
     res.json(allTrainingPeriod);
@@ -84,6 +85,7 @@ exports.endDateMostRecentTrainingPeriod = async (req, res) => {
 
     res.json(TrainingPeriod.rows);
     console.log("End Dating Most Recent Training Period for person " + prsn_rk);
+    console.log(TrainingPeriod.rows);
   } catch (err) {
     console.error(
       "Error occurred while End Dating Most Recent Training Period for person" +
@@ -100,7 +102,19 @@ exports.endDateMostRecentTrainingPeriod = async (req, res) => {
 };
 exports.updateTrainingPeriod = async (req, res) => {
   try {
-    const { trpe_rk, trpe_start_dt, trpe_end_dt } = req.body;
+    const { trpe_rk, trpe_start_dt, trpe_end_dt, prsn_rk } = req.body;
+    //First we want to check that the start date is not overlapped by an existing trpe
+    let overlapStart = await TRPEDoesNotOverlap(trpe_start_dt, prsn_rk);
+    if (!overlapStart.pass) {
+      overlapStart.message += " for Start Date";
+      return res.status(400).json({ message: overlapStart.message });
+    }
+    //Next check if the end date is
+    let overlapEnd = await TRPEDoesNotOverlap(trpe_end_dt, prsn_rk);
+    if (!overlapEnd.pass) {
+      overlapEnd.message += " for End Date";
+      return res.status(400).json({ message: overlapEnd.message });
+    }
     const updateTodo = await pool.query(
       "UPDATE training_period SET trpe_start_dt = $1, trpe_end_dt = $2 WHERE trpe_rk = $3",
       [trpe_start_dt, trpe_end_dt, trpe_rk]
@@ -109,9 +123,7 @@ exports.updateTrainingPeriod = async (req, res) => {
     console.log("Updated Training Period " + trpe_rk);
   } catch (err) {
     console.error(
-      "Error occurred while Updating Training Period " +
-        trpe_rk +
-        " Async Error:",
+      "Error occurred while Updating Training Period " + " Async Error:",
       err.message
     );
     res

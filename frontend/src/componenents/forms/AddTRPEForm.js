@@ -1,112 +1,64 @@
 import React, { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import dayjs from "dayjs";
 import styled from "styled-components";
 import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-const AddTRPE = async (
-  trpe_start_dt,
-  trpe_end_dt,
-  prsn_rk,
-  endDateRecent,
-  setErrors
-) => {
-  const NotOverlap = await ValidateOverlaps(trpe_start_dt, prsn_rk);
-  if (NotOverlap) {
-    console.log("IT WAS TRUE");
-    if (endDateRecent) {
-      let newDate = new Date(trpe_start_dt);
-      const firstDayOfMonth = new Date(
-        newDate.getFullYear(),
-        newDate.getMonth(),
-        1
-      );
-      firstDayOfMonth.setDate(firstDayOfMonth.getDate() - 1);
-
-      const response = await fetch(
-        `http://localhost:5000/api//endDateMostRecent_trainingPeriod`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          }, //meas_id, meas_typ, meas_unit, prsn_rk
-          body: JSON.stringify({
-            prsn_rk: prsn_rk,
-            trpe_end_dt: firstDayOfMonth,
-          }),
-        }
-      );
-    }
+//Name says it, but this is just a function to add the trpe when submitting
+const AddTRPE = async (trpe_start_dt, prsn_rk, endDateRecent) => {
+  if (endDateRecent) {
+    const dateString = new Date(trpe_start_dt);
+    dateString.setDate(dateString.getDate() - 1);
+    const newEndDate = dateString.toISOString().split("T")[0];
 
     const response = await fetch(
-      `http://localhost:5000/api//add-trainingPeriod`,
+      `http://localhost:5000/api//endDateMostRecent_trainingPeriod`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         }, //meas_id, meas_typ, meas_unit, prsn_rk
         body: JSON.stringify({
-          trpe_start_dt: trpe_start_dt,
-          trpe_end_dt: trpe_end_dt,
           prsn_rk: prsn_rk,
+          trpe_end_dt: newEndDate,
         }),
       }
     );
-    const jsonData = await response.json();
-    console.log(jsonData);
-    if (response.ok === false) {
-      console.log("ERROR HAS OCCURRED ", response.statusText);
-      return false;
-    }
-    return true;
   }
-  setErrors(
-    "Your Start Date is between an Existing End Dated Training Period, please choose a different date or edit the overlapped training period"
-  );
-  return false;
-};
-
-async function ValidateOverlaps(trpe_start_dt, prsn_rk) {
-  const response = await fetch(
-    `http://localhost:5000/api//TRPEDoesNotOverlap`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      }, //meas_id, meas_typ, meas_unit, prsn_rk
-      body: JSON.stringify({
-        date: trpe_start_dt,
-        prsn_rk: prsn_rk,
-      }),
-    }
-  );
+  console.log(prsn_rk);
+  const response = await fetch(`http://localhost:5000/api/add-trainingPeriod`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      trpe_start_dt: trpe_start_dt,
+      prsn_rk: prsn_rk,
+    }),
+  });
   const jsonData = await response.json();
-  console.log("VALIDATIONS");
-  console.log(jsonData);
-  if (jsonData.rows.length > 0) {
-    return false;
-  } else {
-    return true;
+  //Throw error if the response wasn't clean ( Something went wrong in validations?)
+  if (!response.ok) {
+    console.log("ERROR HAS OCCURRED ", response.statusText);
+    throw new Error(jsonData.message || "Something went wrong");
   }
-}
+  return true;
+};
 const AddTRPEForm = ({ close, refresh }) => {
-  const [failed, setFailed] = useState(false);
-  const [errors, setErrors] = useState("");
   const initialValues = {
     trpe_start_dt: "",
-    trpe_end_dt: "",
     endDateRecent: false,
   };
-  const { user } = useUser();
+  const { getUser } = useUser();
   const validationSchema = Yup.object().shape({
     trpe_start_dt: Yup.date().required("Measurable Name is required"),
-    trpe_end_dt: Yup.date(),
   });
 
-  const handleSubmit = async (values, { setSubmitting }) => {
+  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     // Handle form submission here
     //Make call on submit to update practice, and delete all measurments in for the prac, then create a new one for each in the array
     console.log(values);
@@ -114,8 +66,7 @@ const AddTRPEForm = ({ close, refresh }) => {
     try {
       const bAdded = await AddTRPE(
         values.trpe_start_dt,
-        values.trpe_end_dt,
-        user.prsn_rk,
+        getUser(),
         values.endDateRecent,
         setErrors
       );
@@ -123,19 +74,17 @@ const AddTRPEForm = ({ close, refresh }) => {
         alert("Training Period Added Successfully");
         close();
         refresh();
-        setErrors("");
       }
       setSubmitting(false);
       return;
     } catch (error) {
-      setFailed(true);
+      setErrors({ submit: error.message });
       console.error(error.message);
       return false;
     }
   };
   return (
     <>
-      <Error>{errors}</Error>
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
@@ -143,7 +92,7 @@ const AddTRPEForm = ({ close, refresh }) => {
         validateOnBlur={false}
         onSubmit={handleSubmit}
       >
-        {({ handleSubmit, isSubmitting, values, setFieldValue }) => (
+        {({ handleSubmit, isSubmitting, values, setFieldValue, errors }) => (
           //date, training period, wind, notes, measurables
           <StyledForm onSubmit={handleSubmit}>
             <Field name="trpe_start_dt" type="date">
@@ -154,7 +103,12 @@ const AddTRPEForm = ({ close, refresh }) => {
                     {...field}
                     selected={values.trpe_start_dt}
                     onChange={(trpe_start_dt) =>
-                      setFieldValue("trpe_start_dt", trpe_start_dt)
+                      setFieldValue(
+                        "trpe_start_dt",
+                        trpe_start_dt
+                          ? dayjs(trpe_start_dt).format("YYYY-MM-DD")
+                          : null
+                      )
                     }
                     dateFormat="yyyy-MM-dd"
                   />
@@ -171,11 +125,7 @@ const AddTRPEForm = ({ close, refresh }) => {
             <StyledButton type="submit" disabled={isSubmitting}>
               Save
             </StyledButton>
-            {failed ? (
-              <SubmitError>
-                Something went wrong, please try again later
-              </SubmitError>
-            ) : null}
+            {errors.submit && <SubmitError>{errors.submit}</SubmitError>}
           </StyledForm>
         )}
       </Formik>
@@ -189,16 +139,6 @@ const StyledForm = styled(Form)`
   align-items: center;
   justify-content: center;
   padding: 20px;
-`;
-const Error = styled.p`
-  color: red;
-  font-weight; 10px;
-`;
-const StyledInput = styled.input`
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  margin-bottom: 10px;
 `;
 
 const StyledButton = styled.button`

@@ -1,0 +1,18 @@
+{
+  "name": "throwtrackerapp",
+  "version": "1.0.0",
+  "description": "This is a Full Stack Web Application Project I am currently working on for Track and Field athletes to better manage\r and process training data. The tech stack is a PERN stack of Postgre SQL, Express, React, Node.\r I have currently implemented the REST API for the Frontend to communicate with the Database, as well as some functionalities of the FrontEnd.\r Once ready, the University of British Columbia Throws Coach has volunteered for beta testing with their athlete.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "start:backend": "cd backend/server && nodemon",
+    "start:frontend": "cd frontend && npm run start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

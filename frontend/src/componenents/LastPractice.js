@@ -6,6 +6,63 @@ import * as FaIcons from "react-icons/fa";
 // This is your PracticeItem component
 //Test that this works and add it to the practices component
 
+const LastPractice = () => {
+  //Stuff
+  const [datas, setDatas] = useState({});
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      const response = await fetch(
+        `http://localhost:5000/api/get-last-practice`
+      );
+      const jsonData = await response.json();
+      const row = jsonData.rows[0];
+      setDatas({
+        prac_rk: row.prac_rk,
+        meas_id: row.meas_id,
+        msrm_value: row.msrm_value,
+        meas_unit: row.meas_unit,
+        prac_dt: row.prac_dt,
+        TRPE_RK: row.TRPE_RK,
+      });
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return <div>Loading</div>;
+  }
+  return (
+    <CompWrap>
+      <Title>Last Practice</Title>
+      <Item>
+        <DateWrap>
+          <Date>{dayjs(datas.meet_dt).format("MMM D YYYY")}</Date>
+        </DateWrap>
+        <Rows>
+          <ColumnLeft>
+            <Data>
+              <Weight />
+              <DataLabel>Measurement: </DataLabel>
+              {datas.msrm_value} and {datas.meas_unit}
+            </Data>
+          </ColumnLeft>
+          <ColumnRight>
+            <Implement />
+            <Data>
+              <DataLabel>Measurable: </DataLabel>
+              {datas.meas_id}
+            </Data>
+          </ColumnRight>
+        </Rows>
+      </Item>
+    </CompWrap>
+  );
+};
+
+export default LastPractice;
 const CompWrap = styled.div`
   display: flex;
   flex-direction: column;
@@ -90,91 +147,3 @@ const Implement = styled(FaIcons.FaToolbox)`
   height: 50px;
   width: 50px;
 `;
-const LastPractice = () => {
-  //Stuff
-  const [datas, setDatas] = useState({});
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      const response = await fetch(
-        `http://localhost:5000/api/get-last-practice`
-      );
-      const jsonData = await response.json();
-      const row = jsonData.rows[0];
-      setDatas({
-        prac_rk: row.prac_rk,
-        meas_id: row.meas_id,
-        msrm_value: row.msrm_value,
-        meas_unit: row.meas_unit,
-        prac_dt: row.prac_dt,
-        TRPE_RK: row.TRPE_RK,
-      });
-      setLoading(false);
-    };
-    fetchData();
-  }, []);
-
-  if (loading) {
-    return <div>Loading</div>;
-  }
-  return (
-    <CompWrap>
-      <Title>Last Practice</Title>
-      <Item>
-        <DateWrap>
-          <Date>{dayjs(datas.meet_dt).format("MMM D YYYY")}</Date>
-        </DateWrap>
-        <Rows>
-          <ColumnLeft>
-            <Data>
-              <Weight />
-              <DataLabel>Measurement: </DataLabel>
-              {datas.msrm_value} and {datas.meas_unit}
-            </Data>
-          </ColumnLeft>
-          <ColumnRight>
-            <Implement />
-            <Data>
-              <DataLabel>Measurable: </DataLabel>
-              {datas.meas_id}
-            </Data>
-          </ColumnRight>
-        </Rows>
-      </Item>
-    </CompWrap>
-  );
-};
-
-export default LastPractice;
-/*<CompWrap>
-      <Title>Last Practice</Title>
-      <Item>
-        <Row>
-          <Date>{dayjs(datas.meet_dt).format("MMM D YYYY")}</Date>
-          <Data>
-            <DataLabel>PRAC_RK: </DataLabel>
-            {datas.prac_rk}
-          </Data>
-          <Data>
-            <DataLabel>Implement: </DataLabel>
-            {datas.meas_id}
-          </Data>
-          <Data>
-            <DataLabel>Implement Weight: </DataLabel>
-            {datas.msrm_value}
-          </Data>
-        </Row>
-        <ColumnRight>
-          <Data>
-            <DataLabel>Best Throw: </DataLabel>
-            {datas.meas_unit}
-          </Data>
-          <Data>
-            <DataLabel>Date: </DataLabel>
-            {dayjs(datas.meet_dt).format("MMM D YYYY")}
-          </Data>
-        </ColumnRight>
-      </Item>
-    </CompWrap>
-    */

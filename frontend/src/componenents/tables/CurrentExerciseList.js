@@ -42,7 +42,6 @@ const CurrentExcersiseList = () => {
     } catch (error) {
       console.error(error.message);
     }
-    console.log("TRPE data loading Succeeded");
   }, []);
 
   const columns = [
