@@ -8,6 +8,9 @@ join measurement msrm on msrm.meas_rk = m.meas_rk where prac_rk = $1
 SELECT p.prsn_rk, p.prsn_first_nm, p.prsn_last_nm, p.prsn_email, p.prsn_role, o.org_name FROM person p 
 inner join organization o on o.org_rk = p.org_rk WHERE p.coach_prsn_rk = 16 and o.org_name = 'University Of British Columbia';
 
+      select * from training_period trpe where trpe.prsn_rk = 12 and trpe.trpe_start_dt <=  '2024-06-30' and trpe_rk = 4 and (trpe.trpe_end_dt >= '2024-06-30' OR trpe_end_dt is null)
+      [prac_dt, prsn_rk, trpe_rk]
+
 SELECT 
     p.prac_rk,
     p.prac_dt,

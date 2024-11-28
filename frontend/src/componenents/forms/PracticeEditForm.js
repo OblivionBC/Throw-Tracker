@@ -4,14 +4,14 @@ import * as Yup from "yup";
 import styled from "styled-components";
 import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
+import dayjs from "dayjs";
 import { MeasurableFieldArray } from "./MeasurableFieldArray";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import TrainingPeriodOptions from "../formHelpers/TrainingPeriodOptions";
 
-//Grab the initial values
+//Add a measurement to a given practice
 const addMeasurement = async (measurable, prac_rk) => {
-  console.log(measurable.meas_rk);
   const response = await fetch(`http://localhost:5000/api/add-measurement`, {
     method: "POST",
     headers: {
@@ -23,10 +23,8 @@ const addMeasurement = async (measurable, prac_rk) => {
       prac_rk: prac_rk,
     }),
   });
-  const jsonData = await response.json();
-  console.log(jsonData);
 };
-
+//Grabs measurements to fill the initial values
 const findMeasurements = async (prac_rk) => {
   const response = await fetch(
     `http://localhost:5000/api//get-measurementsForPrac`,
@@ -44,6 +42,7 @@ const findMeasurements = async (prac_rk) => {
   return jsonData.rows;
 };
 
+//Get rid of the old measurements to make sure no data is left over from the edit
 const deleteMeasurements = async (prac_rk) => {
   const response = await fetch(
     `http://localhost:5000/api//delete-measurements-for-practice`,
@@ -58,19 +57,16 @@ const deleteMeasurements = async (prac_rk) => {
     }
   );
   const jsonData = await response.json();
-  console.log(jsonData);
 };
 
 const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
-  const [failed, setFailed] = useState(false);
-  const [initialMeasurements, setInitialMeasurements] = useState([]);
   const [measurementContainer, setMeasurementContainer] = useState([]);
 
+  //Grabbing measurements for autofill of the form
   useEffect(() => {
     const fetchMeasurements = async () => {
       try {
         const measurements = await findMeasurements(prac.prac_rk);
-        setInitialMeasurements(measurements);
         const container = measurements.map((element) => ({
           meas_rk: element.meas_rk,
           msrm_value: element.msrm_value,
@@ -78,30 +74,27 @@ const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
         setMeasurementContainer(container);
       } catch (error) {
         console.error("Error fetching measurements:", error);
-        setFailed(true);
       }
     };
     fetchMeasurements();
   }, [prac.prac_rk]);
 
+  //Trim date to make it nice and purrrty for the date picker
   let pracDate = new Date(prac.prac_dt);
   let trimmedPracDate = pracDate.toISOString().split("T")[0];
-  console.log("Initial Measurements:", initialMeasurements);
-  console.log("Measurements:", measurementContainer);
   const initialValues = {
     trpe: prac.trpe_rk,
     date: trimmedPracDate,
     measurables: measurementContainer,
   };
+  const { getUser } = useUser();
 
-  console.log(initialValues);
-  const { user } = useUser();
   const validationSchema = Yup.object().shape({
     trpe: Yup.number("Must be a number").required(
       "Training Period is a required field"
     ),
     date: Yup.date().required(),
-    measurables: Yup.array()
+    measurables: Yup.array() //Array of obkjects with a row key and value
       .of(
         Yup.object().shape({
           meas_rk: Yup.number("Must be a number")
@@ -114,12 +107,11 @@ const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
       )
       .required("Must have measurables"),
   });
-  const handleSubmit = async (values, { setSubmitting }) => {
+  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     // Handle form submission here
     //Make call on submit to update practice, and delete all measurments in for the prac, then create a new one for each in the array
     setSubmitting(true);
     try {
-      deleteMeasurements(prac.prac_rk);
       const response = await fetch(
         `http://localhost:5000/api/update-practice`,
         {
@@ -131,23 +123,34 @@ const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
             trpe_rk: values.trpe,
             prac_dt: values.date,
             prac_rk: prac.prac_rk,
+            prsn_rk: getUser(),
           }),
         }
       );
-
-      values.measurables.forEach((element) => {
-        addMeasurement(element, prac.prac_rk);
-        console.log("POSTING");
-      });
+      const jsonData = await response.json();
+      //If response didn't come back clean (i.e. Validation or rule error in backend) Throw an error with the message
+      if (!response.ok) {
+        console.log("ERROR HAS OCCURRED ", response.statusText);
+        throw new Error(jsonData.message || "Something went wrong");
+      }
+      //Delete the old measurements
+      deleteMeasurements(prac.prac_rk);
+      //Create new measurements
+      if (values.measurables.length > 0) {
+        values.measurables.forEach((element) => {
+          addMeasurement(element, prac.prac_rk);
+        });
+      }
+      //Refresh, return to the detail modal and send a success message
       refresh();
       goToDetails();
       setSubmitting(false);
       alert("Practice Updated Successfully");
       return;
     } catch (error) {
-      setFailed(true);
+      setSubmitting(false);
+      setErrors({ submit: error.message });
       console.error(error.message);
-      console.log(this.props.errors);
       return false;
     }
   };
@@ -161,17 +164,14 @@ const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
         validateOnBlur={false}
         onSubmit={handleSubmit}
       >
-        {({ handleSubmit, isSubmitting, values, setFieldValue }) => (
+        {({ handleSubmit, isSubmitting, values, setFieldValue, errors }) => (
           //date, training period, wind, notes, measurables
           <StyledForm onSubmit={handleSubmit}>
             <Field name="trpe">
               {({ field }) => (
                 <FieldOutputContainer>
                   <FieldLabel>Training Period:</FieldLabel>
-                  <TrainingPeriodOptions
-                    prsn_rk={useUser.prsn_rk}
-                    name="trpe"
-                  />
+                  <TrainingPeriodOptions prsn_rk={getUser()} name="trpe" />
                 </FieldOutputContainer>
               )}
             </Field>
@@ -184,7 +184,12 @@ const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
                   <DatePicker
                     {...field}
                     selected={values.date}
-                    onChange={(date) => setFieldValue("date", date)}
+                    onChange={(date) =>
+                      setFieldValue(
+                        "date",
+                        date ? dayjs(date).format("YYYY-MM-DD") : null
+                      )
+                    }
                     dateFormat="yyyy-MM-dd"
                   />
                 </FieldOutputContainer>
@@ -198,11 +203,7 @@ const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
             <StyledButton type="submit" disabled={isSubmitting}>
               Save
             </StyledButton>
-            {failed ? (
-              <SubmitError>
-                Something went wrong, please try again later
-              </SubmitError>
-            ) : null}
+            {errors.submit && <SubmitError>{errors.submit}</SubmitError>}
           </StyledForm>
         )}
       </Formik>

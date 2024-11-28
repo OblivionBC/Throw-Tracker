@@ -9,7 +9,7 @@ import PersonMeasurableOptions from "./PersonMeasurableOptions";
 // Next to each input are buttons for insert and remove.
 // If the list is empty, there is a button to add an item.
 export const MeasurableFieldArray = () => {
-  const { user } = useUser();
+  const { getUser } = useUser();
   return (
     <FieldArray name="measurables">
       {(fieldArrayProps) => {
@@ -38,7 +38,7 @@ export const MeasurableFieldArray = () => {
               <div key={index}>
                 <PersonMeasurableOptions
                   name={`measurables[${index}].meas_rk`}
-                  prsn_rk={user.prsn_rk}
+                  prsn_rk={getUser()}
                 />
                 <Field
                   name={`measurables[${index}].msrm_value`}

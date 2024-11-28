@@ -35,11 +35,6 @@ const ConfirmPracDeleteModal = ({ open, onClose, pracObj, refresh }) => {
             Are you sure you want to delete Practice {pracObj.prac_rk} and its{" "}
             {pracObj.measurement_count} measurements?
           </h3>
-          <h4>
-            {" "}
-            If you are deleting this through the Edit Training Period page, the
-            practice will delete whether or not you click save on the page
-          </h4>
           <h4>Date: {dayjs(pracObj.prac_dt).format("MMM D YYYY")}</h4>
           <MeasurementList prac_rk={pracObj.prac_rk} />
           <ButtonContainer>
