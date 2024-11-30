@@ -1,6 +1,58 @@
 CREATE DATABASE trackApp;
    UPDATE person set prsn_pwrd = crypt('mypassword', gen_salt('bf')) where prsn_email = 'gideon@gmail.com';
 
+--Current Exercise:
+excr_rk ,  excr_nm,  excr_reps, excr_sets, excr_weight , excr_notes, prsn_rk --Do something similar to the measurement?
+alter table exercise drop column trpe_rk;
+delete from exercise where 1=1;
+alter table exercise add column coach_prsn_rk integer not null;
+ALTER TABLE exercise 
+   ADD CONSTRAINT fk_coach_prsn_rk
+   FOREIGN KEY (coach_prsn_rk) 
+   REFERENCES person(prsn_rk)
+   ON DELETE CASCADE; 
+--excersise_assignment
+exas_rk, prog_rk, prsn_rk
+Create TABLE exercise_assignment(
+exas_rk  SERIAL PRIMARY KEY,
+prog_rk integer not null,
+athlete_prsn_rk integer NOT NULL,
+assigner_prsn_rk integer,
+exas_notes varchar(128),
+);
+ALTER TABLE exercise_assignment 
+   ADD CONSTRAINT fk_prog_rk
+   FOREIGN KEY (prog_rk) 
+   REFERENCES program(prog_rk)
+   ON DELETE CASCADE;
+ALTER TABLE exercise_assignment 
+   ADD CONSTRAINT fk_athlete_prsn_rk
+   FOREIGN KEY (athlete_prsn_rk) 
+   REFERENCES person(prsn_rk)
+   ON DELETE CASCADE;
+   ALTER TABLE exercise_assignment 
+   ADD CONSTRAINT fk_assigner_prsn_rk
+   FOREIGN KEY (assigner_prsn_rk) 
+   REFERENCES person(prsn_rk);
+--Program: Foreign keys to the coach, and the training period (will be connected to athlete)
+prog_rk, coach_prsn_rk, trpe_rk, prog_nm
+Create TABLE program(
+prog_rk  SERIAL PRIMARY KEY,
+prog_nm varchar(64) NOT NULL,
+coach_prsn_rk integer,
+trpe_rk integer NOT NULL
+);
+ALTER TABLE program
+ADD CONSTRAINT fk_trpe_rk FOREIGN KEY (trpe_rk)
+REFERENCES training_period (trpe_rk)
+ON DELETE CASCADE;
+ALTER TABLE program 
+   ADD CONSTRAINT fk_coach_prsn_rk
+   FOREIGN KEY (coach_prsn_rk) 
+   REFERENCES person(prsn_rk);
+
+
+
 UPDATE training_period 
 SET trpe_end_dt = null WHERE trpe_rk = 
 ( SELECT trpe_rk FROM training_period where prsn_rk = 12 ORDER BY trpe_start_dt DESC LIMIT 1)
