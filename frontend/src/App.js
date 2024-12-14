@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import Practices from "./pages/Practices";
 import Meets from "./pages/Meets";
 import LoginModal from "./componenents/modals/LoginModal";
+import Coach from "./pages/Coach";
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -27,6 +28,7 @@ const App = () => {
           <Route path="/home" element={<Home />} />
           <Route path="/practices" element={<Practices />} />
           <Route path="/meets" element={<Meets />} />
+          <Route path="/coach" element={<Coach />} />
         </Routes>
       </Router>
     </>

@@ -1,10 +1,13 @@
 import React from "react";
 import styled from "styled-components";
+import { useState } from "react";
 import "typeface-nunito";
-import EditMeasurableForm from "../forms/EditMeasurableForm";
+import TrainingPeriodList from "../tables/TrainingPeriodList";
 
-const MeasurableEditModal = ({ open, onClose, measObj, refresh }) => {
-  if (!open) return null;
+const AthleteDetails = ({ open, onClose, refresh, athlete }) => {
+  const [loading, setLoading] = useState(false);
+  console.log(athlete);
+  if (!open || loading) return null;
   return (
     <Modal>
       <Overlay>
@@ -17,11 +20,8 @@ const MeasurableEditModal = ({ open, onClose, measObj, refresh }) => {
             Close
           </CloseButton>
           <Content>
-            <EditMeasurableForm
-              measObj={measObj}
-              close={() => onClose()}
-              refresh={refresh}
-            />
+            <h1>{athlete.prsn_first_nm + " " + athlete.prsn_last_nm}</h1>
+            <TrainingPeriodList prsn_rk={athlete.prsn_rk} bPrograms={true} />
           </Content>
         </ModalContainer>
       </Overlay>
@@ -67,41 +67,6 @@ const ModalContainer = styled.div`
 const Content = styled.div`
   width: 90%;
 `;
-const RowContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: row;
-  font-family: "Nunito", sans-serif;
-  margin: 0;
-  padding: 0;
-`;
-
-const FieldName = styled.h3`
-  margin: 0 10px 0 0;
-  padding: 0;
-`;
-const EditButton = styled.button`
-  background: linear-gradient(45deg, #808080 30%, black 95%);
-  border: none;
-  border-radius: 25px;
-  color: white;
-  padding: 5px 10px;
-  font-size: 12px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transform: translateY(0);
-  }
-`;
 const CloseButton = styled.button`
   background: linear-gradient(45deg, black 30%, #808080 95%);
   border: none;
@@ -123,4 +88,4 @@ const CloseButton = styled.button`
     transform: translateY(0);
   }
 `;
-export default MeasurableEditModal;
+export default AthleteDetails;

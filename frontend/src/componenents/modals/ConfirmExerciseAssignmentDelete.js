@@ -1,52 +1,53 @@
 import React from "react";
 import styled from "styled-components";
 
-const ConfirmMeasurableDeleteModal = ({ open, onClose, measObj, refresh }) => {
-  async function deleteMeas(meas_rk) {
+const ConfirmExerciseAssignmentDelete = ({
+  open,
+  onClose,
+  fullClose,
+  excr,
+  refresh,
+}) => {
+  async function deleteExas({ exas_rk }) {
     try {
+      //Fix the route
+      console.log("DELETING");
       const response = await fetch(
-        `http://localhost:5000/api//delete-measurable`,
+        `http://localhost:5000/api/delete-exerciseAssignment`,
         {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            meas_rk: measObj.meas_rk,
+            exas_rk: excr.exas_rk,
           }),
         }
       );
-      alert("Meas DELETED");
+      alert("Exercise Assignment DELETED");
+
       console.log(response);
       onClose();
+      fullClose();
       refresh();
     } catch (error) {
       alert(error.message);
     }
   }
   if (!open) return null;
-
   return (
     <Modal>
       <Overlay>
         <ModalContainer>
           <FieldContainer>
             <FieldLabel>
-              Are you sure you want to delete Measurable:{" "}
+              Are you sure you want to delete the Assignment of Excercise:
             </FieldLabel>
-            <h2>{measObj.meas_id}</h2>
-          </FieldContainer>
-          <FieldContainer>
-            <FieldLabel>Type:</FieldLabel>
-            <h2>{measObj.meas_typ}</h2>
-          </FieldContainer>
-          <FieldContainer>
-            <FieldLabel>Units:</FieldLabel>
-            <h2>{measObj.meas_unit}</h2>
+            <h2>{excr.excr_nm}</h2>
           </FieldContainer>
 
           <ButtonContainer>
-            <StyledButton onClick={() => deleteMeas(measObj.meas_rk)}>
+            <StyledButton onClick={() => deleteExas(excr.exas_rk)}>
               Delete
             </StyledButton>
             <CancelButton onClick={() => onClose()}>Cancel</CancelButton>
@@ -130,4 +131,4 @@ const FieldLabel = styled.h4`
   color: grey;
   margin-right: 20px;
 `;
-export default ConfirmMeasurableDeleteModal;
+export default ConfirmExerciseAssignmentDelete;

@@ -4,58 +4,32 @@
 */
 const { pool } = require(".././db");
 
-exports.addExercise = async (req, res) => {
+exports.addProgram = async (req, res) => {
   try {
-    console.log(req.body);
-    const { excr_nm, excr_reps, excr_sets, excr_weight, excr_notes, trpe_rk } =
-      req.body;
+    const { prog_nm, coach_prsn_rk, trpe_rk } = req.body;
     //$1 is the variable to add in the db, runs sql query in quotes which is same as in the CLI
     //Returning * returns back the data
-    const newExercise = await pool.query(
-      "INSERT INTO Exercise (excr_nm, excr_reps, excr_sets, excr_weight, excr_notes, trpe_rk) VALUES($1, $2, $3, $4, $5, $6) RETURNING *",
-      [excr_nm, excr_reps, excr_sets, excr_weight, excr_notes, trpe_rk]
+    const newProgram = await pool.query(
+      "INSERT INTO program (prog_nm, coach_prsn_rk, trpe_rk) VALUES($1, $2, $3) RETURNING *",
+      [prog_nm, coach_prsn_rk, trpe_rk]
     );
 
-    res.json(newExercise);
+    res.json(newProgram);
   } catch (err) {
     console.error("Async Error:", err.message);
-    res.status(500).json({ message: "Error occurred Adding Exercise." });
+    res.status(500).json({ message: "Error occurred Adding Program." });
   }
 };
 
-exports.getAllExercises = async (req, res) => {
+exports.getProgramAndExercises = async (req, res) => {
   try {
-    const allExercises = await pool.query("SELECT * FROM Exercise");
-    res.json(allExercises);
-  } catch (err) {
-    console.error("Async Error:", err.message);
-    res.status(500).json({ message: "Error occurred getting All Exercises." });
-  }
-};
-
-exports.getExercisesInCurrentTRPE = async (req, res) => {
-  try {
-    const allExercises = await pool.query(
-      "SELECT * FROM Exercise excr join training_period trpe on excr.trpe_rk = trpe.trpe_rk where trpe.trpe_end_dt is null and trpe.trpe_start_dt < current_date "
-    );
-    res.json(allExercises);
-  } catch (err) {
-    console.error("Async Error:", err.message);
-    res
-      .status(500)
-      .json({ message: "Error occurred Getting Exercise from current TRPE." });
-  }
-};
-
-exports.getExercise = async (req, res) => {
-  try {
-    const { excr_rk } = req.params;
-    const Exercise = await pool.query(
-      "SELECT * FROM Exercise WHERE excr_rk = $1",
-      [excr_rk]
+    const { prog_rk } = req.params;
+    const Program = await pool.query(
+      "select prog.prog_rk, prog.prog_nm, prog.coach_prsn_rk, exas.athlete_prsn_rk, exas.assigner_prsn_rk, exas.exas_notes, excr.excr_nm, excr.excr_reps, excr.excr_sets, excr.excr_weight, excr.excr_notes from program prog inner join exercise_assignment exas on prog.prog_rk = exas.prog_rk inner join exercise excr on excr.excr_rk = exas.excr_rk where prog.prog_rk = $1",
+      [prog_rk]
     );
 
-    res.json(Exercise.rows);
+    res.json(Program.rows);
     console.log(req.params);
   } catch (err) {
     console.error("Async Error:", err.message);
@@ -63,33 +37,31 @@ exports.getExercise = async (req, res) => {
   }
 };
 
-exports.updateExercise = async (req, res) => {
+exports.updateProgram = async (req, res) => {
   try {
-    const { excr_rk } = req.params;
-    const { excr_nm, excr_reps, excr_sets, excr_weight, excr_notes, trpe_rk } =
-      req.body;
+    const { prog_rk, prog_nm, coach_prsn_rk, trpe_rk } = req.body;
     const updateTodo = await pool.query(
-      "UPDATE Exercise SET excr_nm = $1, excr_reps = $2, excr_sets = $3, excr_weight = $4, excr_notes = $5, trpe_rk = $6 WHERE excr_rk = $7",
-      [excr_nm, excr_reps, excr_sets, excr_weight, excr_notes, trpe_rk, excr_rk]
+      "UPDATE program SET prog_nm = $2, coach_prsn_rk = $3, trpe_rk = $4 WHERE prog_rk = $1",
+      [prog_rk, prog_nm, coach_prsn_rk, trpe_rk]
     );
-    res.json("Exercise was Updated");
+    res.json("program was Updated");
   } catch (err) {
     console.error("Async Error:", err.message);
-    res.status(500).json({ message: "Error occurred Updating Exercise." });
+    res.status(500).json({ message: "Error occurred Updating program." });
   }
 };
 
-exports.deleteExercise = async (req, res) => {
+exports.deleteProgram = async (req, res) => {
   try {
-    const { excr_rk } = req.params;
+    const { prog_rk } = req.params;
     const deleteExercise = await pool.query(
-      "DELETE FROM Exercise WHERE excr_rk = $1",
-      [prsn_rk]
+      "DELETE FROM program WHERE prog_rk = $1",
+      [prog_rk]
     );
 
-    res.json("Exercise has been Deleted");
+    res.json("Program has been Deleted");
   } catch (err) {
     console.error("Async Error:", err.message);
-    res.status(500).json({ message: "Error occurred Deleting Exercise." });
+    res.status(500).json({ message: "Error occurred Deleting Program." });
   }
 };

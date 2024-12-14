@@ -23,6 +23,9 @@ const Navbar = () => {
         <NavPath to="/home">Home</NavPath>
         <NavPath to="/practices">Practices</NavPath>
         <NavPath to="/meets">Meets</NavPath>
+        {user.prsn_role === "COACH" ? (
+          <NavPath to="/coach">Coach</NavPath>
+        ) : null}
       </NavCenter>
       <NavRight>
         {user.prsn_role === "ATHLETE" ? null : (

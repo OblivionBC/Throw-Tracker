@@ -1,10 +1,19 @@
 import React from "react";
 import styled from "styled-components";
+import { useState } from "react";
+import AddExerciseAssignmentForm from "../forms/AddExerciseAssignment";
 import "typeface-nunito";
-import EditMeasurableForm from "../forms/EditMeasurableForm";
 
-const MeasurableEditModal = ({ open, onClose, measObj, refresh }) => {
-  if (!open) return null;
+const AddExerciseAssignment = ({
+  open,
+  onClose,
+  refresh,
+  prog_rk,
+  prsn_rk,
+}) => {
+  const [loading, setLoading] = useState(false);
+
+  if (!open || loading) return null;
   return (
     <Modal>
       <Overlay>
@@ -17,10 +26,15 @@ const MeasurableEditModal = ({ open, onClose, measObj, refresh }) => {
             Close
           </CloseButton>
           <Content>
-            <EditMeasurableForm
-              measObj={measObj}
-              close={() => onClose()}
-              refresh={refresh}
+            <AddExerciseAssignmentForm
+              close={() => {
+                console.log("CLOSING");
+                onClose();
+                console.log("CLOSING");
+              }}
+              refresh={() => refresh()}
+              prog_rk={prog_rk}
+              athlete_prsn_rk={prsn_rk}
             />
           </Content>
         </ModalContainer>
@@ -56,8 +70,8 @@ const ModalContainer = styled.div`
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  max-width: 1400px;
-  width: 70%;
+  max-width: 900px;
+  width: 100%;
   position: fixed;
   background-color: white;
   border-radius: 15px;
@@ -66,41 +80,6 @@ const ModalContainer = styled.div`
 `;
 const Content = styled.div`
   width: 90%;
-`;
-const RowContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: row;
-  font-family: "Nunito", sans-serif;
-  margin: 0;
-  padding: 0;
-`;
-
-const FieldName = styled.h3`
-  margin: 0 10px 0 0;
-  padding: 0;
-`;
-const EditButton = styled.button`
-  background: linear-gradient(45deg, #808080 30%, black 95%);
-  border: none;
-  border-radius: 25px;
-  color: white;
-  padding: 5px 10px;
-  font-size: 12px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transform: translateY(0);
-  }
 `;
 const CloseButton = styled.button`
   background: linear-gradient(45deg, black 30%, #808080 95%);
@@ -123,4 +102,4 @@ const CloseButton = styled.button`
     transform: translateY(0);
   }
 `;
-export default MeasurableEditModal;
+export default AddExerciseAssignment;

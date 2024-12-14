@@ -48,8 +48,8 @@ const ModalContainer = styled.div`
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  max-width: 900px;
-  width: 100%;
+  max-width: 1400px;
+  width: 70%;
   max-height: 90vh;
   overflow-y: auto;
   position: relative;

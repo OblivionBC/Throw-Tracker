@@ -1,25 +1,48 @@
+SELECT prog.prog_rk, prog.prog_nm, excr.excr_nm, exas.excr_rk, exas.exas_rk, exas.exas_reps, exas.exas_sets, exas.exas_weight, excr.excr_notes,  exas.exas_notes, exas.is_measurable FROM program prog 
+left join exercise_assignment exas on exas.prog_rk = prog.prog_rk left join exercise excr on excr.excr_rk = exas.excr_rk where prog.trpe_rk = 
+
 CREATE DATABASE trackApp;
    UPDATE person set prsn_pwrd = crypt('mypassword', gen_salt('bf')) where prsn_email = 'gideon@gmail.com';
 
---Current Exercise:
+--Current Exercise: Should have reps sets and weight in assignment
 excr_rk ,  excr_nm,  excr_reps, excr_sets, excr_weight , excr_notes, prsn_rk --Do something similar to the measurement?
-alter table exercise drop column trpe_rk;
 delete from exercise where 1=1;
+alter table exercise drop column trpe_rk;
+alter table exercise drop column excr_reps;
+alter table exercise drop column excr_sets;
+alter table exercise drop column excr_weight;
+alter table exercise add column excr_units varchar(16) not null;  
 alter table exercise add column coach_prsn_rk integer not null;
+alter table exercise add column excr_typ varchar(32) not null default 'Specific Preparatory';
 ALTER TABLE exercise 
    ADD CONSTRAINT fk_coach_prsn_rk
    FOREIGN KEY (coach_prsn_rk) 
    REFERENCES person(prsn_rk)
    ON DELETE CASCADE; 
---excersise_assignment
+--exercise_assignment
 exas_rk, prog_rk, prsn_rk
 Create TABLE exercise_assignment(
 exas_rk  SERIAL PRIMARY KEY,
+excr_rk integer not null.
 prog_rk integer not null,
 athlete_prsn_rk integer NOT NULL,
 assigner_prsn_rk integer,
-exas_notes varchar(128),
+exas_notes varchar(128)
 );
+alter table exercise_assignment add column exas_reps integer;
+alter table exercise_assignment add column exas_sets integer;
+alter table exercise_assignment add column exas_weight decimal;
+alter table exercise_assignment add column meas_rk integer;
+alter table exercise_assignment add column excr_rk integer not null;
+ALTER TABLE exercise_assignment 
+   ADD CONSTRAINT fk_meas_rk
+   FOREIGN KEY (meas_rk) 
+   REFERENCES measurable(meas_rk);
+ALTER TABLE exercise_assignment 
+   ADD CONSTRAINT fk_excr_rk
+   FOREIGN KEY (excr_rk) 
+   REFERENCES exercise(excr_rk)
+   ON DELETE CASCADE;
 ALTER TABLE exercise_assignment 
    ADD CONSTRAINT fk_prog_rk
    FOREIGN KEY (prog_rk) 
@@ -50,8 +73,6 @@ ALTER TABLE program
    ADD CONSTRAINT fk_coach_prsn_rk
    FOREIGN KEY (coach_prsn_rk) 
    REFERENCES person(prsn_rk);
-
-
 
 UPDATE training_period 
 SET trpe_end_dt = null WHERE trpe_rk = 

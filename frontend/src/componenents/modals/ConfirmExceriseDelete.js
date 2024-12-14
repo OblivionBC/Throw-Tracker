@@ -1,22 +1,23 @@
 import React from "react";
 import styled from "styled-components";
 
-const ConfirmMeasurableDeleteModal = ({ open, onClose, measObj, refresh }) => {
-  async function deleteMeas(meas_rk) {
+const ConfirmExerciseDelete = ({ open, onClose, excr, refresh }) => {
+  async function deleteExercise(excr_rk) {
+    alert("PRAC DELETED");
     try {
+      //Fix the route
       const response = await fetch(
-        `http://localhost:5000/api//delete-measurable`,
+        `http://localhost:5000/api//delete-exercise`,
         {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            meas_rk: measObj.meas_rk,
+            excr_rk: excr_rk,
           }),
         }
       );
-      alert("Meas DELETED");
       console.log(response);
       onClose();
       refresh();
@@ -25,28 +26,17 @@ const ConfirmMeasurableDeleteModal = ({ open, onClose, measObj, refresh }) => {
     }
   }
   if (!open) return null;
-
   return (
     <Modal>
       <Overlay>
         <ModalContainer>
           <FieldContainer>
-            <FieldLabel>
-              Are you sure you want to delete Measurable:{" "}
-            </FieldLabel>
-            <h2>{measObj.meas_id}</h2>
-          </FieldContainer>
-          <FieldContainer>
-            <FieldLabel>Type:</FieldLabel>
-            <h2>{measObj.meas_typ}</h2>
-          </FieldContainer>
-          <FieldContainer>
-            <FieldLabel>Units:</FieldLabel>
-            <h2>{measObj.meas_unit}</h2>
+            <FieldLabel>Are you sure you want to delete Exercise:</FieldLabel>
+            <h2>{excr.excr_nm}</h2>
           </FieldContainer>
 
           <ButtonContainer>
-            <StyledButton onClick={() => deleteMeas(measObj.meas_rk)}>
+            <StyledButton onClick={() => deleteExercise(excr.excr_rk)}>
               Delete
             </StyledButton>
             <CancelButton onClick={() => onClose()}>Cancel</CancelButton>
@@ -130,4 +120,4 @@ const FieldLabel = styled.h4`
   color: grey;
   margin-right: 20px;
 `;
-export default ConfirmMeasurableDeleteModal;
+export default ConfirmExerciseDelete;
