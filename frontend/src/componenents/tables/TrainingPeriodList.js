@@ -7,6 +7,7 @@ import ConfirmTRPEDelete from "../modals/ConfirmTRPEDelete";
 import AddTRPEModal from "../modals/AddTRPEModal";
 import { useUser } from "../contexts/UserContext";
 import TrainingPeriodEditModal from "../modals/TrainingPeriodEditModal";
+import ProgramsModal from "../modals/ProgramsModal";
 
 const TableStyles = {
   pagination: {
@@ -23,14 +24,29 @@ const TableStyles = {
     },
   },
 };
-const TrainingPeriodList = ({ sharedState, setSharedState }) => {
+const TrainingPeriodList = ({
+  prsn_rk,
+  bAdd,
+  bEdit,
+  bDelete,
+  paginationNum,
+  sharedState,
+  bPrograms,
+  selectable,
+  setSharedState,
+}) => {
   const [trpeData, setTrpeData] = useState([]);
   const [addTRPEOpen, setAddTRPEOpen] = useState(false);
   const [deleteTRPEOpen, setDeleteTRPEOpen] = useState(false);
+  const [programs, setPrograms] = useState(false);
   const [editTRPEOpen, setEditTRPEOpen] = useState(false);
   const [selectedTRPE, setSelectedTRPE] = useState({});
   const { getUser } = useUser();
-  console.log(getUser());
+  let pagination = 3;
+  paginationNum === undefined ? (pagination = 3) : (pagination = paginationNum);
+  selectable === undefined ? (selectable = false) : (selectable = true);
+  let user = getUser();
+  if (prsn_rk !== undefined) user = prsn_rk;
   const getTRPEData = async () => {
     try {
       const response = await fetch(
@@ -41,7 +57,7 @@ const TrainingPeriodList = ({ sharedState, setSharedState }) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            prsn_rk: getUser(),
+            prsn_rk: user,
           }),
         }
       );
@@ -66,7 +82,7 @@ const TrainingPeriodList = ({ sharedState, setSharedState }) => {
       const ids = selectedRows?.map((row) => {
         return row.trpe_rk;
       });
-      setSharedState(ids);
+      if (setSharedState) setSharedState(ids);
     }
   };
   const columns = [
@@ -92,7 +108,9 @@ const TrainingPeriodList = ({ sharedState, setSharedState }) => {
         ),
       sortable: true,
     },
-    {
+  ];
+  if (bEdit === true)
+    columns.push({
       cell: (row) => (
         <DeleteButton
           onClick={() => {
@@ -103,8 +121,9 @@ const TrainingPeriodList = ({ sharedState, setSharedState }) => {
           Edit
         </DeleteButton>
       ),
-    },
-    {
+    });
+  if (bDelete === true)
+    columns.push({
       cell: (row) => (
         <DeleteButton
           onClick={() => {
@@ -115,8 +134,20 @@ const TrainingPeriodList = ({ sharedState, setSharedState }) => {
           Delete
         </DeleteButton>
       ),
-    },
-  ];
+    });
+  if (bPrograms === true)
+    columns.push({
+      cell: (row) => (
+        <DeleteButton
+          onClick={() => {
+            setSelectedTRPE(row);
+            setPrograms(true);
+          }}
+        >
+          Programs
+        </DeleteButton>
+      ),
+    });
   //Add the Detail/Edit modal now
   return (
     <CompWrap>
@@ -137,9 +168,17 @@ const TrainingPeriodList = ({ sharedState, setSharedState }) => {
         refresh={() => getTRPEData()}
         trpeObj={selectedTRPE}
       />
+      <ProgramsModal
+        prsn_rk={user}
+        open={programs}
+        onClose={() => setPrograms(false)}
+        trpe_rk={selectedTRPE.trpe_rk}
+      />
       <RowDiv>
         <Title>Training Periods</Title>
-        <AddButton onClick={() => setAddTRPEOpen(true)}>Add</AddButton>
+        {bAdd === true && (
+          <AddButton onClick={() => setAddTRPEOpen(true)}>Add</AddButton>
+        )}
         <AddButton onClick={() => getTRPEData()}>Refresh</AddButton>
       </RowDiv>
       <TableWrap>
@@ -147,7 +186,7 @@ const TrainingPeriodList = ({ sharedState, setSharedState }) => {
           columns={columns}
           data={trpeData}
           pagination
-          paginationPerPage={6}
+          paginationPerPage={pagination}
           paginationComponentOptions={{
             rowsPerPageText: "Rows per page:",
             rangeSeparatorText: "of",
@@ -156,7 +195,7 @@ const TrainingPeriodList = ({ sharedState, setSharedState }) => {
           customStyles={TableStyles}
           defaultSortFieldId="Start"
           defaultSortAsc={false}
-          selectableRows
+          selectableRows={selectable}
           onSelectedRowsChange={handleChange}
         />
       </TableWrap>

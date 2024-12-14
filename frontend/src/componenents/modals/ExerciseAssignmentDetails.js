@@ -2,38 +2,63 @@ import React from "react";
 import styled from "styled-components";
 import { useState } from "react";
 import "typeface-nunito";
-import EditTRPEForm from "../forms/EditTRPEForm";
-import Practices from "../tables/PracticeList";
+import EditExerciseAssignmentForm from "../forms/EditExerciseAssignment";
+import ConfirmExerciseAssignmentDelete from "./ConfirmExerciseAssignmentDelete";
 
-const TrainingPeriodEditModal = ({ open, onClose, trpeObj, refresh }) => {
+const ExerciseAssignmentDetails = ({
+  open,
+  onClose,
+  excrObj,
+  refresh,
+  bEdit,
+  bDelete,
+  prsn_rk,
+}) => {
   const [editing, setEditing] = useState(false);
-  console.log(trpeObj);
-  console.log({ trpeObj });
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const Details = () => {
-    if (editing) return null;
+    console.log(excrObj);
     return (
-      <Modal>
-        <Overlay>
-          <ModalContainer>
-            <CloseButton
-              onClick={() => {
-                onClose();
-                setEditing(false);
-              }}
-            >
-              Close
-            </CloseButton>
-            <Content>
-              <EditTRPEForm
-                trpe={trpeObj}
-                close={() => onClose()}
-                refresh={refresh}
-              />
-              <Practices trpe_rk={trpeObj.trpe_rk} paginationNum={4} />
-            </Content>
-          </ModalContainer>
-        </Overlay>
-      </Modal>
+      <>
+        <RowContainer>
+          <FieldName>Excercise Name:</FieldName>
+          <p>{excrObj.excr_nm}</p>
+        </RowContainer>
+        <RowContainer>
+          <FieldName>Sets:</FieldName>
+          <p>{excrObj.exas_sets}</p>
+        </RowContainer>
+        <RowContainer>
+          <FieldName>Reps:</FieldName>
+          <p>{excrObj.exas_reps}</p>
+        </RowContainer>
+        <RowContainer>
+          <FieldName>Wegiht:</FieldName>
+          <p>{excrObj.exas_weight}</p>
+        </RowContainer>
+        {excrObj.excr_notes && (
+          <RowContainer>
+            <FieldName>Excercise Notes:</FieldName>
+            <p style={{ overflow: "auto" }}>{excrObj.excr_notes}</p>
+          </RowContainer>
+        )}
+        {excrObj.exas_notes && (
+          <RowContainer>
+            <FieldName>Excercise Assignment Notes:</FieldName>
+            <p style={{ overflow: "auto" }}>{excrObj.exas_notes}</p>
+          </RowContainer>
+        )}
+
+        <RowContainer>
+          <FieldName>Assigned as Measurable?:</FieldName>
+          <input
+            type="checkbox"
+            id="measurable_checkbox"
+            checked={excrObj.is_measurable === "Y"}
+            disabled
+          />
+        </RowContainer>
+      </>
     );
   };
 
@@ -41,6 +66,13 @@ const TrainingPeriodEditModal = ({ open, onClose, trpeObj, refresh }) => {
   return (
     <Modal>
       <Overlay>
+        <ConfirmExerciseAssignmentDelete
+          open={confirmDelete}
+          onClose={() => setConfirmDelete(false)}
+          excr={excrObj}
+          refresh={() => refresh()}
+          fullClose={() => onClose()}
+        />
         <ModalContainer>
           <CloseButton
             onClick={() => {
@@ -51,11 +83,27 @@ const TrainingPeriodEditModal = ({ open, onClose, trpeObj, refresh }) => {
             Close
           </CloseButton>
           <Content>
-            <Details />
+            {editing ? (
+              <EditExerciseAssignmentForm
+                excr={excrObj}
+                close={() => {
+                  setEditing(false);
+                }}
+                refresh={() => refresh()}
+                athlete_prsn_rk={prsn_rk}
+              />
+            ) : (
+              <Details />
+            )}
           </Content>
-          <EditButton onClick={() => setEditing(!editing)}>
-            {editing ? "Details" : "Edit"}
-          </EditButton>
+          {bEdit && (
+            <EditButton onClick={() => setEditing(!editing)}>
+              {editing ? "Details" : "Edit"}
+            </EditButton>
+          )}
+          {bDelete && (
+            <button onClick={() => setConfirmDelete(true)}>Delete</button>
+          )}
         </ModalContainer>
       </Overlay>
     </Modal>
@@ -137,7 +185,6 @@ const EditButton = styled.button`
 `;
 const CloseButton = styled.button`
   background: linear-gradient(45deg, black 30%, #808080 95%);
-  margin: 5px;
   border: none;
   border-radius: 25px;
   color: white;
@@ -157,4 +204,4 @@ const CloseButton = styled.button`
     transform: translateY(0);
   }
 `;
-export default TrainingPeriodEditModal;
+export default ExerciseAssignmentDetails;
