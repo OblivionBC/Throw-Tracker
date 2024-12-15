@@ -8,48 +8,37 @@ const DynamicModal = ({ open, onClose, refresh, Component, props }) => {
   if (!open || loading) return null;
   console.log(props);
   return (
-    <Modal>
-      <Overlay>
-        <ModalContainer>
-          <CloseButton
-            onClick={() => {
-              onClose();
-            }}
-          >
-            Close
-          </CloseButton>
-          <Content>
-            {Component ? (
-              <Component
-                refresh={() => refresh()}
-                close={() => onClose()}
-                props={props}
-              />
-            ) : (
-              <p>The form did not load correctly</p>
-            )}
-          </Content>
-        </ModalContainer>
-      </Overlay>
-    </Modal>
+    <Overlay>
+      <ModalContainer>
+        <CloseButton
+          onClick={() => {
+            onClose();
+          }}
+        >
+          Close
+        </CloseButton>
+        <Content>
+          {Component ? (
+            <Component
+              refresh={() => refresh()}
+              close={() => onClose()}
+              props={props}
+            />
+          ) : (
+            <p>The form did not load correctly</p>
+          )}
+        </Content>
+      </ModalContainer>
+    </Overlay>
   );
 };
 
-const Modal = styled.div`
-  position: fixed;
+const Overlay = styled.div`
+  display: flex;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 2;
-  padding: 12px 24px;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
-const Overlay = styled.div`
-  display: flex;
   justify-content: center;
   align-items: center;
   position: fixed;
