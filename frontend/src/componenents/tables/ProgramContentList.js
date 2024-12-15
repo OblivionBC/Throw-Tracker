@@ -21,7 +21,16 @@ const TableStyles = {
   },
 };
 
-const ProgramContent = ({ paginationNum, data, prog_rk, prsn_rk, refresh }) => {
+const ProgramContent = ({
+  paginationNum,
+  data,
+  prog_rk,
+  prsn_rk,
+  refresh,
+  bAdd,
+  bEdit,
+  bDelete,
+}) => {
   //Make modal/form for adding exercise_assignment and deleteing one
   const [assignExercise, setAssignExercise] = useState(false);
   const [selectedExcr, setSelectedExcr] = useState({});
@@ -111,13 +120,13 @@ const ProgramContent = ({ paginationNum, data, prog_rk, prsn_rk, refresh }) => {
         onClose={() => setEditExcr(!editExcr)}
         refresh={() => refresh()}
         excrObj={selectedExcr}
-        bEdit={user.prsn_role === "COACH"}
-        bDelete={user.prsn_role === "COACH"}
+        bEdit={user.prsn_role === "COACH" && bEdit}
+        bDelete={user.prsn_role === "COACH" && bDelete}
         prsn_rk={prsn_rk}
       />
       <RowDiv>
         <Title>Program : {prog_rk} </Title>
-        {user.prsn_role === "COACH" && (
+        {user.prsn_role === "COACH" && bAdd && (
           <AddButton onClick={() => setAssignExercise(true)}>
             Add Exercise
           </AddButton>

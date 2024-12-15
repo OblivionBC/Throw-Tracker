@@ -25,7 +25,7 @@ exports.getProgramAndExercises = async (req, res) => {
   try {
     const { prog_rk } = req.params;
     const Program = await pool.query(
-      "select prog.prog_rk, prog.prog_nm, prog.coach_prsn_rk, exas.athlete_prsn_rk, exas.assigner_prsn_rk, exas.exas_notes, excr.excr_nm, excr.excr_reps, excr.excr_sets, excr.excr_weight, excr.excr_notes from program prog inner join exercise_assignment exas on prog.prog_rk = exas.prog_rk inner join exercise excr on excr.excr_rk = exas.excr_rk where prog.prog_rk = $1",
+      "select prog.prog_rk, prog.prog_nm, prog.coach_prsn_rk, exas.athlete_prsn_rk, exas.assigner_prsn_rk, exas.exas_notes, excr.excr_nm, excr.excr_reps, excr.excr_sets, excr.excr_weight, excr.excr_notes, exas.meas_rk from program prog inner join exercise_assignment exas on prog.prog_rk = exas.prog_rk inner join exercise excr on excr.excr_rk = exas.excr_rk where prog.prog_rk = $1",
       [prog_rk]
     );
 

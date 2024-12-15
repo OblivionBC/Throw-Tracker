@@ -102,7 +102,7 @@ const Practices = ({ trpe_rk, paginationNum, bAdd, bDetail, bDelete }) => {
     },
     {
       name: "TRPE",
-      selector: (row) => row.trpe_rk,
+      selector: (row) => trpe_rk || row.trpe_rk,
       sortable: true,
       //width: "10%",
     },

@@ -15,52 +15,40 @@ const AddExerciseAssignment = ({
 
   if (!open || loading) return null;
   return (
-    <Modal>
-      <Overlay>
-        <ModalContainer>
-          <CloseButton
-            onClick={() => {
+    <Overlay>
+      <ModalContainer>
+        <CloseButton
+          onClick={() => {
+            onClose();
+          }}
+        >
+          Close
+        </CloseButton>
+        <Content>
+          <AddExerciseAssignmentForm
+            close={() => {
+              console.log("CLOSING");
               onClose();
+              console.log("CLOSING");
             }}
-          >
-            Close
-          </CloseButton>
-          <Content>
-            <AddExerciseAssignmentForm
-              close={() => {
-                console.log("CLOSING");
-                onClose();
-                console.log("CLOSING");
-              }}
-              refresh={() => refresh()}
-              prog_rk={prog_rk}
-              athlete_prsn_rk={prsn_rk}
-            />
-          </Content>
-        </ModalContainer>
-      </Overlay>
-    </Modal>
+            refresh={() => refresh()}
+            prog_rk={prog_rk}
+            athlete_prsn_rk={prsn_rk}
+          />
+        </Content>
+      </ModalContainer>
+    </Overlay>
   );
 };
 
-const Modal = styled.div`
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 2;
-  padding: 12px 24px;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
 const Overlay = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
   position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   background-color: rgba(0, 0, 0, 0.5);
   width: 100%;
   height: 100%;
