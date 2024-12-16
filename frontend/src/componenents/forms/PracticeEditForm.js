@@ -219,13 +219,6 @@ const StyledForm = styled(Form)`
   padding: 20px;
 `;
 
-const StyledInput = styled.input`
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  margin-bottom: 10px;
-`;
-
 const StyledButton = styled.button`
   padding: 10px 20px;
   background-color: #007bff;

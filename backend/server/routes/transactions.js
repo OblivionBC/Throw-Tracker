@@ -36,7 +36,7 @@ const {
   addExercise,
   getExercise,
   getAllExercises,
-  getExercisesInCurrentTRPE,
+  getExerciseForCoach,
   deleteExercise,
   updateExercise,
 } = require("../controllers/exercises");
@@ -72,7 +72,14 @@ const {
   deleteMeasurementsForPrac,
   getmeasurementsForTRPEs,
 } = require("../controllers/measurements");
+const {
+  getProgramsAndExerciseForTRPE,
+  addExerciseAssignment,
+  updateExerciseAssignment,
+  deleteExerciseAssignment,
+} = require("../controllers/exercise_assignments");
 
+const { addProgram } = require("../controllers/programs");
 router
   .post("/add-person", addPerson)
   .get("/get-person/:prsn_rk", getPerson)
@@ -97,12 +104,12 @@ router
   .put("/update-trainingPeriod", updateTrainingPeriod)
   .post("/endDateMostRecent_trainingPeriod", endDateMostRecentTrainingPeriod)
 
-  .post("/add-excersise", addExercise)
-  .get("/get-excersise/:excr_rk", getExercise)
-  .get("/get-all-excersises/:trpe_rk", getAllExercises)
-  .get("/get-exercisesInCurrentTRPE", getExercisesInCurrentTRPE)
-  .delete("/delete-excercise/:excr_rk", deleteExercise)
-  .put("/update-excercise/:excr_rk", updateExercise)
+  .post("/add-exercise", addExercise)
+  .get("/get-exercise/:excr_rk", getExercise)
+  .get("/get-all-exercises/:trpe_rk", getAllExercises)
+  .post("/get-exerciseForCoach", getExerciseForCoach)
+  .delete("/delete-exercise", deleteExercise)
+  .put("/update-exercise", updateExercise)
 
   .post("/add-measurable", addMeasurable)
   .get("/get-measurableForPrac", getMeasurablesForPrac)
@@ -126,6 +133,12 @@ router
   .get("/get-event/:even_rk", getEvent)
   .get("/get-all-event", getAllEvents)
   .delete("/delete-event/:even_rk", deleteEvent)
-  .put("/update-event/:even_rk", updateEvent);
+  .put("/update-event/:even_rk", updateEvent)
 
+  .post("/get-programsAndExerciseForTRPE", getProgramsAndExerciseForTRPE)
+  .post("/add-exerciseAssignment", addExerciseAssignment)
+  .put("/update-exerciseAssignment", updateExerciseAssignment)
+  .delete("/delete-exerciseAssignment", deleteExerciseAssignment)
+
+  .post("/add-program", addProgram);
 module.exports = router;

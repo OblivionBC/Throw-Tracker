@@ -15,8 +15,14 @@ exports.addPerson = async (req, res) => {
       org_rk,
       prsn_role,
     } = req.body;
-    //$1 is the variable to add in the db, runs sql query in quotes which is same as in the CLI
-    //Returning * returns back the data
+    const alreadyExists = await pool.query(
+      "select * from person where prsn_email = $1",
+      [prsn_email]
+    );
+    if (alreadyExists.rowCount > 0)
+      return res
+        .status(400)
+        .json({ message: "Email is already in use, please select another" });
     const newPerson = await pool.query(
       "INSERT INTO person (prsn_first_nm, prsn_last_nm, prsn_email, prsn_pwrd, org_rk, prsn_role) VALUES($1, $2, $3, crypt($4, gen_salt('bf')), $5, $6) RETURNING *",
       [prsn_first_nm, prsn_last_nm, prsn_email, prsn_pwrd, org_rk, prsn_role]
@@ -118,7 +124,6 @@ exports.athletes = async (req, res) => {
       "SELECT p.prsn_rk, p.prsn_first_nm, p.prsn_last_nm, p.prsn_email, p.prsn_role, o.org_name FROM person p inner join organization o on o.org_rk = p.org_rk WHERE p.coach_prsn_rk = $1 and o.org_name = $2;",
       [coach_prsn_rk, org_name]
     );
-    console.log(result);
     if (result.rows.length == 0) {
       res.status(404).json("Record does not exist");
       console.log("Unsuccessful Athlete Grab as User: " + coach_prsn_rk);

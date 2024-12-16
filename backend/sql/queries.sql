@@ -72,3 +72,10 @@ select * from training_period trpe
 where trpe.prsn_rk = 11
     and trpe_start_dt <= '2023-09-21'
     and trpe_end_dt >= '2023-09-21';
+
+select prog.prog_rk, prog.prog_nm, prog.coach_prsn_rk, exas.athlete_prsn_rk, 
+    exas.assigner_prsn_rk, exas.exas_notes, excr.excr_nm, excr.excr_reps, 
+    excr.excr_sets, excr.excr_weight, excr.excr_notes 
+from program prog 
+inner join exercise_assignment exas on prog.prog_rk = exas.prog_rk 
+inner join exercise excr on excr.excr_rk = exas.excr_rk;

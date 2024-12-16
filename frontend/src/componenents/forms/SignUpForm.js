@@ -5,7 +5,6 @@ import styled from "styled-components";
 import "typeface-nunito";
 
 const SignUpForm = ({ on, off }) => {
-  const [failed, setFailed] = useState(false);
   const initialValues = {
     fname: "",
     lname: "",
@@ -32,10 +31,9 @@ const SignUpForm = ({ on, off }) => {
       .oneOf(["COACH", "ATHLETE"], "Invalid Role"),
   });
 
-  const handleSubmit = async (values, { setSubmitting }) => {
+  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     // Handle form submission here
     // For example, you could make an API call to authenticate the user\
-    console.log(values);
     setSubmitting(true);
     try {
       const response = await fetch(`http://localhost:5000/api//add-person`, {
@@ -52,22 +50,19 @@ const SignUpForm = ({ on, off }) => {
           prsn_role: values.role,
         }),
       });
-      const jsonData = await response.json();
-      if (jsonData.rowCount === 0) {
-        setFailed(true);
+      if (response.ok === false) {
+        const jsonData = await response.json();
+        setErrors({ submit: jsonData.message });
         return;
-      } else {
       }
+      alert("Submitted");
+      setSubmitting(false);
+      off();
     } catch (error) {
-      setFailed(true);
-      console.error(error.message);
+      setErrors({ submit: error.message });
       return false;
     }
-    alert("Submitted");
-    setSubmitting(false);
-    off();
   };
-  console.log(on);
   if (!on) {
     return null;
   }
@@ -78,7 +73,7 @@ const SignUpForm = ({ on, off }) => {
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
       >
-        {({ handleSubmit, isSubmitting }) => (
+        {({ handleSubmit, isSubmitting, errors }) => (
           <StyledForm onSubmit={handleSubmit}>
             <Field name="fname">
               {({ field }) => (
@@ -173,11 +168,7 @@ const SignUpForm = ({ on, off }) => {
             <StyledButton type="submit" disabled={isSubmitting}>
               Sign Up
             </StyledButton>
-            {failed ? (
-              <SubmitError>
-                Something went wrong, please try again later
-              </SubmitError>
-            ) : null}
+            {errors.submit && <SubmitError>{errors.submit}</SubmitError>}
           </StyledForm>
         )}
       </Formik>

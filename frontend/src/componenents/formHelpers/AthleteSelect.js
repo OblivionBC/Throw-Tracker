@@ -1,7 +1,7 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import { useUser } from "../contexts/UserContext";
-const AthleteSelect = ({ prsn_rk, org_name }) => {
+const AthleteSelect = ({ prsn_rk, org_name, updateUser }) => {
   const [athletes, setAthletes] = useState([]);
   const [loading, setLoading] = useState(true);
   const { setSelectedAthlete, getUser } = useUser();
@@ -35,9 +35,9 @@ const AthleteSelect = ({ prsn_rk, org_name }) => {
   return (
     <select
       onChange={(choice) => {
-        setSelectedAthlete(choice.target.value);
-        console.log("SELECTED ATHLETE");
-        console.log(choice.target.value);
+        if (updateUser !== false) {
+          setSelectedAthlete(choice.target.value);
+        }
       }}
     >
       <option value="-1" label="Select Athlete" />

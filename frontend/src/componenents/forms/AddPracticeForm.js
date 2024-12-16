@@ -9,6 +9,7 @@ import { MeasurableFieldArray } from "./MeasurableFieldArray";
 import TrainingPeriodOptions from "../formHelpers/TrainingPeriodOptions";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import ProgramSelectWithExercise from "../formHelpers/ProgramSelectWithExercise";
 
 //Grab the initial values
 const addMeasurement = async (measurable, prac_rk) => {
@@ -53,7 +54,21 @@ const addPractice = async (prac_dt, trpe_rk, prsn_rk) => {
 
 const AddPracticeForm = ({ close, refresh }) => {
   const [failed, setFailed] = useState(false);
-  const [dateFieldDisabled, setDateFieldDisabled] = useState(true);
+  const [programData, setProgramData] = useState([]);
+  let formikRef = null;
+
+  useEffect(() => {
+    console.log("STUFF CHANGED");
+    let defaultMeasurables = [];
+    programData?.forEach((row) => {
+      defaultMeasurables.push({ meas_rk: row.meas_rk, msrm_value: 0 });
+    });
+    if (formikRef) {
+      formikRef.setFieldValue("measurables", defaultMeasurables);
+      console.log("CHANGED IT");
+    }
+    console.log({ defaultMeasurables });
+  }, [programData, formikRef]);
   const initialValues = {
     trpe: "",
     date: "",
@@ -82,6 +97,7 @@ const AddPracticeForm = ({ close, refresh }) => {
     // Handle form submission here
     //Make call on submit to update practice, and delete all measurments in for the prac, then create a new one for each in the array
     setSubmitting(true);
+    console.log(values);
     try {
       const prac_rk = await addPractice(values.date, values.trpe, getUser());
       values.measurables.forEach((element) => {
@@ -103,6 +119,7 @@ const AddPracticeForm = ({ close, refresh }) => {
     <>
       <Formik
         initialValues={initialValues}
+        innerRef={(formik) => (formikRef = formik)}
         validationSchema={validationSchema}
         validateOnChange={false}
         validateOnBlur={false}
@@ -121,6 +138,11 @@ const AddPracticeForm = ({ close, refresh }) => {
             </Field>
             <ErrorMessage name="trpe" component={SubmitError} />
 
+            <ProgramSelectWithExercise
+              trpe_rk={values.trpe}
+              disabled={values.trpe === ""}
+              setData={setProgramData}
+            />
             <Field name="date">
               {({ field }) => (
                 <FieldOutputContainer>

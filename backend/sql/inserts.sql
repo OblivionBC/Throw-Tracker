@@ -140,16 +140,31 @@ excr_nm,
   excr_sets,
   excr_weight,
   excr_notes,
-  trpe_rk)
+  coach_prsn_rk)
 VALUES
-    ('Bench Press', 4, 3, 225, '10 reps, 3 sets, 135 lbs', 1),
-    ('Half Squat', 8, 3, 220, '10 reps, 3 sets, 135 lbs', 1),
-    ('Romanian Deadlift', 6, 3, 160, '10 reps, 3 sets, 135 lbs', 1),
-    ('Incline Bench Press', 4, 3, 180, '10 reps, 3 sets, 135 lbs', 2),
-    ('Full Squat', 8, 3, 300, '10 reps, 3 sets, 135 lbs', 2),
-    ('Deadlift', 8, 3, 350, '10 reps, 3 sets, 135 lbs', 2),
-    ('Decline Bench Press', 4, 3, 190, '10 reps, 3 sets, 135 lbs', 4),
-    ('Quarter Squat', 6, 3, 325, '10 reps, 3 sets, 135 lbs', 4),
-    ('Romaian Deadlift', 8, 3, 170, '10 reps, 3 sets, 135 lbs', 4);
+    ('Bench Press', 4, 3, 225, 'Go for speed', 16),
+    ('Half Squat', 8, 3, 220, 'Slow on the eccentric, then fast', 16),
+    ('Romanian Deadlift', 6, 3, 160, 'Go light', 16),
+    ('Incline Bench Press', 4, 3, 180, '', 16),
+    ('Full Squat', 8, 3, 300, 'Ass to grass Si vous plaits', 16),
+    ('Deadlift', 8, 3, 350, 'Dont you dare try sumo', 16),
+    ('Decline Bench Press', 4, 3, 190, 'upside down', 16),
+    ('Quarter Squat', 6, 3, 325, 'load up to 325 with 70%, 80%, 90% then 100', 16),
+    ('Romaian Deadlift', 8, 3, 170, '', 16);
 
-  
+  INSERT INTO program (prog_nm, coach_prsn_rk, trpe_rk) VALUES
+('Discus Program', 16, 1),
+('Shotput', 16, 1);
+
+INSERT INTO exercise_assignment (
+  prog_rk,
+  athlete_prsn_rk,
+  assigner_prsn_rk,
+  excr_rk)
+VALUES
+    (1, 12, 16, 13),
+    (1, 12, 16, 14),
+    (1, 12, 16, 15),
+    (2, 12, 16, 16),
+    (2, 12, 16, 17),
+    (2, 12, 16, 21);

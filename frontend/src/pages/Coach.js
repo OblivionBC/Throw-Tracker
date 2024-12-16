@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import PracticeList from "../componenents/tables/PracticeList";
 import TrainingPeriodList from "../componenents/tables/TrainingPeriodList";
-import MeasurementChart from "../componenents/MeasurementChart";
+import CurrentExcersiseList from "../componenents/tables/CurrentExerciseList";
 import Measurables from "../componenents/tables/MeasurableList";
 import "typeface-rubik";
 import { useUser } from "../componenents/contexts/UserContext";
 import ErrorBoundary from "../componenents/ErrorBoundary";
+import AthleteList from "../componenents/tables/AthleteList";
 
-const Practices = () => {
+const Coach = () => {
   const [activeTRPE, setActiveTRPE] = useState([]);
   const { getUser } = useUser();
   useEffect(() => {
@@ -19,19 +20,11 @@ const Practices = () => {
     <Page>
       <LeftColumn>
         <ErrorBoundary>
-          <MeasurementChart activeTRPE={activeTRPE} />
+          <CurrentExcersiseList paginationNum={5} />
         </ErrorBoundary>
 
         <ErrorBoundary>
-          <TrainingPeriodList
-            sharedState={activeTRPE}
-            setSharedState={setActiveTRPE}
-            paginationNum={5}
-            bAdd={true}
-            bEdit={true}
-            bDelete={true}
-            selectable={true}
-          />
+          <AthleteList />
         </ErrorBoundary>
       </LeftColumn>
       <RightColumn>
@@ -41,7 +34,7 @@ const Practices = () => {
             bAdd={true}
             bDelete={true}
             bDetail={true}
-            paginationNum={5}
+            paginationNum={3}
           />
           <Block />
           <Measurables paginationNum={3} />
@@ -79,4 +72,4 @@ const RightColumn = styled.div`
   height: 100%;
   overflow: hidden;
 `;
-export default Practices;
+export default Coach;

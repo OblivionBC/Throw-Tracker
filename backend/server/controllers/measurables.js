@@ -6,27 +6,32 @@ const { pool } = require(".././db");
 
 exports.addMeasurable = async (req, res) => {
   try {
-    console.log(req.body);
     const { meas_id, meas_typ, meas_unit, prsn_rk } = req.body;
     console.log("Attempting Add Measurables for person " + prsn_rk);
-
-    //$1 is the variable to add in the db, runs sql query in quotes which is same as in the CLI
-    //Returning * returns back the data
+    const alreadyExists = await pool.query(
+      "select from measurable where meas_id = $1 and prsn_rk = $2",
+      [meas_id, prsn_rk]
+    );
+    if (alreadyExists.rowCount > 0) {
+      return res
+        .status(400)
+        .json({ message: "There is a measurable already with this name" });
+    }
     const newMeasurable = await pool.query(
       "INSERT INTO Measurable (meas_id, meas_typ, meas_unit, prsn_rk) VALUES($1, $2, $3, $4) RETURNING *",
       [meas_id, meas_typ, meas_unit, prsn_rk]
     );
 
-    res.json(newMeasurable);
     console.log(
       "Adding a measurable with name " +
         meas_id +
         " for the prsn in row " +
         prsn_rk
     );
+    return { status: 200, data: newMeasurable };
   } catch (err) {
     console.error("Async Error:", err.message);
-    res.status(500).json({
+    return res.status(500).json({
       message: "Error occurred retreiving Adding Measurable to Database.",
     });
   }
