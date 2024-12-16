@@ -1,5 +1,5 @@
 import React from "react";
-import { Field } from "formik";
+import { Field, useFormikContext } from "formik";
 import { useEffect, useState } from "react";
 import { useUser } from "../contexts/UserContext";
 import dayjs from "dayjs";
@@ -8,6 +8,7 @@ const TrainingPeriodOptions = ({ name }) => {
   const [trainingPeriods, setTrainingPeriods] = useState([]);
   const [loading, setLoading] = useState(true);
   const { getUser } = useUser();
+  const { setFieldValue } = useFormikContext();
   useEffect(() => {
     const fetchTrainingPeriods = async () => {
       setLoading(true);
@@ -26,6 +27,9 @@ const TrainingPeriodOptions = ({ name }) => {
         );
         const jsonData = await response.json();
         setTrainingPeriods(jsonData.rows);
+        if (jsonData.rowCount > 0) {
+          setFieldValue(name, jsonData.rows[0].trpe_rk);
+        }
       } catch (error) {
         console.error(error.message);
       }
@@ -36,16 +40,24 @@ const TrainingPeriodOptions = ({ name }) => {
 
   if (loading) return <div>Loading...</div>;
   return (
-    <Field as="select" name={name} placeholder="">
-      <option value="" label="Select option" />
-      {trainingPeriods?.map(({ trpe_rk, trpe_start_dt }) => {
-        return (
-          <option key={trpe_rk} value={trpe_rk}>
-            {`Start Date: ${dayjs(trpe_start_dt).format("MMM D YYYY")}`}
-          </option>
-        );
-      })}
-    </Field>
+    <>
+      <Field
+        as="select"
+        name={name}
+        placeholder=""
+        onChange={(event) => {
+          setFieldValue(name, Number(event.target.value));
+        }}
+      >
+        {trainingPeriods?.map(({ trpe_rk, trpe_start_dt }) => {
+          return (
+            <option key={trpe_rk} value={trpe_rk}>
+              {`Start Date: ${dayjs(trpe_start_dt).format("MMM D YYYY")}`}
+            </option>
+          );
+        })}
+      </Field>
+    </>
   );
 };
 export default TrainingPeriodOptions;

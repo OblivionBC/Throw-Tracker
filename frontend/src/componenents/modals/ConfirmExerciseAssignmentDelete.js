@@ -8,49 +8,52 @@ import {
   FieldLabel,
   FieldContainer,
 } from "../styles/styles";
-const ConfirmMeasurableDeleteModal = ({ open, onClose, measObj, refresh }) => {
-  async function deleteMeas(meas_rk) {
+const ConfirmExerciseAssignmentDelete = ({
+  open,
+  onClose,
+  fullClose,
+  excr,
+  refresh,
+}) => {
+  async function deleteExas({ exas_rk }) {
     try {
+      //Fix the route
+      console.log("DELETING");
       const response = await fetch(
-        `http://localhost:5000/api//delete-measurable`,
+        `http://localhost:5000/api/delete-exerciseAssignment`,
         {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            meas_rk: measObj.meas_rk,
+            exas_rk: excr.exas_rk,
           }),
         }
       );
-      alert("Meas DELETED");
+      alert("Exercise Assignment DELETED");
+
       console.log(response);
       onClose();
+      fullClose();
       refresh();
     } catch (error) {
       alert(error.message);
     }
   }
   if (!open) return null;
-
   return (
     <Overlay>
       <ModalContainer>
         <FieldContainer>
-          <FieldLabel>Are you sure you want to delete Measurable: </FieldLabel>
-          <h2>{measObj.meas_id}</h2>
-        </FieldContainer>
-        <FieldContainer>
-          <FieldLabel>Type:</FieldLabel>
-          <h2>{measObj.meas_typ}</h2>
-        </FieldContainer>
-        <FieldContainer>
-          <FieldLabel>Units:</FieldLabel>
-          <h2>{measObj.meas_unit}</h2>
+          <FieldLabel>
+            Are you sure you want to delete the Assignment of Excercise:
+          </FieldLabel>
+          <h2>{excr.excr_nm}</h2>
         </FieldContainer>
 
         <ButtonContainer>
-          <DeleteButton onClick={() => deleteMeas(measObj.meas_rk)}>
+          <DeleteButton onClick={() => deleteExas(excr.exas_rk)}>
             Delete
           </DeleteButton>
           <CancelButton onClick={() => onClose()}>Cancel</CancelButton>
@@ -59,4 +62,4 @@ const ConfirmMeasurableDeleteModal = ({ open, onClose, measObj, refresh }) => {
     </Overlay>
   );
 };
-export default ConfirmMeasurableDeleteModal;
+export default ConfirmExerciseAssignmentDelete;

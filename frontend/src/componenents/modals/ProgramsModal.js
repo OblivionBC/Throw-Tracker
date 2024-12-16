@@ -1,25 +1,22 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
 import "typeface-nunito";
-import dayjs from "dayjs";
-import EditTRPEForm from "../forms/EditTRPEForm";
-import Practices from "../tables/PracticeList";
 import ProgramContent from "../tables/ProgramContentList";
-import { useUser } from "../contexts/UserContext";
+import DynamicModal from "../dynamicModals/DynamicModal";
+import AddProgramForm from "../forms/AddProgram";
 import {
   Overlay,
   ModalContainer,
   CloseButton,
   Content,
-  EditButton,
+  AddButton,
+  RowDiv,
 } from "../styles/styles";
 
-const TrainingPeriodEditModal = ({ open, onClose, trpeObj, refresh }) => {
-  const [editing, setEditing] = useState(false);
-  const [programData, setProgramData] = useState([]);
-  const { getUser } = useUser();
-  console.log(trpeObj);
-  console.log({ trpeObj });
+const ProgramsModal = ({ open, onClose, refresh, prsn_rk, trpe_rk }) => {
+  const [loading, setLoading] = useState(false);
+  const [programData, setProgramData] = useState(new Map());
+  const [addProgram, setAddProgram] = useState(false);
   const getProgramData = async () => {
     try {
       const response = await fetch(
@@ -30,7 +27,7 @@ const TrainingPeriodEditModal = ({ open, onClose, trpeObj, refresh }) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            trpe_rk: trpeObj.trpe_rk,
+            trpe_rk: trpe_rk,
           }),
         }
       );
@@ -77,62 +74,52 @@ const TrainingPeriodEditModal = ({ open, onClose, trpeObj, refresh }) => {
   };
   useEffect(() => {
     getProgramData();
-  }, [trpeObj]);
-  const Details = () => {
-    if (editing)
-      return (
-        <EditTRPEForm
-          trpe={trpeObj}
-          close={() => onClose()}
-          refresh={refresh}
-        />
-      );
-    //Add Programs into this
-    return (
-      <>
-        <h1>Training Period: {trpeObj.trpe_rk}</h1>
-        <h1>Start Date: {dayjs(trpeObj.trpe_start_dt).format("YYYY-MM-DD")}</h1>
-        <h1>End Date: {trpeObj.trpe_end_dt}</h1>
-        {programData.size <= 0 ? (
-          <div>No Programs</div>
-        ) : (
-          [...programData.entries()].map(([key, row]) => (
-            <ProgramContent
-              data={row}
-              prog_rk={key}
-              prsn_rk={getUser()}
-              bAdd={false}
-              bEdit={false}
-              refresh={() => getProgramData()}
-              key={key}
-            />
-          ))
-        )}
-        <Practices trpe_rk={trpeObj.trpe_rk} paginationNum={4} />
-      </>
-    );
-  };
-
-  if (!open) return null;
+    console.log("REFRESHING THE PROGRAMS");
+  }, [trpe_rk]);
+  if (!open || loading) return null;
   return (
     <Overlay>
+      <DynamicModal
+        open={addProgram}
+        onClose={() => setAddProgram(false)}
+        refresh={() => getProgramData()}
+        Component={AddProgramForm}
+        props={{ trpe_rk }}
+      />
       <ModalContainer>
         <CloseButton
           onClick={() => {
             onClose();
-            setEditing(false);
           }}
         >
           Close
         </CloseButton>
+
+        <AddButton onClick={() => setAddProgram(true)}>Add Program</AddButton>
         <Content>
-          <Details />
+          <RowDiv>
+            <h1>Training Period {trpe_rk}</h1>
+            <AddButton onClick={() => getProgramData()}>Refresh</AddButton>
+          </RowDiv>
+          {programData.size <= 0 ? (
+            <div>No Programs</div>
+          ) : (
+            [...programData.entries()].map(([key, row]) => (
+              <ProgramContent
+                data={row}
+                prog_rk={key}
+                prsn_rk={prsn_rk}
+                bAdd
+                bDelete
+                bEdit
+                refresh={() => getProgramData()}
+              />
+            ))
+          )}
         </Content>
-        <EditButton onClick={() => setEditing(!editing)}>
-          {editing ? "Details" : "Edit"}
-        </EditButton>
       </ModalContainer>
     </Overlay>
   );
 };
-export default TrainingPeriodEditModal;
+
+export default ProgramsModal;

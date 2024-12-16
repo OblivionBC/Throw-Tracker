@@ -1,17 +1,16 @@
 import React from "react";
 import { useState } from "react";
-import AddMeasurableForm from "../forms/AddMeasurableForm";
 import "typeface-nunito";
+import TrainingPeriodList from "../tables/TrainingPeriodList";
 import {
   Overlay,
   ModalContainer,
   CloseButton,
   Content,
 } from "../styles/styles";
-
-const AddMeasurableModal = ({ open, onClose, refresh }) => {
+const AthleteDetails = ({ open, onClose, refresh, athlete }) => {
   const [loading, setLoading] = useState(false);
-
+  console.log(athlete);
   if (!open || loading) return null;
   return (
     <Overlay>
@@ -24,14 +23,12 @@ const AddMeasurableModal = ({ open, onClose, refresh }) => {
           Close
         </CloseButton>
         <Content>
-          <AddMeasurableForm
-            close={() => onClose()}
-            refresh={() => refresh()}
-          />
+          <h1>{athlete.prsn_first_nm + " " + athlete.prsn_last_nm}</h1>
+          <TrainingPeriodList prsn_rk={athlete.prsn_rk} bPrograms={true} />
         </Content>
       </ModalContainer>
     </Overlay>
   );
 };
 
-export default AddMeasurableModal;
+export default AthleteDetails;
