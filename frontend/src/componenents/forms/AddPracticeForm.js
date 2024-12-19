@@ -31,7 +31,7 @@ const addMeasurement = async (measurable, prac_rk) => {
   }
 };
 
-const addPractice = async (prac_dt, trpe_rk, prsn_rk) => {
+const addPractice = async (prac_dt, trpe_rk, prsn_rk, notes) => {
   console.log(prac_dt);
   const response = await fetch(`http://localhost:5000/api//add-practice`, {
     method: "POST",
@@ -42,6 +42,7 @@ const addPractice = async (prac_dt, trpe_rk, prsn_rk) => {
       prac_dt: prac_dt,
       trpe_rk: trpe_rk,
       prsn_rk: prsn_rk,
+      notes: notes,
     }),
   });
   const jsonData = await response.json();
@@ -73,6 +74,7 @@ const AddPracticeForm = ({ close, refresh }) => {
     trpe: "",
     date: "",
     measurables: [],
+    notes: "",
   };
   const { getUser } = useUser();
   const validationSchema = Yup.object().shape({
@@ -99,7 +101,12 @@ const AddPracticeForm = ({ close, refresh }) => {
     setSubmitting(true);
     console.log(values);
     try {
-      const prac_rk = await addPractice(values.date, values.trpe, getUser());
+      const prac_rk = await addPractice(
+        values.date,
+        values.trpe,
+        getUser(),
+        values.notes
+      );
       values.measurables.forEach((element) => {
         addMeasurement(element, prac_rk);
       });
@@ -166,6 +173,20 @@ const AddPracticeForm = ({ close, refresh }) => {
 
             <MeasurableFieldArray />
             <ErrorMessage name="measurables" component={SubmitError} />
+
+            <Field name="notes" type="text">
+              {({ field }) => (
+                <FieldOutputContainer>
+                  <FieldLabel>Notes:</FieldLabel>
+                  <StyledInput
+                    type="text"
+                    placeholder={"Notes Here"}
+                    {...field}
+                  />
+                </FieldOutputContainer>
+              )}
+            </Field>
+            <ErrorMessage name="notes" component={SubmitError} />
 
             <StyledButton type="submit" disabled={isSubmitting}>
               Save

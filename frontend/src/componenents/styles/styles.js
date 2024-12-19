@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 export const Overlay = styled.div`
   display: flex;
-  z-index: 2;
+  z-index: 3;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);

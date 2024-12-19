@@ -4,59 +4,12 @@ left join exercise_assignment exas on exas.prog_rk = prog.prog_rk left join exer
 CREATE DATABASE trackApp;
    UPDATE person set prsn_pwrd = crypt('mypassword', gen_salt('bf')) where prsn_email = 'gideon@gmail.com';
 
---Current Exercise: Should have reps sets and weight in assignment
-excr_rk ,  excr_nm,  excr_reps, excr_sets, excr_weight , excr_notes, prsn_rk --Do something similar to the measurement?
-delete from exercise where 1=1;
-alter table exercise drop column trpe_rk;
-alter table exercise drop column excr_reps;
-alter table exercise drop column excr_sets;
-alter table exercise drop column excr_weight;
-alter table exercise add column excr_units varchar(16) not null;  
-alter table exercise add column coach_prsn_rk integer not null;
-alter table exercise add column excr_typ varchar(32) not null default 'Specific Preparatory';
-ALTER TABLE exercise 
-   ADD CONSTRAINT fk_coach_prsn_rk
-   FOREIGN KEY (coach_prsn_rk) 
-   REFERENCES person(prsn_rk)
-   ON DELETE CASCADE; 
---exercise_assignment
-exas_rk, prog_rk, prsn_rk
-Create TABLE exercise_assignment(
-exas_rk  SERIAL PRIMARY KEY,
-excr_rk integer not null.
-prog_rk integer not null,
-athlete_prsn_rk integer NOT NULL,
-assigner_prsn_rk integer,
-exas_notes varchar(128)
-);
-alter table exercise_assignment add column exas_reps integer;
-alter table exercise_assignment add column exas_sets integer;
-alter table exercise_assignment add column exas_weight decimal;
-alter table exercise_assignment add column meas_rk integer;
-alter table exercise_assignment add column excr_rk integer not null;
-ALTER TABLE exercise_assignment 
-   ADD CONSTRAINT fk_meas_rk
-   FOREIGN KEY (meas_rk) 
-   REFERENCES measurable(meas_rk);
-ALTER TABLE exercise_assignment 
-   ADD CONSTRAINT fk_excr_rk
-   FOREIGN KEY (excr_rk) 
-   REFERENCES exercise(excr_rk)
-   ON DELETE CASCADE;
-ALTER TABLE exercise_assignment 
-   ADD CONSTRAINT fk_prog_rk
-   FOREIGN KEY (prog_rk) 
-   REFERENCES program(prog_rk)
-   ON DELETE CASCADE;
-ALTER TABLE exercise_assignment 
-   ADD CONSTRAINT fk_athlete_prsn_rk
-   FOREIGN KEY (athlete_prsn_rk) 
-   REFERENCES person(prsn_rk)
-   ON DELETE CASCADE;
-   ALTER TABLE exercise_assignment 
-   ADD CONSTRAINT fk_assigner_prsn_rk
-   FOREIGN KEY (assigner_prsn_rk) 
-   REFERENCES person(prsn_rk);
+select p.prsn_first_nm, exas.exas_rk, excr.excr_rk, excr.excr_nm, meas.meas_id, meas.meas_rk from exercise_assignment exas inner join exercise excr on exas.excr_rk = excr.excr_rk inner join measurable meas on meas.meas_rk = exas.meas_rk 
+inner join program prog on exas.prog_rk = prog.prog_rk
+inner join training_period trpe on trpe.trpe_rk = prog.trpe_rk
+inner join person p on trpe.prsn_rk = p.prsn_rk;
+
+
 --Program: Foreign keys to the coach, and the training period (will be connected to athlete)
 prog_rk, coach_prsn_rk, trpe_rk, prog_nm
 Create TABLE program(
@@ -77,6 +30,7 @@ ALTER TABLE program
 UPDATE training_period 
 SET trpe_end_dt = null WHERE trpe_rk = 
 ( SELECT trpe_rk FROM training_period where prsn_rk = 12 ORDER BY trpe_start_dt DESC LIMIT 1)
+
 SELECT
     tc.constraint_name,
     tc.table_name,
@@ -90,7 +44,7 @@ FROM
     JOIN information_schema.constraint_column_usage AS ccu
       ON ccu.constraint_name = tc.constraint_name
 WHERE
-    tc.constraint_type = 'FOREIGN KEY' AND tc.table_name = 'excersise';
+    tc.constraint_type = 'FOREIGN KEY' AND tc.table_name = 'exersise';
 
 alter table practice drop column prac_best;
 

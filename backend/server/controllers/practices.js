@@ -3,7 +3,7 @@ const rules = require("./rules");
 
 exports.addPractice = async (req, res) => {
   try {
-    const { prac_dt, trpe_rk, prsn_rk } = req.body;
+    const { prac_dt, trpe_rk, prsn_rk, notes } = req.body;
     const PracDateWithinTRPE = await rules.PracDateWithinTRPE(
       prac_dt,
       prsn_rk,
@@ -14,8 +14,8 @@ exports.addPractice = async (req, res) => {
       return res.status(400).json({ message: PracDateWithinTRPE.message });
     }
     const newPractice = await pool.query(
-      "INSERT INTO practice (prac_dt, trpe_rk) VALUES($1, $2) RETURNING *",
-      [prac_dt, trpe_rk]
+      "INSERT INTO practice (prac_dt, trpe_rk, notes) VALUES($1, $2, $3) RETURNING *",
+      [prac_dt, trpe_rk, notes]
     );
 
     console.log("Added Practice for Training Period " + trpe_rk);
@@ -108,7 +108,7 @@ exports.getPractice = async (req, res) => {
 
 exports.updatePractice = async (req, res) => {
   try {
-    const { prac_rk, prac_dt, trpe_rk, prsn_rk } = req.body;
+    const { prac_rk, prac_dt, trpe_rk, prsn_rk, notes } = req.body;
     console.log(prac_dt);
     const PracDateWithinTRPE = await rules.PracDateWithinTRPE(
       prac_dt,
@@ -121,8 +121,8 @@ exports.updatePractice = async (req, res) => {
     }
 
     const updateTodo = await pool.query(
-      "UPDATE practice SET prac_dt = $1, trpe_rk = $2 WHERE prac_rk = $3",
-      [prac_dt, trpe_rk, prac_rk]
+      "UPDATE practice SET prac_dt = $1, trpe_rk = $2, notes = $3 WHERE prac_rk = $3",
+      [prac_dt, trpe_rk, prac_rk, notes]
     );
     res.json("Practice was Updated");
     console.log("Updating practice " + prac_rk);
