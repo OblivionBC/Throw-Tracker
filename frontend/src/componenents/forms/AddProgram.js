@@ -23,7 +23,6 @@ const AddProgram = async (props) => {
     console.log("Error?");
     console.log("ERROR HAS OCCURRED ", response.statusText);
   }
-  return jsonData.rows[0].prac_rk;
 };
 
 const AddProgramForm = ({ close, refresh, props }) => {

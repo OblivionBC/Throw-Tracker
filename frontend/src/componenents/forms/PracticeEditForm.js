@@ -200,6 +200,20 @@ const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
             <MeasurableFieldArray />
             <ErrorMessage name="measurables" component={SubmitError} />
 
+            <Field name="notes" type="text">
+              {({ field }) => (
+                <FieldOutputContainer>
+                  <FieldLabel>Notes:</FieldLabel>
+                  <StyledInput
+                    type="text"
+                    placeholder={"Notes Here"}
+                    {...field}
+                  />
+                </FieldOutputContainer>
+              )}
+            </Field>
+            <ErrorMessage name="notes" component={SubmitError} />
+
             <StyledButton type="submit" disabled={isSubmitting}>
               Save
             </StyledButton>
@@ -226,6 +240,12 @@ const StyledButton = styled.button`
   border: none;
   border-radius: 4px;
   cursor: pointer;
+`;
+const StyledInput = styled.input`
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 10px;
 `;
 const SubmitError = styled.div`
   font-size: 18;

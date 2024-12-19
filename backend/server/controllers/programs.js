@@ -9,6 +9,7 @@ exports.addProgram = async (req, res) => {
     const { prog_nm, coach_prsn_rk, trpe_rk } = req.body;
     //$1 is the variable to add in the db, runs sql query in quotes which is same as in the CLI
     //Returning * returns back the data
+    console.log("Creating Program for Training Period : " + trpe_rk);
     const newProgram = await pool.query(
       "INSERT INTO program (prog_nm, coach_prsn_rk, trpe_rk) VALUES($1, $2, $3) RETURNING *",
       [prog_nm, coach_prsn_rk, trpe_rk]
