@@ -7,7 +7,7 @@ import {
   CancelButton,
   FieldLabel,
   FieldContainer,
-} from "../styles/styles";
+} from "../../styles/styles";
 const ConfirmMeasurableDeleteModal = ({ open, onClose, measObj, refresh }) => {
   async function deleteMeas(meas_rk) {
     try {

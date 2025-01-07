@@ -7,7 +7,7 @@ import {
   ModalContainer,
   CloseButton,
   Content,
-} from "../styles/styles";
+} from "../../styles/styles";
 const AddPracticeModal = ({ open, onClose, refresh }) => {
   const [loading, setLoading] = useState(false);
 

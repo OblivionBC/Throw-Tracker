@@ -8,7 +8,7 @@ import {
   ButtonContainer,
   DeleteButton,
   CancelButton,
-} from "../styles/styles";
+} from "../../styles/styles";
 const ConfirmTRPEDelete = ({ open, onClose, trpeObj, refresh }) => {
   async function deleteTRPE(meas_rk) {
     alert("PRAC DELETED");

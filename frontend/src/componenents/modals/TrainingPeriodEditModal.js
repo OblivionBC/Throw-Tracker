@@ -12,7 +12,7 @@ import {
   CloseButton,
   Content,
   EditButton,
-} from "../styles/styles";
+} from "../../styles/styles";
 
 const TrainingPeriodEditModal = ({ open, onClose, trpeObj, refresh }) => {
   const [editing, setEditing] = useState(false);

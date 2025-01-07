@@ -25,6 +25,7 @@ function MeasurementChart({ activeTRPE }) {
     ],
   });
   const [dataMap, setDataMap] = useState(new Map());
+  const [openFilters, setOpenFilters] = useState(new Map());
   const [options, setOptions] = useState({
     responsive: true,
     showLine: true,
@@ -68,7 +69,12 @@ function MeasurementChart({ activeTRPE }) {
       },
     },
   });
-
+  function implementSelectChange(e) {
+    const value = e.target.value;
+    setSelectedMeasurable(value);
+    if (!openFilters.has(value)) openFilters.set(value, { bool: true });
+    console.log(openFilters);
+  }
   async function GetTrainingPeriodMeasurements() {
     //First case is that the user has selected the training period, meaning we will set new data
     if (activeTRPE.length > 0) {
@@ -264,14 +270,15 @@ function MeasurementChart({ activeTRPE }) {
 
       <Row>
         <Title>Chart of Practices</Title>
-        <ImplementSelect
-          onChange={(e) => setSelectedMeasurable(e.target.value)}
-        >
+        <ImplementSelect onChange={(e) => implementSelectChange(e)}>
           <option value="">Choose A Measurable</option>
           {[...dataMap?.keys()].map((key) => (
             <option value={key}>{key}</option>
           ))}
         </ImplementSelect>
+        {[...openFilters?.keys()].map((key) => (
+          <p value={key}>{key}</p>
+        ))}
         <RefreshButton onClick={() => GetMeasurableMeasurements()}>
           Refresh
         </RefreshButton>

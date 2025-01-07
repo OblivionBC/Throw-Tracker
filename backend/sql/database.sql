@@ -18,9 +18,9 @@ prog_nm varchar(64) NOT NULL,
 coach_prsn_rk integer,
 trpe_rk integer NOT NULL
 );
-ALTER TABLE program
-ADD CONSTRAINT fk_trpe_rk FOREIGN KEY (trpe_rk)
-REFERENCES training_period (trpe_rk)
+ALTER TABLE exercise_assignment
+ADD CONSTRAINT fk_meas_rk FOREIGN KEY (meas_rk)
+REFERENCES measurable (meas_rk)
 ON DELETE CASCADE;
 ALTER TABLE program 
    ADD CONSTRAINT fk_coach_prsn_rk

@@ -1,8 +1,14 @@
-import React, { useState } from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import React from "react";
+import { Formik, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import dayjs from "dayjs";
-import styled from "styled-components";
+import {
+  StyledForm,
+  StyledButton,
+  FieldOutputContainer,
+  FieldLabel,
+  SubmitError,
+} from "../../styles/styles.js";
 import "typeface-nunito";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -149,35 +155,4 @@ const EditTRPEForm = ({ trpe, refresh, close }) => {
   );
 };
 
-const StyledForm = styled(Form)`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-`;
-
-const StyledButton = styled.button`
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-`;
-const SubmitError = styled.div`
-  font-size: 18;
-  color: red;
-  font-family: "Nunito", sans-serif;
-`;
-
-const FieldOutputContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-`;
-const FieldLabel = styled.h3`
-  margin-right: 10px;
-`;
 export default EditTRPEForm;

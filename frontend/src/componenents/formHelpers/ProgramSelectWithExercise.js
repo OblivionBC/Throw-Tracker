@@ -87,7 +87,6 @@ const ProgramSelectWithExercise = ({ trpe_rk, setData }) => {
           ))
         )}
       </select>
-      <p>Selected Value: {selectedValue}</p>
     </>
   );
 };

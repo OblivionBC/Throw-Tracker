@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import styled from "styled-components";
+import {
+  StyledForm,
+  StyledButton,
+  FieldOutputContainer,
+  FieldLabel,
+  SubmitError,
+  StyledInput,
+  ParagraphInput,
+} from "../../styles/styles.js";
 import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
 import dayjs from "dayjs";
-import { MeasurableFieldArray } from "./MeasurableFieldArray";
+import { MeasurableFieldArray } from "../formHelpers/MeasurableFieldArray.js";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import TrainingPeriodOptions from "../formHelpers/TrainingPeriodOptions";
@@ -86,6 +94,7 @@ const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
     trpe: prac.trpe_rk,
     date: trimmedPracDate,
     measurables: measurementContainer,
+    notes: prac.notes,
   };
   const { getUser } = useUser();
 
@@ -93,19 +102,20 @@ const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
     trpe: Yup.number("Must be a number").required(
       "Training Period is a required field"
     ),
-    date: Yup.date().required(),
-    measurables: Yup.array() //Array of obkjects with a row key and value
+    date: Yup.date("Must be a valid date").required("Date is required"),
+    measurables: Yup.array("Must be an array") //Array of obkjects with a row key and value
       .of(
         Yup.object().shape({
           meas_rk: Yup.number("Must be a number")
             .typeError("Must Be Number")
-            .required(),
+            .required("Measurable key is required"),
           msrm_value: Yup.number("Must be a Number")
             .typeError("Must Be Number")
-            .required(),
+            .required("Measurement Value is required"),
         })
       )
       .required("Must have measurables"),
+    notes: Yup.string(),
   });
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     // Handle form submission here
@@ -124,6 +134,7 @@ const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
             prac_dt: values.date,
             prac_rk: prac.prac_rk,
             prsn_rk: getUser(),
+            notes: values.notes,
           }),
         }
       );
@@ -133,6 +144,7 @@ const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
         console.log("ERROR HAS OCCURRED ", response.statusText);
         throw new Error(jsonData.message || "Something went wrong");
       }
+      console.log(values);
       //Delete the old measurements
       deleteMeasurements(prac.prac_rk);
       //Create new measurements
@@ -204,7 +216,7 @@ const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
               {({ field }) => (
                 <FieldOutputContainer>
                   <FieldLabel>Notes:</FieldLabel>
-                  <StyledInput
+                  <ParagraphInput
                     type="text"
                     placeholder={"Notes Here"}
                     {...field}
@@ -225,42 +237,4 @@ const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
   );
 };
 
-const StyledForm = styled(Form)`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-`;
-
-const StyledButton = styled.button`
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-`;
-const StyledInput = styled.input`
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  margin-bottom: 10px;
-`;
-const SubmitError = styled.div`
-  font-size: 18;
-  color: red;
-  font-family: "Nunito", sans-serif;
-`;
-
-const FieldOutputContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-`;
-
-const FieldLabel = styled.h3`
-  margin-right: 10px;
-`;
 export default PracticeEditForm;

@@ -92,7 +92,7 @@ const NavPath = styled(NavLink)`
   font-family: "Nunito", sans-serif;
   font-weight: 600;
   border-radius: 5px;
-  font-size: 40px;
+  font-size: 3vw;
   &:hover {
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
     transform: translateY(-2px);

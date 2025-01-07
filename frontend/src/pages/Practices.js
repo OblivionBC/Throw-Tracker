@@ -36,14 +36,12 @@ const Practices = () => {
       </LeftColumn>
       <RightColumn>
         <ErrorBoundary>
-          <Block />
           <PracticeList
             bAdd={true}
             bDelete={true}
             bDetail={true}
             paginationNum={5}
           />
-          <Block />
           <Measurables paginationNum={3} />
         </ErrorBoundary>
       </RightColumn>
@@ -53,7 +51,7 @@ const Practices = () => {
 
 const Page = styled.div`
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: flex-start;
   height: 90vh;
   font-family: "Rubik", sans-serif;
@@ -61,22 +59,23 @@ const Page = styled.div`
 
 const LeftColumn = styled.div`
   display: flex;
+  align-self: flex-start;
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  width: 50%;
+  width: 49%;
   height: 100%;
 `;
-const Block = styled.div`
-  height: 15px;
-`;
+
 const RightColumn = styled.div`
   display: flex;
+  align-self: flex-end;
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  width: 50%;
+  width: 49%;
   height: 100%;
+  margin-left: 5px;
   overflow: hidden;
 `;
 export default Practices;

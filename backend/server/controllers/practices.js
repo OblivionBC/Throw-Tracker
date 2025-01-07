@@ -33,7 +33,7 @@ exports.getAllPractices = async (req, res) => {
   try {
     const { prsn_rk } = req.body;
     const allPractice = await pool.query(
-      "SELECT  p.prac_rk, p.prac_dt, p.trpe_rk, COUNT(m.msrm_rk) AS measurement_count FROM practice p LEFT JOIN measurement m ON p.prac_rk = m.prac_rk inner join training_period tp on tp.trpe_rk = p.trpe_rk where tp.prsn_rk = $1 GROUP BY p.prac_rk ORDER BY p.prac_dt desc",
+      "SELECT  p.prac_rk, p.prac_dt, p.trpe_rk, p.notes, COUNT(m.msrm_rk) AS measurement_count FROM practice p LEFT JOIN measurement m ON p.prac_rk = m.prac_rk inner join training_period tp on tp.trpe_rk = p.trpe_rk where tp.prsn_rk = $1 GROUP BY p.prac_rk ORDER BY p.prac_dt desc",
       [prsn_rk]
     );
     console.log("Getting All Practices for person " + prsn_rk);
@@ -53,7 +53,7 @@ exports.getPracticesInTrpe = async (req, res) => {
   try {
     const { trpe_rk } = req.body;
     const trpePractice = await pool.query(
-      "SELECT p.prac_rk, p.prac_dt, COUNT(m.msrm_rk) AS measurement_count FROM practice p LEFT JOIN measurement m ON p.prac_rk = m.prac_rk where p.trpe_rk = $1 GROUP BY p.prac_rk",
+      "SELECT p.prac_rk, p.prac_dt, p.notes, COUNT(m.msrm_rk) AS measurement_count FROM practice p LEFT JOIN measurement m ON p.prac_rk = m.prac_rk where p.trpe_rk = $1 GROUP BY p.prac_rk",
       [trpe_rk]
     );
     console.log("Getting Practices in the TRPE " + trpe_rk);
@@ -109,7 +109,7 @@ exports.getPractice = async (req, res) => {
 exports.updatePractice = async (req, res) => {
   try {
     const { prac_rk, prac_dt, trpe_rk, prsn_rk, notes } = req.body;
-    console.log(prac_dt);
+    console.log(req.body);
     const PracDateWithinTRPE = await rules.PracDateWithinTRPE(
       prac_dt,
       prsn_rk,
@@ -121,7 +121,7 @@ exports.updatePractice = async (req, res) => {
     }
 
     const updateTodo = await pool.query(
-      "UPDATE practice SET prac_dt = $1, trpe_rk = $2, notes = $3 WHERE prac_rk = $3",
+      "UPDATE practice SET prac_dt = $1, trpe_rk = $2, notes = $4 WHERE prac_rk = $3",
       [prac_dt, trpe_rk, prac_rk, notes]
     );
     res.json("Practice was Updated");

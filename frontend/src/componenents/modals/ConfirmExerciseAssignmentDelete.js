@@ -7,7 +7,7 @@ import {
   CancelButton,
   FieldLabel,
   FieldContainer,
-} from "../styles/styles";
+} from "../../styles/styles";
 const ConfirmExerciseAssignmentDelete = ({
   open,
   onClose,
