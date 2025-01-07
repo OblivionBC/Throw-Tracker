@@ -7,7 +7,7 @@ import {
   ModalContainer,
   CloseButton,
   Content,
-} from "../styles/styles";
+} from "../../styles/styles";
 const AthleteDetails = ({ open, onClose, refresh, athlete }) => {
   const [loading, setLoading] = useState(false);
   console.log(athlete);

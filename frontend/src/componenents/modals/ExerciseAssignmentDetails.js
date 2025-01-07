@@ -11,7 +11,7 @@ import {
   EditButton,
   RowContainer,
   FieldName,
-} from "../styles/styles";
+} from "../../styles/styles";
 const ExerciseAssignmentDetails = ({
   open,
   onClose,

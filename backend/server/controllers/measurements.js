@@ -6,10 +6,8 @@ const { pool } = require("../db");
 
 exports.addMeasurement = async (req, res) => {
   try {
-    console.log(req.body);
     const { msrm_value, prac_rk, meas_rk } = req.body;
-    //$1 is the variable to add in the db, runs sql query in quotes which is same as in the CLI
-    //Returning * returns back the data
+    console.log("Attempting Add measurement for " + meas_rk);
     const newMeasurement = await pool.query(
       "INSERT INTO Measurement (msrm_value, prac_rk, meas_rk) VALUES($1, $2, $3) RETURNING *",
       [msrm_value, prac_rk, meas_rk]

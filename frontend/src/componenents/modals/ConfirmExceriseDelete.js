@@ -7,7 +7,7 @@ import {
   CancelButton,
   FieldLabel,
   FieldContainer,
-} from "../styles/styles";
+} from "../../styles/styles";
 const ConfirmExerciseDelete = ({ open, onClose, excr, refresh }) => {
   async function deleteExercise(excr_rk) {
     alert("PRAC DELETED");

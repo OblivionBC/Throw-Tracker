@@ -102,7 +102,6 @@ exports.login = async (req, res) => {
       "SELECT p.prsn_rk, p.prsn_first_nm, p.prsn_last_nm, p.prsn_email, p.prsn_role, o.org_name FROM person p inner join organization o on o.org_rk = p.org_rk WHERE p.prsn_email = $1 AND p.prsn_pwrd = crypt($2, p.prsn_pwrd);",
       [username, password]
     );
-    console.log(result);
     if (result.rows.length == 0) {
       res.status(404).json("Record does not exist");
       console.log("Unsuccessful Login as User: " + username);

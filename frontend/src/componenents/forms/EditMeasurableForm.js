@@ -1,7 +1,14 @@
 import React, { useState } from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import styled from "styled-components";
+import {
+  StyledForm,
+  StyledButton,
+  FieldOutputContainer,
+  FieldLabel,
+  SubmitError,
+  StyledInput,
+} from "../../styles/styles.js";
 import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
 
@@ -126,43 +133,4 @@ const EditMeasurableForm = ({ measObj, refresh, close }) => {
   );
 };
 
-const StyledForm = styled(Form)`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-`;
-
-const StyledInput = styled.input`
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  margin-bottom: 10px;
-`;
-
-const StyledButton = styled.button`
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-`;
-const SubmitError = styled.div`
-  font-size: 18;
-  color: red;
-  font-family: "Nunito", sans-serif;
-`;
-
-const FieldOutputContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-`;
-
-const FieldLabel = styled.h3`
-  margin-right: 10px;
-`;
 export default EditMeasurableForm;

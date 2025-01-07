@@ -1,8 +1,11 @@
 import React from "react";
 import { Field, FieldArray } from "formik";
-import styled from "styled-components";
-import { useEffect, useState } from "react";
-import { useUser } from "../contexts/UserContext";
+import {
+  AddButton,
+  DeleteButton,
+  StyledFieldArray,
+} from "../../styles/styles.js";
+import { useUser } from "../contexts/UserContext.js";
 import PersonMeasurableOptions from "./PersonMeasurableOptions";
 
 // Here is an example of a form with an editable list.
@@ -72,47 +75,3 @@ export const MeasurableFieldArray = () => {
     </FieldArray>
   );
 };
-const AddButton = styled.button`
-  background: linear-gradient(45deg, #808080 30%, black 95%);
-  border: none;
-  border-radius: 25px;
-  color: white;
-  padding: 2px 6px;
-  margin-left: 10px;
-  font-size: 14px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transform: translateY(0);
-  }
-`;
-const DeleteButton = styled.button`
-  background: linear-gradient(45deg, black 30%, #808080 95%);
-  border: none;
-  border-radius: 25px;
-  color: white;
-  padding: 2px 6px;
-  margin-left: 5px;
-  font-size: 14px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transform: translateY(0);
-  }
-`;

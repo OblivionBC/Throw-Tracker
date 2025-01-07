@@ -1,7 +1,15 @@
-import React, { useState } from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import React from "react";
+import { Formik, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import styled from "styled-components";
+import {
+  StyledForm,
+  StyledButton,
+  StyledInput,
+  FieldOutputContainer,
+  FieldLabel,
+  SubmitError,
+  ParagraphInput,
+} from "../../styles/styles.js";
 import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
 const addExercise = async (props) => {
@@ -40,10 +48,16 @@ const AddExerciseForm = ({ close, refresh, prog_rk, coach_prsn_rk, props }) => {
   };
   const { user } = useUser();
   const validationSchema = Yup.object().shape({
-    excr_nm: Yup.string().required("This Field is required"),
-    excr_notes: Yup.string(),
-    excr_units: Yup.string().required("This Field is required"),
-    excr_typ: Yup.string().required("This Field is required"),
+    excr_nm: Yup.string("Must be a valid string").required(
+      "This Field is required"
+    ),
+    excr_notes: Yup.string("Must be a valid string"),
+    excr_units: Yup.string("Must be a valid string").required(
+      "This Field is required"
+    ),
+    excr_typ: Yup.string("Must be a valid string").required(
+      "This Field is required"
+    ),
   });
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
@@ -142,7 +156,7 @@ const AddExerciseForm = ({ close, refresh, prog_rk, coach_prsn_rk, props }) => {
               {({ field }) => (
                 <FieldOutputContainer>
                   <FieldLabel>Notes:</FieldLabel>
-                  <StyledInput
+                  <ParagraphInput
                     type="text"
                     placeholder={"Name Here"}
                     {...field}
@@ -163,57 +177,4 @@ const AddExerciseForm = ({ close, refresh, prog_rk, coach_prsn_rk, props }) => {
   );
 };
 
-const StyledForm = styled(Form)`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-`;
-
-const StyledInput = styled.input`
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  margin-bottom: 10px;
-`;
-
-const StyledButton = styled.button`
-  background: linear-gradient(45deg, darkblue 30%, skyblue 95%);
-  border: none;
-  border-radius: 25px;
-  color: white;
-  padding: 5px 10px;
-  margin-top: 10px;
-  font-size: 14px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transform: translateY(0);
-  }
-`;
-const SubmitError = styled.div`
-  font-size: 18;
-  color: red;
-  font-family: "Nunito", sans-serif;
-`;
-
-const FieldOutputContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-`;
-
-const FieldLabel = styled.h3`
-  margin-right: 10px;
-`;
 export default AddExerciseForm;

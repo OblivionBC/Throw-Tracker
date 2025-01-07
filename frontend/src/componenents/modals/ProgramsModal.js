@@ -11,7 +11,7 @@ import {
   Content,
   AddButton,
   RowDiv,
-} from "../styles/styles";
+} from "../../styles/styles";
 
 const ProgramsModal = ({ open, onClose, refresh, prsn_rk, trpe_rk }) => {
   const [loading, setLoading] = useState(false);
@@ -49,6 +49,7 @@ const ProgramsModal = ({ open, onClose, refresh, prsn_rk, trpe_rk }) => {
               exas_notes: element.exas_notes,
               excr_notes: element.excr_notes,
               is_measurable: element.is_measurable,
+              prog_nm: element.prog_nm,
             },
           ]);
           //There is already an array, so we just need to push to it
@@ -64,6 +65,7 @@ const ProgramsModal = ({ open, onClose, refresh, prsn_rk, trpe_rk }) => {
             exas_notes: element.exas_notes,
             excr_notes: element.excr_notes,
             is_measurable: element.is_measurable,
+            prog_nm: element.prog_nm,
           });
         }
       });

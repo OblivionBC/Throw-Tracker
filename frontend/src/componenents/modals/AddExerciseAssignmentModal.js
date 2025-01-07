@@ -7,7 +7,7 @@ import {
   ModalContainer,
   CloseButton,
   Content,
-} from "../styles/styles";
+} from "../../styles/styles";
 const AddExerciseAssignment = ({
   open,
   onClose,

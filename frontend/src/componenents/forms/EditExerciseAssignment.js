@@ -1,7 +1,15 @@
-import React, { useState } from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import React from "react";
+import { Formik, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import styled from "styled-components";
+import {
+  StyledForm,
+  StyledButton,
+  FieldOutputContainer,
+  FieldLabel,
+  SubmitError,
+  StyledInput,
+  ParagraphInput,
+} from "../../styles/styles.js";
 import "typeface-nunito";
 import "react-datepicker/dist/react-datepicker.css";
 import { useUser } from "../contexts/UserContext";
@@ -25,12 +33,20 @@ const EditExerciseAssignmentForm = ({
     add_measurable: excr.is_measurable === false,
   };
   const validationSchema = Yup.object().shape({
-    exas_notes: Yup.string(),
-    excr_rk: Yup.number().required("This Field is required"),
-    exas_reps: Yup.number().required("This Field is required"),
-    exas_sets: Yup.number().required("This Field is required"),
-    exas_weight: Yup.number().required("This Field is required"),
-    is_measurable: Yup.bool(),
+    exas_notes: Yup.string("Must be a valid string"),
+    excr_rk: Yup.number("Must be a valid Number").required(
+      "This Field is required"
+    ),
+    exas_reps: Yup.number("Must be a valid Number").required(
+      "This Field is required"
+    ),
+    exas_sets: Yup.number("Must be a valid Number").required(
+      "This Field is required"
+    ),
+    exas_weight: Yup.number("Must be a valid Number").required(
+      "This Field is required"
+    ),
+    is_measurable: Yup.bool("Must be a bool"),
   });
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     // Handle form submission here
@@ -153,7 +169,7 @@ const EditExerciseAssignmentForm = ({
               {({ field }) => (
                 <FieldOutputContainer>
                   <FieldLabel>Notes:</FieldLabel>
-                  <StyledInput type="text" name="exas_notes" {...field} />
+                  <ParagraphInput type="text" name="exas_notes" {...field} />
                 </FieldOutputContainer>
               )}
             </Field>
@@ -168,43 +184,5 @@ const EditExerciseAssignmentForm = ({
     </>
   );
 };
-
-const StyledForm = styled(Form)`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-`;
-
-const StyledButton = styled.button`
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-`;
-const SubmitError = styled.div`
-  font-size: 18;
-  color: red;
-  font-family: "Nunito", sans-serif;
-`;
-
-const FieldOutputContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-`;
-const FieldLabel = styled.h3`
-  margin-right: 10px;
-`;
-const StyledInput = styled.input`
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  margin-bottom: 10px;
-`;
 
 export default EditExerciseAssignmentForm;

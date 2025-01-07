@@ -1,6 +1,5 @@
 import React from "react";
-import styled from "styled-components";
-import DataTable from "react-data-table-component";
+import { Table, TableWrap, CompWrap } from "../../styles/styles.js";
 import { useEffect, useState } from "react";
 import { useUser } from "../contexts/UserContext";
 const TableStyles = {
@@ -72,7 +71,7 @@ const MeasurementList = ({ prac_rk }) => {
 
   if (loading) return <div>Loading</div>;
   return (
-    <Content>
+    <CompWrap>
       Measurements
       <TableWrap>
         <Table
@@ -89,44 +88,8 @@ const MeasurementList = ({ prac_rk }) => {
           customStyles={TableStyles}
         />
       </TableWrap>
-    </Content>
+    </CompWrap>
   );
 };
 
-const Content = styled.div`
-  display: flex;
-  margin: 1rem;
-  width: 100%;
-  height: auto;
-  flex-direction: column;
-`;
-const TableWrap = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding: 0.3rem;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
-  border-radius: 5px;
-`;
-const Table = styled(DataTable)`
-  width: 100%;
-  .rdt_Table {
-    background-color: white;
-  }
-  .rdt_TableHeadRow {
-    background-color: #a9a5ba;
-    font-weight: bold;
-  }
-  .rdt_TableRow {
-    &:nth-of-type(odd) {
-      background-color: white;
-    }
-    &:nth-of-type(even) {
-      background-color: #eeeeee;
-    }
-  }
-  .rdt_Pagination {
-    background-color: #343a40;
-    color: #fff;
-  }
-`;
 export default MeasurementList;

@@ -7,7 +7,7 @@ import {
   DeleteButton,
   ButtonContainer,
   CancelButton,
-} from "../styles/styles";
+} from "../../styles/styles";
 const ConfirmPracDeleteModal = ({ open, onClose, pracObj, refresh }) => {
   async function deletePrac(prac_rk) {
     alert("PRAC DELETED");

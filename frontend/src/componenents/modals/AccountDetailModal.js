@@ -70,7 +70,7 @@ const AccountDetailsModal = ({ on }) => {
 
   async function logout() {
     try {
-      navigate("/");
+      navigate("/login");
       signOut();
     } catch (error) {}
   }
