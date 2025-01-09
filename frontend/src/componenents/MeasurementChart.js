@@ -7,7 +7,12 @@ import { Tooltip } from "chart.js/auto";
 import dayjs from "dayjs";
 import styled from "styled-components";
 ChartJS.register(Tooltip);
-
+/*
+Can do these options
+Add Measurables based on measurables since they selected TRPEs, 
+Make legend have measurables from all selected TRPEs, hover data has the trpe?
+Make my own version
+*/
 function MeasurementChart({ activeTRPE }) {
   const [selectedMeasurable, setSelectedMeasurable] = useState("");
   const [loading, setLoading] = useState(true);
@@ -31,7 +36,7 @@ function MeasurementChart({ activeTRPE }) {
     showLine: true,
     plugins: {
       legend: {
-        display: false,
+        display: true,
       },
       tooltip: {
         mode: "nearest",
@@ -172,7 +177,8 @@ function MeasurementChart({ activeTRPE }) {
           showLine: true,
           plugins: {
             legend: {
-              display: false,
+              display: true,
+              position: "top", //'bottom' 'left' 'right'
             },
             tooltip: {
               mode: "nearest",

@@ -12,6 +12,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
+import ForgotPasswordForm from "./ForgotPasswordForm.js";
 
 const LoginForm = ({ on, off }) => {
   const [failed, setFailed] = useState(false);
@@ -52,7 +53,9 @@ const LoginForm = ({ on, off }) => {
     return null;
   }
   if (forgot) {
-    return null;
+    return (
+      <ForgotPasswordForm off={() => setForgot(false)}></ForgotPasswordForm>
+    );
   }
   return (
     <>

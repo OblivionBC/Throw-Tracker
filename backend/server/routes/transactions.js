@@ -8,7 +8,7 @@ const {
   getPerson,
   getAllPersons,
   deletePerson,
-  updatePerson,
+  updatePassword,
   login,
   athletes,
 } = require("../controllers/persons");
@@ -85,7 +85,7 @@ router
   .get("/get-person/:prsn_rk", getPerson)
   .get("/get-all-persons", getAllPersons)
   .delete("/delete-person/:prsn_rk", deletePerson)
-  .put("/update-person/:prsn_rk", updatePerson)
+  .put("/update-password", updatePassword)
   .post("/login", login)
   .post("/athletes", athletes)
 
