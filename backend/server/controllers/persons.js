@@ -141,19 +141,21 @@ exports.athletes = async (req, res) => {
 
 exports.updatePassword = async (req, res) => {
   try {
-    const { username, password } = req.body;
-    console.log("Attempting Update Password as User: " + username);
-    //$1 is the variable to add in the db, runs sql query in quotes which is same as in the CLI
-    //Returning * returns back the data
+    const { prsn_email, prsn_pwrd, prsn_first_nm, prsn_last_nm } = req.body;
+    console.log(req.body);
+    console.log("Attempting Update Password as User: " + prsn_email);
+
     const result = await pool.query(
-      "Update person p set p.prsn_pwrd crypt($2, gen_salt('bf')) where prsn_email = $1",
-      [username, password]
+      "Update person set prsn_pwrd = crypt($1, gen_salt('bf')) where prsn_email = $2 and prsn_first_nm = $3 and prsn_last_nm = $4 returning *",
+      [prsn_pwrd, prsn_email, prsn_first_nm, prsn_last_nm]
     );
 
-    console.log(result);
+    console.log(result.rows);
     if (result.rows.length == 0) {
-      res.status(404).json("Record does not exist");
-      console.log("Unsuccessful Login as User: " + username);
+      console.log("Unsuccessful Password Reset as User: " + prsn_email);
+      res.status(500).json({
+        message: "Password Reset was Unsuccessful",
+      });
       return;
     }
     console.log(result.rows);
@@ -161,7 +163,7 @@ exports.updatePassword = async (req, res) => {
   } catch (err) {
     console.error("Async Error:", err.message);
     res.status(500).json({
-      message: "Error occurred while Updating Password for User: " + username,
+      message: "Error occurred while Updating Password for User ",
     });
   }
 };
