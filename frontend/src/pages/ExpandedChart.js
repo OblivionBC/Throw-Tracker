@@ -7,7 +7,6 @@ import Measurables from "../componenents/tables/MeasurableList";
 import "typeface-rubik";
 import { useUser } from "../componenents/contexts/UserContext";
 import ErrorBoundary from "../componenents/ErrorBoundary";
-
 const Practices = () => {
   const [activeTRPE, setActiveTRPE] = useState([]);
   const [expand, setExpand] = useState(false);
