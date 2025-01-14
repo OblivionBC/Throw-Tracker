@@ -49,7 +49,7 @@ exports.getmeasurementsForTRPEs = async (req, res) => {
     const decodedArray = decodeURIComponent(req.query.keys);
     const keys = JSON.parse(decodedArray);
     const measurements = await pool.query(
-      "SELECT msrm.msrm_rk, msrm.prac_rk, m.meas_id, msrm.msrm_value, m.meas_unit, m.prsn_rk, p.prac_rk, p.trpe_rk, p.prac_dt from measurement msrm inner join measurable m on m.meas_rk = msrm.meas_rk  inner join practice p on p.prac_rk = msrm.prac_rk where p.trpe_rk = ANY($1);",
+      "SELECT msrm.msrm_rk, msrm.prac_rk, m.meas_id, msrm.msrm_value, m.meas_unit, m.prsn_rk, p.prac_rk, p.trpe_rk, p.prac_dt from measurement msrm inner join measurable m on m.meas_rk = msrm.meas_rk  inner join practice p on p.prac_rk = msrm.prac_rk where p.trpe_rk = ANY($1) order by p.prac_dt desc;",
       [keys]
     );
     res.json(measurements);

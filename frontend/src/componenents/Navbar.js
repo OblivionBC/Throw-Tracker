@@ -81,6 +81,7 @@ const NavRight = styled.div`
   display: flex;
   justify-content: flex-end;
   align-items: center;
+  margin-right: 2%;
   flex: 1;
 `;
 
