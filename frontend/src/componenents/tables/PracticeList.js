@@ -30,15 +30,45 @@ const TableStyles = {
       padding: "0 0px",
     },
   },
+  headRow: { style: { minHeight: "25px", maxHeight: "40px" } }, // Set your desired height here
 };
 
-const Practices = ({ trpe_rk, paginationNum, bAdd, bDetail, bDelete }) => {
+const Practices = ({ trpe_rk, bAdd, bDetail, bDelete }) => {
   const [practiceData, setPracticeData] = useState([]);
   const [addPracticeOpen, setAddPracticeOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [confirmPracDelete, setConfirmPracDelete] = useState(false);
   const [selectedPrac, setSelectedPrac] = useState({});
+  const [paginationNum, setPaginationNum] = useState(4);
+
   const { getUser } = useUser();
+  const updateVisibleRows = () => {
+    const height = window.innerHeight;
+    console.log(window.innerHeight);
+    console.log("Calling Update Rows");
+    let newPaginationNum;
+    if (height < 400) {
+      newPaginationNum = 1;
+      console.log("Set to 2");
+    } else if (height < 600) {
+      newPaginationNum = 2;
+      console.log("Set to 4");
+    } else if (height < 800) {
+      newPaginationNum = 4;
+      console.log("Set to 4");
+    } else {
+      newPaginationNum = 7;
+      console.log("Set to 7");
+    }
+    console.log("Pagination is " + paginationNum);
+    setPaginationNum(newPaginationNum);
+  };
+  useEffect(() => {
+    window.addEventListener("resize", updateVisibleRows);
+    updateVisibleRows();
+    return () => window.removeEventListener("resize", updateVisibleRows);
+  }, []);
+
   const getPracticeData = async () => {
     try {
       let response;
@@ -91,26 +121,22 @@ const Practices = ({ trpe_rk, paginationNum, bAdd, bDetail, bDelete }) => {
       name: "ID",
       selector: (row) => row.prac_rk,
       sortable: true,
-      //width: "9%",
     },
     {
       name: "Date",
       cell: (row) => <div>{dayjs(row.prac_dt).format("MMM D YYYY")}</div>,
       selector: (row) => row.prac_dt,
       sortable: true,
-      //width: "15%",
     },
     {
       name: "Measurables",
       selector: (row) => row.measurement_count,
       sortable: true,
-      //width: "15%",
     },
     {
       name: "TRPE",
       selector: (row) => trpe_rk || row.trpe_rk,
       sortable: true,
-      //width: "10%",
     },
   ];
 
@@ -174,12 +200,14 @@ const Practices = ({ trpe_rk, paginationNum, bAdd, bDetail, bDelete }) => {
           data={practiceData}
           pagination
           paginationPerPage={paginationNum}
+          paginationRowsPerPageOptions={[2, 4, 7, 10]}
           paginationComponentOptions={{
-            rowsPerPageText: "Rows per page:",
+            rowsPerPageText: "Rows",
             rangeSeparatorText: "of",
             selectAllRowsItem: false,
           }}
           customStyles={TableStyles}
+          key={paginationNum}
         />
       </TableWrap>
     </CompWrap>

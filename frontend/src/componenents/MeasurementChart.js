@@ -1,4 +1,3 @@
-// components/BarChart.js
 import React, { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
 import { Chart as ChartJS } from "chart.js/auto";
@@ -10,12 +9,14 @@ ChartJS.register(Tooltip);
 /*
 Can do these options
 Add Measurables based on measurables since they selected TRPEs, 
-Make legend have measurables from all selected TRPEs, hover data has the trpe?
-Make my own version
+ This approach First  --Make legend have measurables from all selected TRPEs, hover data has the trpe?
+Make my own version?
 */
+
+//This approach means no selected measurable at all, it will take the data from the measurables and dump them into seperate datasets
 function MeasurementChart({ activeTRPE }) {
-  const [selectedMeasurable, setSelectedMeasurable] = useState("");
   const [loading, setLoading] = useState(true);
+  const [labels, setLabels] = useState([]);
   const [chartData, setChartData] = useState({
     labels: [],
     datasets: [
@@ -29,7 +30,6 @@ function MeasurementChart({ activeTRPE }) {
       },
     ],
   });
-  const [dataMap, setDataMap] = useState(new Map());
   const [openFilters, setOpenFilters] = useState(new Map());
   const [options, setOptions] = useState({
     responsive: true,
@@ -37,15 +37,6 @@ function MeasurementChart({ activeTRPE }) {
     plugins: {
       legend: {
         display: true,
-      },
-      tooltip: {
-        mode: "nearest",
-        intersect: false,
-        callbacks: {
-          label: function (tooltipItem) {
-            return `(${tooltipItem.raw}m, Prac ${tooltipItem.label})`;
-          },
-        },
       },
     },
     hover: {
@@ -59,11 +50,17 @@ function MeasurementChart({ activeTRPE }) {
     },
     scales: {
       x: {
-        type: "linear",
+        type: "time",
+        time: {
+          unit: "day",
+          tooltipFormat: "yyyy-MM-dd",
+          displayFormats: { day: "MMM dd, yyyy" },
+          distribution: "series",
+        },
         position: "bottom",
         title: {
           display: true,
-          text: "Practice Number",
+          text: "Date",
         },
       },
       y: {
@@ -74,15 +71,10 @@ function MeasurementChart({ activeTRPE }) {
       },
     },
   });
-  function implementSelectChange(e) {
-    const value = e.target.value;
-    setSelectedMeasurable(value);
-    if (!openFilters.has(value)) openFilters.set(value, { bool: true });
-    console.log(openFilters);
-  }
   async function GetTrainingPeriodMeasurements() {
     //First case is that the user has selected the training period, meaning we will set new data
     if (activeTRPE.length > 0) {
+      console.log("TRPES are selected");
       const params = new URLSearchParams({
         keys: JSON.stringify(activeTRPE),
       });
@@ -90,6 +82,7 @@ function MeasurementChart({ activeTRPE }) {
       const response = await fetch(
         `http://localhost:5000/api//get-measurementsForTRPEs?${params}`
       );
+
       const jsonData = await response.json();
       //Make a map and add each unique meas_id from the Query Results as a key with and array as the value
       let newDataMap = new Map();
@@ -115,21 +108,104 @@ function MeasurementChart({ activeTRPE }) {
           });
         }
       });
-      setDataMap(newDataMap);
+      console.log(newDataMap);
+      console.log("Starting Phase 2 of having a training period");
+      let datasetArray = [];
+      let newLabels = [];
+      newDataMap.forEach((row, key) => {
+        newLabels = row?.map((item) => {
+          return item.prac_dt.split("T")[0];
+        });
+        console.log(newLabels);
+        const values = row?.map((item) => {
+          return { x: item.prac_dt.split("T")[0], y: item.msrm_value };
+        });
+        console.log(values);
+        console.log(newLabels);
+        datasetArray.push({
+          //Label is the block at the top that you can click to filter, not using this yet
+          label: `${key}`,
+          data: values,
+          pointRadius: 5,
+          spanGaps: false,
+          pointHoverRadius: 1, // Increase the hover radius
+          pointHitRadius: 1, // Increase the hit radius
+        });
+      });
 
+      console.log("Sorting Complete");
+      console.log(newLabels);
+      console.log(datasetArray);
+      setChartData({
+        labels: newLabels,
+        datasets: datasetArray,
+      });
+
+      //Set the options for the tooltip
+      setOptions({
+        responsive: true,
+        showLine: true,
+        plugins: {
+          legend: {
+            display: true,
+            position: "top", //'bottom' 'left' 'right'
+          },
+          tooltip: {
+            mode: "nearest",
+            intersect: false,
+            callbacks: {
+              label: function (tooltipItem) {
+                console.log(tooltipItem);
+                return `${tooltipItem?.dataset?.label}, ${tooltipItem?.formattedValue}`;
+              },
+            },
+          },
+        },
+        hover: {
+          mode: "point",
+          intersect: false,
+          onHover: function (event, chartElement) {
+            event.native.target.style.cursor = chartElement[0]
+              ? "pointer"
+              : "default";
+          },
+        },
+        scales: {
+          x: {
+            type: "time",
+            time: {
+              unit: "day",
+              tooltipFormat: "yyyy-MM-dd",
+              displayFormats: { day: "MMM dd, yyyy" },
+              distribution: "series",
+            },
+            position: "bottom",
+            title: { display: true, text: "Date" },
+            ticks: {
+              source: "data",
+              autoSkip: true,
+              maxRotation: 90,
+              minRotation: 45,
+            },
+          },
+          y: {
+            title: {
+              display: true,
+              text: `Measurement`,
+            },
+          },
+        },
+      });
       //Second case is that there are no active TRPEs, in which we want to reset the data
     } else {
-      let newDataMap = new Map();
-      setDataMap(newDataMap);
-      const labels = [];
-      const values = [];
+      console.log("NO ACTIVE TRPES");
       setChartData({
-        labels: labels,
+        labels: [],
         datasets: [
           {
             //Label is the block at the top that you can click to filter
             label: `Legend`,
-            data: values,
+            data: [],
             spanGaps: false,
             pointRadius: 5,
             pointHoverRadius: 8, // Increase the hover radius
@@ -139,153 +215,28 @@ function MeasurementChart({ activeTRPE }) {
       });
     }
   }
-  async function GetMeasurableMeasurements() {
-    console.log("Getting measurable measurement");
-    if (activeTRPE.length > 0) {
-      //Make sure the selected measurable is a real measurable
-      if (selectedMeasurable !== "" && selectedMeasurable !== undefined) {
-        //Sort the array of measurements by date
-        let newArray = dataMap.get(selectedMeasurable);
-        newArray.sort(
-          (a, b) =>
-            new Date(a.prac_dt).getTime() - new Date(b.prac_dt).getTime()
-        );
-        //Set the Lables (y values) as the practice dates without the timestamps
-        const labels = newArray?.map((item) => {
-          return item.prac_dt.split("T")[0];
-        });
-        //Set the values (x values) as the measurement value
-        const values = newArray?.map((item) => item.msrm_value); // Adjust according to your data structure
-        //Update the chart data to this
-        setChartData({
-          labels: labels,
-          datasets: [
-            {
-              //Label is the block at the top that you can click to filter, not using this yet
-              label: `${selectedMeasurable.meas_id} Legend`,
-              data: values,
-              pointRadius: 5,
-              spanGaps: false,
-              pointHoverRadius: 8, // Increase the hover radius
-              pointHitRadius: 5, // Increase the hit radius
-            },
-          ],
-        });
-        //Set the options for the tooltip
-        setOptions({
-          responsive: true,
-          showLine: true,
-          plugins: {
-            legend: {
-              display: true,
-              position: "top", //'bottom' 'left' 'right'
-            },
-            tooltip: {
-              mode: "nearest",
-              intersect: false,
-              callbacks: {
-                label: function (tooltipItem) {
-                  let prac = dataMap.get(selectedMeasurable)?.find((obj) => {
-                    return obj.prac_dt.split("T")[0] == tooltipItem.label;
-                  });
 
-                  return `${tooltipItem.raw}${prac.meas_unit}, ${dayjs(
-                    prac.prac_dt
-                  ).format("YYYY-MM-DD")}  `;
-                },
-              },
-            },
-          },
-          hover: {
-            mode: "point",
-            intersect: false,
-            onHover: function (event, chartElement) {
-              event.native.target.style.cursor = chartElement[0]
-                ? "pointer"
-                : "default";
-            },
-          },
-          scales: {
-            x: {
-              type: "category",
-              time: {
-                unit: "day",
-                tooltipFormat: "yyyy-MM-dd",
-                displayFormats: { day: "yyyy-MM-dd" },
-                distribution: "series",
-              },
-              position: "bottom",
-              title: { display: true, text: "Date" },
-              ticks: {
-                source: "data",
-                autoSkip: true,
-              },
-            },
-            y: {
-              title: {
-                display: true,
-                text: `Measurement in ${
-                  dataMap.get(selectedMeasurable)[0].meas_unit
-                }  `,
-              },
-            },
-          },
-        });
-      }
-    } else {
-      //There are no active trpes so reset the data
-      setChartData({
-        labels: [],
-        datasets: [
-          {
-            label: "",
-            data: [],
-            spanGaps: false,
-            backgroundColor: "",
-            borderColor: "",
-            borderWidth: 0,
-          },
-        ],
-      });
-    }
-  }
   //This Use effect will be for when the selected TRPEs change
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      GetTrainingPeriodMeasurements();
+      await GetTrainingPeriodMeasurements();
     };
     fetchData();
     setLoading(false);
   }, [activeTRPE]);
-
-  useEffect(() => {
-    setLoading(true);
-    GetMeasurableMeasurements();
-    setLoading(false);
-  }, [selectedMeasurable]);
 
   if (loading) {
     return <ChartWrap>Loading...</ChartWrap>;
   }
   return (
     <ChartWrap>
-      <Message>
-        {activeTRPE.length === 0 ? "Please Select a Training Period" : ""}
-      </Message>
-
       <Row>
         <Title>Chart of Practices</Title>
-        <ImplementSelect onChange={(e) => implementSelectChange(e)}>
-          <option value="">Choose A Measurable</option>
-          {[...dataMap?.keys()].map((key) => (
-            <option value={key}>{key}</option>
-          ))}
-        </ImplementSelect>
         {[...openFilters?.keys()].map((key) => (
           <p value={key}>{key}</p>
         ))}
-        <RefreshButton onClick={() => GetMeasurableMeasurements()}>
+        <RefreshButton onClick={() => console.log("REFRESH")}>
           Refresh
         </RefreshButton>
       </Row>
@@ -294,24 +245,9 @@ function MeasurementChart({ activeTRPE }) {
   );
 }
 
-const Message = styled.div`
-  position: relative;
-  padding: 0;
-  margin: 0;
-  top: 50%;
-  left: 20%;
-  transform: translate(-50%, -50%);
-  z-index: 2;
-  padding: 12px 24px;
-  color: black;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
-
 const ChartWrap = styled.div`
   display: flex;
-  flex-shrink: 1;
+
   align-items: center;
   justify-content: center;
   flex-direction: column;
@@ -322,22 +258,15 @@ const ChartWrap = styled.div`
   overflow: hidden;
 `;
 
-const ImplementSelect = styled.select`
-  display: flex;
-  border-radius: 30px;
-  border-width: 2px;
-  font-family: "Nunito", sans-serif;
-  align-text: center;
-  width: 200px;
-  font-weight: 700;
-  margin: 0;
-  padding: 0;
-`;
 const ResponsiveLineChart = styled(Line)`
   width: 100% !important;
   height: 90% !important;
+  display: flex;
+  border-radius: 10px;
+  border: 2px solid gray;
   margin: 0;
   padding: 0;
+  background-color: white;
 `;
 const Title = styled.h2`
   display: flex;

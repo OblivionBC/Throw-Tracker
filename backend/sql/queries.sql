@@ -79,3 +79,26 @@ select prog.prog_rk, prog.prog_nm, prog.coach_prsn_rk, exas.athlete_prsn_rk,
 from program prog 
 inner join exercise_assignment exas on prog.prog_rk = exas.prog_rk 
 inner join exercise excr on excr.excr_rk = exas.excr_rk;
+
+--Query for data for truman
+--Gives all measurements, alongside the persons names, measurable id, measurement value, and date. ordered by person then date
+select prsn.prsn_first_nm, prsn.prsn_last_nm, tp.trpe_rk, p.prac_dt, meas.meas_id, msrm.msrm_value  
+from measurement msrm 
+inner join measurable meas on meas.meas_rk = msrm.meas_rk 
+inner join practice p on p.prac_rk = msrm.prac_rk
+inner join training_period tp on tp.trpe_rk = p.trpe_rk
+inner join person prsn on prsn.prsn_rk = tp.prsn_rk
+where prsn.prsn_rk != 16
+    and msrm.msrm_value != 0
+order by prsn.prsn_rk, p.prac_dt;
+
+--turns into csv
+COPY (select prsn.prsn_first_nm, prsn.prsn_last_nm, tp.trpe_rk, p.prac_dt, meas.meas_id, msrm.msrm_value  
+from measurement msrm 
+inner join measurable meas on meas.meas_rk = msrm.meas_rk 
+inner join practice p on p.prac_rk = msrm.prac_rk
+inner join training_period tp on tp.trpe_rk = p.trpe_rk
+inner join person prsn on prsn.prsn_rk = tp.prsn_rk
+where prsn.prsn_rk != 16
+    and msrm.msrm_value != 0
+order by prsn.prsn_rk, p.prac_dt) TO 'C:/Users/hengs/Desktop/athlete_data.csv' DELIMITER ',' CSV HEADER;

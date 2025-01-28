@@ -14,7 +14,7 @@ import "typeface-nunito";
 
 const addMeasurable = async (meas_id, meas_typ, meas_unit, prsn_rk) => {
   console.log(meas_id);
-  const response = await fetch(`http://localhost:5000/api//add-measurable`, {
+  const response = await fetch(`http://localhost:5000/api/add-measurable`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -26,13 +26,12 @@ const addMeasurable = async (meas_id, meas_typ, meas_unit, prsn_rk) => {
       prsn_rk: prsn_rk,
     }),
   });
-  console.log(response);
   const jsonData = await response.json();
-  console.log(jsonData);
+  console.log(response);
   if (response.ok === false) {
     console.log("ERROR HAS OCCURRED ", response.statusText);
+    throw new Error(jsonData.message || "Something went wrong");
   }
-  return jsonData.rows[0].prac_rk;
 };
 
 const AddMeasurableForm = ({ close, refresh }) => {
@@ -54,7 +53,7 @@ const AddMeasurableForm = ({ close, refresh }) => {
     meas_typ: Yup.string().required("Measurable Type is required"),
   });
 
-  const handleSubmit = async (values, { setSubmitting }) => {
+  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     // Handle form submission here
     //Make call on submit to update practice, and delete all measurments in for the prac, then create a new one for each in the array
     console.log(values);
@@ -66,14 +65,17 @@ const AddMeasurableForm = ({ close, refresh }) => {
         values.meas_unit,
         getUser()
       );
-      console.log(measurable);
+      console.log("Added Successfully", measurable);
       alert("Measurable Added Successfully");
       close();
       refresh();
       setSubmitting(false);
       return;
     } catch (error) {
+      console.log("HERE");
+      console.log(error);
       setFailed(true);
+      setErrors({ submit: error.message });
       console.error(error.message);
       return false;
     }
@@ -87,7 +89,7 @@ const AddMeasurableForm = ({ close, refresh }) => {
         validateOnBlur={false}
         onSubmit={handleSubmit}
       >
-        {({ handleSubmit, isSubmitting, values, setFieldValue }) => (
+        {({ handleSubmit, isSubmitting, values, setFieldValue, errors }) => (
           //date, training period, wind, notes, measurables
           <StyledForm onSubmit={handleSubmit}>
             <Field name="meas_id" type="text">
@@ -144,6 +146,7 @@ const AddMeasurableForm = ({ close, refresh }) => {
             <StyledButton type="submit" disabled={isSubmitting}>
               Save
             </StyledButton>
+            {errors.submit && <SubmitError>{errors.submit}</SubmitError>}
             {failed ? (
               <SubmitError>
                 Something went wrong, please try again later

@@ -7,56 +7,25 @@ import Measurables from "../componenents/tables/MeasurableList";
 import "typeface-rubik";
 import { useUser } from "../componenents/contexts/UserContext";
 import ErrorBoundary from "../componenents/ErrorBoundary";
-import ExpandedChart from "./ExpandedChart";
-import { Col } from "../styles/styles";
-
-const Practices = () => {
+const ExpandedChart = ({ back }) => {
   const [activeTRPE, setActiveTRPE] = useState([]);
-  const [expand, setExpand] = useState(false);
-  const [expandContent, setExpandContent] = useState(
-    <ExpandedChart back={() => setExpand(false)} />
-  );
-  const { getUser } = useUser();
-  useEffect(() => {
-    setActiveTRPE([]);
-  }, [getUser()]);
-  if (expand) return expandContent;
+
   return (
     <Page>
+      <button onClick={() => back()}>Back</button>
       <LeftColumn>
         <ErrorBoundary>
-          <div style={{ display: "flex", flex: 1, flexDirection: "column" }}>
-            <button
-              onClick={() => setExpand(true)}
-              style={{ margin: "0", padding: "0" }}
-            >
-              Expand Chart
-            </button>
-            <MeasurementChart activeTRPE={activeTRPE} />
-          </div>
-        </ErrorBoundary>
-
-        <ErrorBoundary>
-          <TrainingPeriodList
-            sharedState={activeTRPE}
-            setSharedState={setActiveTRPE}
-            paginationNum={5}
-            bAdd={true}
-            bEdit={true}
-            bDelete={true}
-            selectable={true}
-          />
+          <MeasurementChart activeTRPE={activeTRPE} />
         </ErrorBoundary>
       </LeftColumn>
       <RightColumn>
         <ErrorBoundary>
-          <PracticeList
-            bAdd={true}
-            bDelete={true}
-            bDetail={true}
-            paginationNum={5}
+          <TrainingPeriodList
+            sharedState={activeTRPE}
+            setSharedState={setActiveTRPE}
+            paginationNum={8}
+            selectable={true}
           />
-          <Measurables paginationNum={3} />
         </ErrorBoundary>
       </RightColumn>
     </Page>
@@ -67,6 +36,7 @@ const Page = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  background-color: rgb(234, 234, 223);
   height: 90vh;
   font-family: "Rubik", sans-serif;
 `;
@@ -74,24 +44,23 @@ const Page = styled.div`
 const LeftColumn = styled.div`
   display: flex;
   flex: 1;
+  margin: 0;
+  padding: 0;
   align-self: flex-start;
-  align-items: center;
-  justify-content: center;
+
   flex-direction: column;
-  width: 49%;
   height: 100%;
 `;
 
 const RightColumn = styled.div`
   display: flex;
-  flex: 1;
+  flex: .4;
   align-self: flex-end;
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  width: 49%;
   height: 100%;
-  margin-left: 5px;
+  margin-right: 100px
   overflow: hidden;
 `;
-export default Practices;
+export default ExpandedChart;

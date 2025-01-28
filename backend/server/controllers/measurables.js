@@ -13,8 +13,10 @@ exports.addMeasurable = async (req, res) => {
       [meas_id, prsn_rk]
     );
     if (alreadyExists.rowCount > 0) {
+      console.log("Already Exists");
+      console.error("There is a measurable already with this name");
       return res
-        .status(400)
+        .status(500)
         .json({ message: "There is a measurable already with this name" });
     }
     const newMeasurable = await pool.query(
@@ -28,6 +30,7 @@ exports.addMeasurable = async (req, res) => {
         " for the prsn in row " +
         prsn_rk
     );
+    res.status(200).json({ message: "Measurable Added" });
     return { status: 200, data: newMeasurable };
   } catch (err) {
     console.error("Async Error:", err.message);
