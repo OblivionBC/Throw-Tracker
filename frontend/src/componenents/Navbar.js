@@ -65,14 +65,14 @@ const NavCenter = styled.div`
   justify-content: space-between;
   align-items: center;
   flex: 1;
-  font-size: 100px;
+
   a.active {
     color: #2b81e2;
     display: flex;
     text-decoration: none;
     font-family: "Nunito", sans-serif;
     font-weight: 700;
-    border-bottom: 2px solid grey;
+    border-bottom: 2px solid black;
     border-radius: 5px;
   }
 `;
@@ -93,7 +93,7 @@ const NavPath = styled(NavLink)`
   font-family: "Nunito", sans-serif;
   font-weight: 600;
   border-radius: 5px;
-  font-size: 3vw;
+  font-size: 2.3vw;
   &:hover {
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
     transform: translateY(-2px);
