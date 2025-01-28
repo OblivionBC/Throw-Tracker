@@ -194,12 +194,14 @@ export const FieldLabel = styled.h4`
 
 export const CompWrap = styled.div`
   display: flex;
+  flex: 1;
   flex-direction: column;
   width: 98%;
   height: 100%;
 `;
 export const TableWrap = styled.div`
   display: flex;
+  overflow: hidden;
   flex-direction: column;
   max-width: 100%;
   height: auto;

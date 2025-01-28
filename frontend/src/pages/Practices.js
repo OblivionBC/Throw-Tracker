@@ -7,11 +7,15 @@ import Measurables from "../componenents/tables/MeasurableList";
 import "typeface-rubik";
 import { useUser } from "../componenents/contexts/UserContext";
 import ErrorBoundary from "../componenents/ErrorBoundary";
+import ExpandedChart from "./ExpandedChart";
+import { Col } from "../styles/styles";
 
 const Practices = () => {
   const [activeTRPE, setActiveTRPE] = useState([]);
   const [expand, setExpand] = useState(false);
-  const [expandContent, setExpandContent] = useState(null);
+  const [expandContent, setExpandContent] = useState(
+    <ExpandedChart back={() => setExpand(false)} />
+  );
   const { getUser } = useUser();
   useEffect(() => {
     setActiveTRPE([]);
@@ -21,7 +25,15 @@ const Practices = () => {
     <Page>
       <LeftColumn>
         <ErrorBoundary>
-          <MeasurementChart activeTRPE={activeTRPE} />
+          <div style={{ display: "flex", flex: 1, flexDirection: "column" }}>
+            <button
+              onClick={() => setExpand(true)}
+              style={{ margin: "0", padding: "0" }}
+            >
+              Expand Chart
+            </button>
+            <MeasurementChart activeTRPE={activeTRPE} />
+          </div>
         </ErrorBoundary>
 
         <ErrorBoundary>
@@ -61,6 +73,7 @@ const Page = styled.div`
 
 const LeftColumn = styled.div`
   display: flex;
+  flex: 1;
   align-self: flex-start;
   align-items: center;
   justify-content: center;
@@ -71,6 +84,7 @@ const LeftColumn = styled.div`
 
 const RightColumn = styled.div`
   display: flex;
+  flex: 1;
   align-self: flex-end;
   align-items: center;
   justify-content: center;

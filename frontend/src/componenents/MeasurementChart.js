@@ -38,15 +38,6 @@ function MeasurementChart({ activeTRPE }) {
       legend: {
         display: true,
       },
-      tooltip: {
-        mode: "nearest",
-        intersect: false,
-        callbacks: {
-          label: function (tooltipItem) {
-            return `(${tooltipItem.raw}m, Prac ${tooltipItem.label})`;
-          },
-        },
-      },
     },
     hover: {
       mode: "point",
@@ -59,11 +50,17 @@ function MeasurementChart({ activeTRPE }) {
     },
     scales: {
       x: {
-        type: "linear",
+        type: "time",
+        time: {
+          unit: "day",
+          tooltipFormat: "yyyy-MM-dd",
+          displayFormats: { day: "MMM dd, yyyy" },
+          distribution: "series",
+        },
         position: "bottom",
         title: {
           display: true,
-          text: "Practice Number",
+          text: "Date",
         },
       },
       y: {
@@ -119,7 +116,7 @@ function MeasurementChart({ activeTRPE }) {
         newLabels = row?.map((item) => {
           return item.prac_dt.split("T")[0];
         });
-
+        console.log(newLabels);
         const values = row?.map((item) => {
           return { x: item.prac_dt.split("T")[0], y: item.msrm_value };
         });
@@ -234,10 +231,6 @@ function MeasurementChart({ activeTRPE }) {
   }
   return (
     <ChartWrap>
-      <Message>
-        {activeTRPE.length === 0 ? "Please Select a Training Period" : ""}
-      </Message>
-
       <Row>
         <Title>Chart of Practices</Title>
         {[...openFilters?.keys()].map((key) => (
@@ -252,24 +245,9 @@ function MeasurementChart({ activeTRPE }) {
   );
 }
 
-const Message = styled.div`
-  position: relative;
-  padding: 0;
-  margin: 0;
-  top: 50%;
-  left: 20%;
-  transform: translate(-50%, -50%);
-  z-index: 2;
-  padding: 12px 24px;
-  color: black;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
-
 const ChartWrap = styled.div`
   display: flex;
-  flex-shrink: 1;
+
   align-items: center;
   justify-content: center;
   flex-direction: column;
@@ -283,8 +261,12 @@ const ChartWrap = styled.div`
 const ResponsiveLineChart = styled(Line)`
   width: 100% !important;
   height: 90% !important;
+  display: flex;
+  border-radius: 10px;
+  border: 2px solid gray;
   margin: 0;
   padding: 0;
+  background-color: white;
 `;
 const Title = styled.h2`
   display: flex;
