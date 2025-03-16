@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import * as FaIcons from "react-icons/fa";
 import styled from "styled-components";
-import logo from "../images/LogoIcon.png";
-import text from "../images/LogoText.png";
+import logo from "../../images/LogoIcon.png";
+import text from "../../images/LogoText.png";
 import "typeface-nunito";
-import AccountDetailsModal from "./modals/AccountDetailModal";
-import AthleteSelect from "./formHelpers/AthleteSelect";
-import { useUser } from "./contexts/UserContext";
+import AccountDetailsModal from "../modals/AccountDetailModal";
+import AthleteSelect from "../formHelpers/AthleteSelect";
+import { useUser } from "../contexts/UserContext";
 
 const Navbar = () => {
   const [profile, setProfile] = useState(false);
@@ -16,8 +16,13 @@ const Navbar = () => {
   return (
     <NavWrap>
       <NavLeft>
-        <Logo src={logo} />
-        <Text src={text} />
+        <Profile onClick={() => setProfile(!profile)}>
+          <UserIcon />
+          <AccountDetailsModal on={profile} />
+        </Profile>
+        {user.prsn_role === "ATHLETE" ? null : (
+          <AthleteSelect prsn_rk={user.prsn_rk} org_name={user.org_name} />
+        )}
       </NavLeft>
       <NavCenter>
         <NavPath to="/home">Home</NavPath>
@@ -28,13 +33,8 @@ const Navbar = () => {
         ) : null}
       </NavCenter>
       <NavRight>
-        {user.prsn_role === "ATHLETE" ? null : (
-          <AthleteSelect prsn_rk={user.prsn_rk} org_name={user.org_name} />
-        )}
-        <Profile onClick={() => setProfile(!profile)}>
-          <UserIcon />
-          <AccountDetailsModal on={profile} />
-        </Profile>
+        <Logo src={logo} />
+        <Text src={text} />
       </NavRight>
     </NavWrap>
   );

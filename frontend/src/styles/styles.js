@@ -2,6 +2,22 @@ import styled from "styled-components";
 import DataTable from "react-data-table-component";
 import { Form, FieldArray } from "formik";
 //Pages
+export const AppLayout = styled.div`
+  display: flex; /* Flexbox layout for sidebar and main content */
+`;
+export const AppRHS = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+`;
+export const AppRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 0px;
+  margin: 0px;
+`;
 export const PageContent = styled.div`
   display: flex;
   background: white;
@@ -23,6 +39,8 @@ export const Row = styled.div`
   flex-direction: row;
   align-items: center;
   justify-content: center;
+  padding: 0px;
+  margin: 0px;
 `;
 export const Col = styled.div`
   display: flex;

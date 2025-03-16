@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import { useUser } from "../contexts/UserContext";
 import { useNavigate } from "react-router-dom";
@@ -65,7 +65,9 @@ const SignOut = styled.button`
 `;
 
 const AccountDetailsModal = ({ on }) => {
+  const profileRef = useRef(null);
   const { user, signOut } = useUser();
+  const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
   const navigate = useNavigate();
 
   async function logout() {
