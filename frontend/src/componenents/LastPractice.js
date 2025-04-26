@@ -3,6 +3,7 @@ import styled from "styled-components";
 import "typeface-nunito";
 import dayjs from "dayjs";
 import * as FaIcons from "react-icons/fa";
+import { API_BASE_URL } from "../config";
 // This is your PracticeItem component
 //Test that this works and add it to the practices component
 
@@ -13,9 +14,7 @@ const LastPractice = () => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const response = await fetch(
-        `http://localhost:5000/api/get-last-practice`
-      );
+      const response = await fetch(`${API_BASE_URL}/api/get-last-practice`);
       const jsonData = await response.json();
       const row = jsonData.rows[0];
       setDatas({

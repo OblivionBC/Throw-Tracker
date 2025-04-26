@@ -1,6 +1,8 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import { useUser } from "../contexts/UserContext";
+import { API_BASE_URL } from "../../config.js";
+
 const AthleteSelect = ({ prsn_rk, org_name, updateUser }) => {
   const [athletes, setAthletes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -9,7 +11,7 @@ const AthleteSelect = ({ prsn_rk, org_name, updateUser }) => {
     const fetchAthletes = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`http://localhost:5000/api/athletes`, {
+        const response = await fetch(`${API_BASE_URL}/api/athletes`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

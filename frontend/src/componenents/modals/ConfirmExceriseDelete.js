@@ -8,23 +8,21 @@ import {
   FieldLabel,
   FieldContainer,
 } from "../../styles/styles";
+import { API_BASE_URL } from "../../config.js";
 const ConfirmExerciseDelete = ({ open, onClose, excr, refresh }) => {
   async function deleteExercise(excr_rk) {
     alert("PRAC DELETED");
     try {
       //Fix the route
-      const response = await fetch(
-        `http://localhost:5000/api//delete-exercise`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            excr_rk: excr_rk,
-          }),
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/api//delete-exercise`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          excr_rk: excr_rk,
+        }),
+      });
       console.log(response);
       onClose();
       refresh();

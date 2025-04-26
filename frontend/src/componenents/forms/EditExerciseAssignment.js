@@ -14,7 +14,7 @@ import "typeface-nunito";
 import "react-datepicker/dist/react-datepicker.css";
 import { useUser } from "../contexts/UserContext";
 import ExerciseSelect from "../formHelpers/ExerciseSelect";
-
+import { API_BASE_URL } from "../../config.js";
 const EditExerciseAssignmentForm = ({
   excr,
   refresh,
@@ -58,7 +58,7 @@ const EditExerciseAssignmentForm = ({
     try {
       console.log(values);
       const response = await fetch(
-        `http://localhost:5000/api/update-exerciseAssignment`,
+        `${API_BASE_URL}/api/update-exerciseAssignment`,
         {
           method: "PUT",
           headers: {

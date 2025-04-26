@@ -13,7 +13,7 @@ import "typeface-nunito";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useUser } from "../contexts/UserContext";
-
+import { API_BASE_URL } from "../../config.js";
 const EditTRPEForm = ({ trpe, refresh, close }) => {
   const { getUser } = useUser();
   //Trim the dates to make them work better with the date picker
@@ -52,7 +52,7 @@ const EditTRPEForm = ({ trpe, refresh, close }) => {
     }
     try {
       const response = await fetch(
-        `http://localhost:5000/api/update-trainingPeriod`,
+        `${API_BASE_URL}/api/update-trainingPeriod`,
         {
           method: "PUT",
           headers: {

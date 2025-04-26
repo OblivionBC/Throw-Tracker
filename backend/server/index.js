@@ -13,9 +13,9 @@ app.use(express.urlencoded({ extended: true }));
 // Importing the transactions router module
 const transactionsRouter = require("./routes/transactions.js");
 app.use("/api", transactionsRouter);
-app.listen(5000, () => {
+app.listen(3000, () => {
   try {
-    console.log("Listening on Port 5000");
+    console.log("Listening on Port 3000");
   } catch (err) {
     console.log(err.message);
   }

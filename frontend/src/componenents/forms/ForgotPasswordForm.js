@@ -12,7 +12,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../contexts/UserContext.js";
 import "typeface-nunito";
-
+import { API_BASE_URL } from "../../config.js";
 const ForgotPasswordForm = ({ off }) => {
   const [failed, setFailed] = useState(false);
   const initialValues = {
@@ -40,22 +40,19 @@ const ForgotPasswordForm = ({ off }) => {
     // For example, you could make an API call to authenticate the user\
     setSubmitting(true);
     try {
-      const response = await fetch(
-        `http://localhost:5000/api//update-password`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            prsn_first_nm: values.fname,
-            prsn_last_nm: values.lname,
-            prsn_email: values.username,
-            prsn_pwrd: values.password,
-            prsn_role: values.role,
-          }),
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/api//update-password`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          prsn_first_nm: values.fname,
+          prsn_last_nm: values.lname,
+          prsn_email: values.username,
+          prsn_pwrd: values.password,
+          prsn_role: values.role,
+        }),
+      });
       if (response.ok === false) {
         const jsonData = await response.json();
         setErrors({ submit: jsonData.message });

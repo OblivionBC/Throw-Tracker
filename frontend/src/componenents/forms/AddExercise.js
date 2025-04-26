@@ -12,10 +12,12 @@ import {
 } from "../../styles/styles.js";
 import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
+import { API_BASE_URL } from "../../config.js";
+
 const addExercise = async (props) => {
   console.log("Adding");
 
-  const response = await fetch(`http://localhost:5000/api/add-exercise`, {
+  const response = await fetch(`${API_BASE_URL}/api/add-exercise`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

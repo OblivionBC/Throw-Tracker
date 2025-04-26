@@ -13,6 +13,7 @@ import PracticeDetailsModal from "../modals/PracticeDetailsModal";
 import ConfirmPracDeleteModal from "../modals/ConfirmPracDeleteModal";
 import AddPracticeModal from "../modals/AddPracticeModal";
 import { useUser } from "../contexts/UserContext";
+import { API_BASE_URL } from "../../config.js";
 // This is your PracticeItem component
 //Test that this works and add it to the practices component
 
@@ -74,22 +75,19 @@ const Practices = ({ trpe_rk, bAdd, bDetail, bDelete }) => {
       let response;
       //If the training period was passed in, we want to get the practices only from the training period
       if (trpe_rk) {
-        response = await fetch(
-          `http://localhost:5000/api/get-practicesInTrpe`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              trpe_rk: trpe_rk,
-            }),
-          }
-        );
+        response = await fetch(`${API_BASE_URL}/api/get-practicesInTrpe`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            trpe_rk: trpe_rk,
+          }),
+        });
       } else {
         //No Training Period was specified so get all for the person
         console.log("Getting All for Person");
-        response = await fetch(`http://localhost:5000/api/get-all-practices`, {
+        response = await fetch(`${API_BASE_URL}/api/get-all-practices`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

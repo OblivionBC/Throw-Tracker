@@ -8,22 +8,20 @@ import {
   ButtonContainer,
   CancelButton,
 } from "../../styles/styles";
+import { API_BASE_URL } from "../../config.js";
 const ConfirmPracDeleteModal = ({ open, onClose, pracObj, refresh }) => {
   async function deletePrac(prac_rk) {
     alert("PRAC DELETED");
     try {
-      const response = await fetch(
-        `http://localhost:5000/api//delete-practice`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            prac_rk: pracObj.prac_rk,
-          }),
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/api//delete-practice`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          prac_rk: pracObj.prac_rk,
+        }),
+      });
       onClose();
       refresh();
     } catch (error) {

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import styled from "styled-components";
 import { useNavigate, Link } from "react-router-dom";
 import { useUser } from "../contexts/UserContext";
@@ -13,12 +14,11 @@ const MOCKUSER = {
 };
 
 const sidebarItems = [
-  { name: "Dashboard", route: "/dashboard" },
-  { name: "Projects", route: "/projects" },
-  { name: "Teams", route: "/teams" },
-  { name: "Settings", route: "/settings" },
+  { name: "Charts", route: "/practice-charts" },
+  { name: "Practices", route: "/practices" },
+  { name: "Training Periods", route: "/training-periods" },
+  { name: "Measurables", route: "/measurables" },
 ];
-
 const Sidebar = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
@@ -26,6 +26,7 @@ const Sidebar = () => {
   const { user, signOut } = useUser();
   const navigate = useNavigate();
 
+  //grab sidebar items which are elements based on routes
   const handleProfileClick = () => {
     if (profileRef.current) {
       const rect = profileRef.current.getBoundingClientRect();
@@ -58,6 +59,12 @@ const Sidebar = () => {
     signOut();
   };
 
+  const location = useLocation();
+  console.log(location);
+  // Check if the current route is "/login"
+  if (location.pathname === "/login" || location.pathname === "/") {
+    return null;
+  }
   return (
     <SidebarContainer>
       {/* User Profile Section */}

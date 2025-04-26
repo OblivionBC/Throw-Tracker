@@ -14,6 +14,7 @@ import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { API_BASE_URL } from "../../config.js";
 
 //Name says it, but this is just a function to add the trpe when submitting
 const AddTRPE = async (trpe_start_dt, prsn_rk, endDateRecent) => {
@@ -23,7 +24,7 @@ const AddTRPE = async (trpe_start_dt, prsn_rk, endDateRecent) => {
     const newEndDate = dateString.toISOString().split("T")[0];
 
     const response = await fetch(
-      `http://localhost:5000/api//endDateMostRecent_trainingPeriod`,
+      `${API_BASE_URL}/api//endDateMostRecent_trainingPeriod`,
       {
         method: "POST",
         headers: {
@@ -37,7 +38,7 @@ const AddTRPE = async (trpe_start_dt, prsn_rk, endDateRecent) => {
     );
   }
   console.log(prsn_rk);
-  const response = await fetch(`http://localhost:5000/api/add-trainingPeriod`, {
+  const response = await fetch(`${API_BASE_URL}/api/add-trainingPeriod`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

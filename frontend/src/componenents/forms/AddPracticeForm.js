@@ -17,10 +17,11 @@ import TrainingPeriodOptions from "../formHelpers/TrainingPeriodOptions";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import ProgramSelectWithExercise from "../formHelpers/ProgramSelectWithExercise";
+import { API_BASE_URL } from "../../config.js";
 
 //Grab the initial values
 const addMeasurement = async (measurable, prac_rk) => {
-  const response = await fetch(`http://localhost:5000/api/add-measurement`, {
+  const response = await fetch(`${API_BASE_URL}/api/add-measurement`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -38,7 +39,7 @@ const addMeasurement = async (measurable, prac_rk) => {
 };
 
 const addPractice = async (prac_dt, trpe_rk, prsn_rk, notes) => {
-  const response = await fetch(`http://localhost:5000/api//add-practice`, {
+  const response = await fetch(`${API_BASE_URL}/api//add-practice`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

@@ -13,6 +13,7 @@ import EditExerciseForm from "../forms/EditExercise";
 import AddExerciseForm from "../forms/AddExercise";
 import { useUser } from "../contexts/UserContext";
 import ConfirmExerciseDelete from "../modals/ConfirmExceriseDelete";
+import { API_BASE_URL } from "../../config.js";
 const TableStyles = {
   pagination: {
     style: {
@@ -40,18 +41,15 @@ const CurrentExcersiseList = ({ paginationNum }) => {
   paginationNum === undefined ? (pagination = 3) : (pagination = paginationNum);
   const getExerciseData = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/get-exerciseForCoach`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            coach_prsn_rk: user.prsn_rk,
-          }),
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/api/get-exerciseForCoach`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          coach_prsn_rk: user.prsn_rk,
+        }),
+      });
       const jsonData = await response.json();
       setExcrData(jsonData.rows);
     } catch (error) {

@@ -8,21 +8,20 @@ import {
   FieldLabel,
   FieldContainer,
 } from "../../styles/styles";
+import { API_BASE_URL } from "../../config.js";
+
 const ConfirmMeasurableDeleteModal = ({ open, onClose, measObj, refresh }) => {
   async function deleteMeas(meas_rk) {
     try {
-      const response = await fetch(
-        `http://localhost:5000/api//delete-measurable`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            meas_rk: measObj.meas_rk,
-          }),
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/api//delete-measurable`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          meas_rk: measObj.meas_rk,
+        }),
+      });
       alert("Meas DELETED");
       console.log(response);
       onClose();

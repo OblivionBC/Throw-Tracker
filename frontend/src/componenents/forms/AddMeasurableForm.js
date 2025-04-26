@@ -11,10 +11,11 @@ import {
 } from "../../styles/styles.js";
 import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
+import { API_BASE_URL } from "../../config.js";
 
 const addMeasurable = async (meas_id, meas_typ, meas_unit, prsn_rk) => {
   console.log(meas_id);
-  const response = await fetch(`http://localhost:5000/api/add-measurable`, {
+  const response = await fetch(`${API_BASE_URL}/api/add-measurable`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

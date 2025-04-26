@@ -9,13 +9,14 @@ import {
   DeleteButton,
   CancelButton,
 } from "../../styles/styles";
+import { API_BASE_URL } from "../../config.js";
 const ConfirmTRPEDelete = ({ open, onClose, trpeObj, refresh }) => {
   async function deleteTRPE(meas_rk) {
     alert("PRAC DELETED");
     try {
       //Fix the route
       const response = await fetch(
-        `http://localhost:5000/api//delete-trainingPeriod`,
+        `${API_BASE_URL}/api//delete-trainingPeriod`,
         {
           method: "DELETE",
           headers: {

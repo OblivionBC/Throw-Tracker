@@ -8,6 +8,7 @@ import {
 } from "../../styles/styles.js";
 import { useUser } from "../contexts/UserContext";
 import AthleteDetails from "../modals/AthleteDetails";
+import { API_BASE_URL } from "../../config.js";
 const TableStyles = {
   pagination: {
     style: {
@@ -34,7 +35,7 @@ const AthleteList = ({ paginationNum }) => {
 
   const getExerciseData = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/athletes`, {
+      const response = await fetch(`${API_BASE_URL}/api/athletes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

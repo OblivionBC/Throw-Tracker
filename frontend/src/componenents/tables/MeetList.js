@@ -8,6 +8,7 @@ import {
   AddButton,
   EditButton,
 } from "../../styles/styles.js";
+import { API_BASE_URL } from "../../config.js";
 import dayjs from "dayjs";
 // This is your PracticeItem component
 //Test that this works and add it to the practices component
@@ -32,7 +33,7 @@ const MeetList = () => {
   const [meetData, setMeetData] = useState([]);
   const getMeetData = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/get-all-meets`);
+      const response = await fetch(`${API_BASE_URL}/api/get-all-meets`);
       const jsonData = await response.json();
       setMeetData(jsonData.rows);
     } catch (error) {

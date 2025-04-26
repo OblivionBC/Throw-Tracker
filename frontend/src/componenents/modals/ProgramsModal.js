@@ -12,7 +12,7 @@ import {
   AddButton,
   RowDiv,
 } from "../../styles/styles";
-
+import { API_BASE_URL } from "../../config.js";
 const ProgramsModal = ({ open, onClose, refresh, prsn_rk, trpe_rk }) => {
   const [loading, setLoading] = useState(false);
   const [programData, setProgramData] = useState(new Map());
@@ -20,7 +20,7 @@ const ProgramsModal = ({ open, onClose, refresh, prsn_rk, trpe_rk }) => {
   const getProgramData = async () => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/get-programsAndExerciseForTRPE`,
+        `${API_BASE_URL}/api/get-programsAndExerciseForTRPE`,
         {
           method: "POST",
           headers: {

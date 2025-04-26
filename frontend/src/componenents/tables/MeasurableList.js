@@ -12,6 +12,7 @@ import { useUser } from "../contexts/UserContext";
 import AddMeasurableModal from "../modals/AddMeasurableModal";
 import ConfirmMeasurableDeleteModal from "../modals/ConfirmMeasurableDeleteModal";
 import MeasurableEditModal from "../modals/MeasurableEditModal";
+import { API_BASE_URL } from "../../config.js";
 // This is your PracticeItem component
 //Test that this works and add it to the practices component
 
@@ -44,7 +45,7 @@ const Measurables = ({ paginationNum }) => {
   const getMeasurableData = async () => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api//get-all-measurablesForPrsn`,
+        `${API_BASE_URL}/api//get-all-measurablesForPrsn`,
         {
           method: "POST",
           headers: {

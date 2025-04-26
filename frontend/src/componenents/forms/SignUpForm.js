@@ -11,7 +11,7 @@ import {
   StyledSelect,
 } from "../../styles/styles.js";
 import "typeface-nunito";
-
+import { API_BASE_URL } from "../../config.js";
 const SignUpForm = ({ on, off }) => {
   const initialValues = {
     fname: "",
@@ -44,7 +44,7 @@ const SignUpForm = ({ on, off }) => {
     // For example, you could make an API call to authenticate the user\
     setSubmitting(true);
     try {
-      const response = await fetch(`http://localhost:5000/api//add-person`, {
+      const response = await fetch(`${API_BASE_URL}/api//add-person`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

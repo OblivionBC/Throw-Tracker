@@ -11,8 +11,10 @@ import {
 } from "../../styles/styles.js";
 import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
+import { API_BASE_URL } from "../../config.js";
+
 const AddProgram = async (props) => {
-  const response = await fetch(`http://localhost:5000/api/add-program`, {
+  const response = await fetch(`${API_BASE_URL}/api/add-program`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

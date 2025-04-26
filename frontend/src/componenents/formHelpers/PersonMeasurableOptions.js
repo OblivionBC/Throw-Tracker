@@ -2,6 +2,7 @@ import React from "react";
 import { Field } from "formik";
 import { useEffect, useState } from "react";
 import { useUser } from "../contexts/UserContext";
+import { API_BASE_URL } from "../../config.js";
 
 const PersonMeasurableOptions = ({ state, prsn_rk, name }) => {
   const [measurables, setMeasurables] = useState([]);
@@ -13,7 +14,7 @@ const PersonMeasurableOptions = ({ state, prsn_rk, name }) => {
       setLoading(true);
       try {
         const response = await fetch(
-          `http://localhost:5000/api//get-all-measurablesForPrsn`,
+          `${API_BASE_URL}/api//get-all-measurablesForPrsn`,
           {
             method: "POST",
             headers: {

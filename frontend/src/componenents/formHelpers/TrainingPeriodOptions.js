@@ -3,6 +3,7 @@ import { Field, useFormikContext } from "formik";
 import { useEffect, useState } from "react";
 import { useUser } from "../contexts/UserContext";
 import dayjs from "dayjs";
+import { API_BASE_URL } from "../../config.js";
 
 const TrainingPeriodOptions = ({ name }) => {
   const [trainingPeriods, setTrainingPeriods] = useState([]);
@@ -14,7 +15,7 @@ const TrainingPeriodOptions = ({ name }) => {
       setLoading(true);
       try {
         const response = await fetch(
-          `http://localhost:5000/api//get-all-trainingPeriods`,
+          `${API_BASE_URL}/api//get-all-trainingPeriods`,
           {
             method: "POST",
             headers: {

@@ -1,5 +1,7 @@
 import React from "react";
 import { useEffect, useState } from "react";
+import { API_BASE_URL } from "../../config.js";
+
 function checkMeasurable(row) {
   return row.meas_rk && row.is_measurable === "Y";
 }
@@ -14,7 +16,7 @@ const ProgramSelectWithExercise = ({ trpe_rk, setData }) => {
       try {
         if (trpe_rk > 0) {
           const response = await fetch(
-            `http://localhost:5000/api/get-programsAndExerciseForTRPE`,
+            `${API_BASE_URL}/api/get-programsAndExerciseForTRPE`,
             {
               method: "POST",
               headers: {

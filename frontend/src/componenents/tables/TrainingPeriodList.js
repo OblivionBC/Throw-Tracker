@@ -14,6 +14,7 @@ import AddTRPEModal from "../modals/AddTRPEModal";
 import { useUser } from "../contexts/UserContext";
 import TrainingPeriodEditModal from "../modals/TrainingPeriodEditModal";
 import ProgramsModal from "../modals/ProgramsModal";
+import { API_BASE_URL } from "../../config.js";
 
 const TableStyles = {
   pagination: {
@@ -30,6 +31,7 @@ const TableStyles = {
     },
   },
 };
+
 const TrainingPeriodList = ({
   prsn_rk,
   bAdd,
@@ -56,7 +58,7 @@ const TrainingPeriodList = ({
   const getTRPEData = async () => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/get-all-trainingPeriods`,
+        `${API_BASE_URL}/api/get-all-trainingPeriods`,
         {
           method: "POST",
           headers: {

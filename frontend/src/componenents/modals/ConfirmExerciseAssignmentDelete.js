@@ -8,6 +8,7 @@ import {
   FieldLabel,
   FieldContainer,
 } from "../../styles/styles";
+import { API_BASE_URL } from "../../config.js";
 const ConfirmExerciseAssignmentDelete = ({
   open,
   onClose,
@@ -20,7 +21,7 @@ const ConfirmExerciseAssignmentDelete = ({
       //Fix the route
       console.log("DELETING");
       const response = await fetch(
-        `http://localhost:5000/api/delete-exerciseAssignment`,
+        `${API_BASE_URL}/api/delete-exerciseAssignment`,
         {
           method: "DELETE",
           headers: {

@@ -2,6 +2,7 @@ import React from "react";
 import { Table, TableWrap, CompWrap } from "../../styles/styles.js";
 import { useEffect, useState } from "react";
 import { useUser } from "../contexts/UserContext";
+import { API_BASE_URL } from "../../config.js";
 const TableStyles = {
   pagination: {
     style: {
@@ -27,7 +28,7 @@ const MeasurementList = ({ prac_rk }) => {
       setLoading(true);
       try {
         const response = await fetch(
-          `http://localhost:5000/api//get-measurementsForPrac`,
+          `${API_BASE_URL}/api//get-measurementsForPrac`,
           {
             method: "POST",
             headers: {

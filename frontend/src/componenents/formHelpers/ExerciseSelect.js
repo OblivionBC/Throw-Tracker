@@ -2,6 +2,7 @@ import React from "react";
 import { Field } from "formik";
 import { useEffect, useState } from "react";
 import { useUser } from "../contexts/UserContext";
+import { API_BASE_URL } from "../../config.js";
 
 const ExerciseSelect = ({ name }) => {
   const [exercises, setExercises] = useState([]);
@@ -12,7 +13,7 @@ const ExerciseSelect = ({ name }) => {
       setLoading(true);
       try {
         const response = await fetch(
-          `http://localhost:5000/api//get-exerciseForCoach`,
+          `${API_BASE_URL}/api//get-exerciseForCoach`,
           {
             method: "POST",
             headers: {

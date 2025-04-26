@@ -3,8 +3,10 @@ import { Line } from "react-chartjs-2";
 import { Chart as ChartJS } from "chart.js/auto";
 import "chartjs-adapter-date-fns";
 import { Tooltip } from "chart.js/auto";
-import dayjs from "dayjs";
 import styled from "styled-components";
+
+import { API_BASE_URL } from "../config";
+
 ChartJS.register(Tooltip);
 /*
 Can do these options
@@ -80,7 +82,7 @@ function MeasurementChart({ activeTRPE }) {
       });
       //Returns msrm_rk | prac_rk | meas_id | meas_unit | prsn_rk | prac_rk | trpe_rk
       const response = await fetch(
-        `http://localhost:5000/api//get-measurementsForTRPEs?${params}`
+        `${API_BASE_URL}/api//get-measurementsForTRPEs?${params}`
       );
 
       const jsonData = await response.json();

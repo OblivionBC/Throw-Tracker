@@ -13,7 +13,7 @@ import {
 import "typeface-nunito";
 import "react-datepicker/dist/react-datepicker.css";
 import { useUser } from "../contexts/UserContext";
-
+import { API_BASE_URL } from "../../config.js";
 const EditExerciseForm = ({ props, close, refresh }) => {
   const { getUser } = useUser();
   const initialValues = {
@@ -40,22 +40,19 @@ const EditExerciseForm = ({ props, close, refresh }) => {
     setSubmitting(true);
     try {
       console.log(values);
-      const response = await fetch(
-        `http://localhost:5000/api/update-exercise`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            excr_rk: props.excr_rk,
-            excr_nm: values.excr_nm,
-            excr_notes: values.excr_notes,
-            excr_units: values.excr_units,
-            excr_typ: values.excr_typ,
-          }),
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/api/update-exercise`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          excr_rk: props.excr_rk,
+          excr_nm: values.excr_nm,
+          excr_notes: values.excr_notes,
+          excr_units: values.excr_units,
+          excr_typ: values.excr_typ,
+        }),
+      });
       const jsonData = await response.json();
 
       //Throw error if the response wasn't clean ( Something went wrong in validations?)

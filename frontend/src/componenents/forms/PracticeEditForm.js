@@ -17,10 +17,10 @@ import { MeasurableFieldArray } from "../formHelpers/MeasurableFieldArray.js";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import TrainingPeriodOptions from "../formHelpers/TrainingPeriodOptions";
-
+import { API_BASE_URL } from "../../config.js";
 //Add a measurement to a given practice
 const addMeasurement = async (measurable, prac_rk) => {
-  const response = await fetch(`http://localhost:5000/api/add-measurement`, {
+  const response = await fetch(`${API_BASE_URL}/api/add-measurement`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -34,18 +34,15 @@ const addMeasurement = async (measurable, prac_rk) => {
 };
 //Grabs measurements to fill the initial values
 const findMeasurements = async (prac_rk) => {
-  const response = await fetch(
-    `http://localhost:5000/api//get-measurementsForPrac`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        prac_rk: prac_rk,
-      }),
-    }
-  );
+  const response = await fetch(`${API_BASE_URL}/api//get-measurementsForPrac`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      prac_rk: prac_rk,
+    }),
+  });
   const jsonData = await response.json();
   return jsonData.rows;
 };
@@ -53,7 +50,7 @@ const findMeasurements = async (prac_rk) => {
 //Get rid of the old measurements to make sure no data is left over from the edit
 const deleteMeasurements = async (prac_rk) => {
   const response = await fetch(
-    `http://localhost:5000/api//delete-measurements-for-practice`,
+    `${API_BASE_URL}/api//delete-measurements-for-practice`,
     {
       method: "DELETE",
       headers: {
@@ -122,22 +119,19 @@ const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
     //Make call on submit to update practice, and delete all measurments in for the prac, then create a new one for each in the array
     setSubmitting(true);
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/update-practice`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            trpe_rk: values.trpe,
-            prac_dt: values.date,
-            prac_rk: prac.prac_rk,
-            prsn_rk: getUser(),
-            notes: values.notes,
-          }),
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/api/update-practice`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          trpe_rk: values.trpe,
+          prac_dt: values.date,
+          prac_rk: prac.prac_rk,
+          prsn_rk: getUser(),
+          notes: values.notes,
+        }),
+      });
       const jsonData = await response.json();
       //If response didn't come back clean (i.e. Validation or rule error in backend) Throw an error with the message
       if (!response.ok) {
