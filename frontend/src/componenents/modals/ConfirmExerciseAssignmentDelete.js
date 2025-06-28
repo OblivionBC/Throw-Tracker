@@ -8,7 +8,8 @@ import {
   FieldLabel,
   FieldContainer,
 } from "../../styles/styles";
-import { API_BASE_URL } from "../../config.js";
+import { exerciseAssignmentsApi } from "../../api";
+
 const ConfirmExerciseAssignmentDelete = ({
   open,
   onClose,
@@ -16,25 +17,13 @@ const ConfirmExerciseAssignmentDelete = ({
   excr,
   refresh,
 }) => {
-  async function deleteExas({ exas_rk }) {
+  async function deleteExas() {
     try {
-      //Fix the route
       console.log("DELETING");
-      const response = await fetch(
-        `${API_BASE_URL}/api/delete-exerciseAssignment`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            exas_rk: excr.exas_rk,
-          }),
-        }
-      );
+
+      await exerciseAssignmentsApi.delete(excr.exas_rk);
       alert("Exercise Assignment DELETED");
 
-      console.log(response);
       onClose();
       fullClose();
       refresh();
@@ -42,7 +31,9 @@ const ConfirmExerciseAssignmentDelete = ({
       alert(error.message);
     }
   }
+
   if (!open) return null;
+
   return (
     <Overlay>
       <ModalContainer>
@@ -54,13 +45,12 @@ const ConfirmExerciseAssignmentDelete = ({
         </FieldContainer>
 
         <ButtonContainer>
-          <DeleteButton onClick={() => deleteExas(excr.exas_rk)}>
-            Delete
-          </DeleteButton>
+          <DeleteButton onClick={deleteExas}>Delete</DeleteButton>
           <CancelButton onClick={() => onClose()}>Cancel</CancelButton>
         </ButtonContainer>
       </ModalContainer>
     </Overlay>
   );
 };
+
 export default ConfirmExerciseAssignmentDelete;

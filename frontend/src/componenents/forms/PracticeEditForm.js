@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import {
   StyledForm,
@@ -7,61 +7,19 @@ import {
   FieldOutputContainer,
   FieldLabel,
   SubmitError,
-  StyledInput,
   ParagraphInput,
 } from "../../styles/styles.js";
-import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
 import dayjs from "dayjs";
 import { MeasurableFieldArray } from "../formHelpers/MeasurableFieldArray.js";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import TrainingPeriodOptions from "../formHelpers/TrainingPeriodOptions";
-import { API_BASE_URL } from "../../config.js";
-//Add a measurement to a given practice
-const addMeasurement = async (measurable, prac_rk) => {
-  const response = await fetch(`${API_BASE_URL}/api/add-measurement`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      meas_rk: measurable.meas_rk,
-      msrm_value: measurable.msrm_value,
-      prac_rk: prac_rk,
-    }),
-  });
-};
+import { practicesApi } from "../../api";
 //Grabs measurements to fill the initial values
 const findMeasurements = async (prac_rk) => {
-  const response = await fetch(`${API_BASE_URL}/api//get-measurementsForPrac`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      prac_rk: prac_rk,
-    }),
-  });
-  const jsonData = await response.json();
-  return jsonData.rows;
-};
-
-//Get rid of the old measurements to make sure no data is left over from the edit
-const deleteMeasurements = async (prac_rk) => {
-  const response = await fetch(
-    `${API_BASE_URL}/api//delete-measurements-for-practice`,
-    {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        prac_rk: prac_rk,
-      }),
-    }
-  );
-  const jsonData = await response.json();
+  const response = await practicesApi.getMeasurementsForPrac(prac_rk);
+  return response.rows;
 };
 
 const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
@@ -93,7 +51,6 @@ const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
     measurables: measurementContainer,
     notes: prac.notes,
   };
-  const { getUser } = useUser();
 
   const validationSchema = Yup.object().shape({
     trpe: Yup.number("Must be a number").required(
@@ -115,43 +72,13 @@ const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
     notes: Yup.string(),
   });
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
-    // Handle form submission here
-    //Make call on submit to update practice, and delete all measurments in for the prac, then create a new one for each in the array
     setSubmitting(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/update-practice`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          trpe_rk: values.trpe,
-          prac_dt: values.date,
-          prac_rk: prac.prac_rk,
-          prsn_rk: getUser(),
-          notes: values.notes,
-        }),
-      });
-      const jsonData = await response.json();
-      //If response didn't come back clean (i.e. Validation or rule error in backend) Throw an error with the message
-      if (!response.ok) {
-        console.log("ERROR HAS OCCURRED ", response.statusText);
-        throw new Error(jsonData.message || "Something went wrong");
-      }
-      console.log(values);
-      //Delete the old measurements
-      deleteMeasurements(prac.prac_rk);
-      //Create new measurements
-      if (values.measurables.length > 0) {
-        values.measurables.forEach((element) => {
-          addMeasurement(element, prac.prac_rk);
-        });
-      }
-      //Refresh, return to the detail modal and send a success message
+      await practicesApi.update(prac.prac_rk, values);
       refresh();
-      goToDetails();
       setSubmitting(false);
       alert("Practice Updated Successfully");
+      goToDetails();
       return;
     } catch (error) {
       setSubmitting(false);
@@ -177,7 +104,7 @@ const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
               {({ field }) => (
                 <FieldOutputContainer>
                   <FieldLabel>Training Period:</FieldLabel>
-                  <TrainingPeriodOptions prsn_rk={getUser()} name="trpe" />
+                  <TrainingPeriodOptions name="trpe" />
                 </FieldOutputContainer>
               )}
             </Field>

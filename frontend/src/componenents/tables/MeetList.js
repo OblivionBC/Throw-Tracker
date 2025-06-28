@@ -1,17 +1,7 @@
 import React, { useEffect, useState } from "react";
-import {
-  Table,
-  TableWrap,
-  RowDiv,
-  Title,
-  CompWrap,
-  AddButton,
-  EditButton,
-} from "../../styles/styles.js";
-import { API_BASE_URL } from "../../config.js";
+import { Table, TableWrap, Title, CompWrap } from "../../styles/styles.js";
+import { meetsApi } from "../../api";
 import dayjs from "dayjs";
-// This is your PracticeItem component
-//Test that this works and add it to the practices component
 
 const TableStyles = {
   pagination: {
@@ -33,9 +23,8 @@ const MeetList = () => {
   const [meetData, setMeetData] = useState([]);
   const getMeetData = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/get-all-meets`);
-      const jsonData = await response.json();
-      setMeetData(jsonData.rows);
+      const response = await meetsApi.getAll();
+      setMeetData(response);
     } catch (error) {
       console.error(error.message);
     }
@@ -50,14 +39,13 @@ const MeetList = () => {
   }, []);
 
   const handleChange = ({ selectedRows }) => {
-    // You can set state or dispatch with something like Redux so we can use the retrieved data
     if (selectedRows) {
       const ids = selectedRows?.map((row) => {
         return row.trpe_rk;
       });
     }
   };
-  //meet_nm, meet_dt, meet_location, prsn_rk
+
   const columns = [
     {
       name: "Name",

@@ -9,9 +9,8 @@ import {
   SubmitError,
   StyledInput,
 } from "../../styles/styles.js";
-import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
-import { API_BASE_URL } from "../../config.js";
+import { measurablesApi } from "../../api";
 const EditMeasurableForm = ({ measObj, refresh, close }) => {
   const [failed, setFailed] = useState(false);
   const initialValues = {
@@ -19,7 +18,6 @@ const EditMeasurableForm = ({ measObj, refresh, close }) => {
     meas_typ: measObj.meas_typ,
     meas_unit: measObj.meas_unit,
   };
-  const { getUser } = useUser();
   const validationSchema = Yup.object().shape({
     meas_id: Yup.string("Must be a string").required(
       "Measurable Name is a Required Field"
@@ -37,32 +35,16 @@ const EditMeasurableForm = ({ measObj, refresh, close }) => {
     console.log(values);
     setSubmitting(true);
     try {
-      console.log(getUser());
-      console.log(values);
-
-      const response = await fetch(`${API_BASE_URL}/api/update-measurable`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          meas_id: values.meas_id,
-          meas_typ: values.meas_typ,
-          meas_unit: values.meas_unit,
-          meas_rk: measObj.meas_rk,
-          prsn_rk: getUser(),
-        }),
-      });
-      refresh();
+      await measurablesApi.update(measObj.meas_rk, values);
       alert("Measurable Edited Successfully");
       close();
+      refresh();
+      return;
     } catch (error) {
       setFailed(true);
       console.error(error.message);
-      console.log(this.props.errors);
     }
     setSubmitting(false);
-    return;
   };
   return (
     <>
@@ -73,7 +55,7 @@ const EditMeasurableForm = ({ measObj, refresh, close }) => {
         validateOnBlur={false}
         onSubmit={handleSubmit}
       >
-        {({ handleSubmit, isSubmitting, values, setFieldValue }) => (
+        {({ handleSubmit, isSubmitting }) => (
           //date, training period, wind, notes, measurables
           <StyledForm onSubmit={handleSubmit}>
             <Field type="string" name="meas_id">

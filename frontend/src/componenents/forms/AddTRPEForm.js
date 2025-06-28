@@ -1,5 +1,5 @@
 import React from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import dayjs from "dayjs";
 import {
@@ -8,13 +8,12 @@ import {
   FieldOutputContainer,
   FieldLabel,
   SubmitError,
-  StyledInput,
 } from "../../styles/styles.js";
 import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { API_BASE_URL } from "../../config.js";
+import { trainingPeriodsApi } from "../../api";
 
 //Name says it, but this is just a function to add the trpe when submitting
 const AddTRPE = async (trpe_start_dt, prsn_rk, endDateRecent) => {
@@ -22,39 +21,11 @@ const AddTRPE = async (trpe_start_dt, prsn_rk, endDateRecent) => {
     const dateString = new Date(trpe_start_dt);
     dateString.setDate(dateString.getDate() - 1);
     const newEndDate = dateString.toISOString().split("T")[0];
+    await trainingPeriodsApi.getEndDateMostRecent(prsn_rk, newEndDate);
+  }
 
-    const response = await fetch(
-      `${API_BASE_URL}/api//endDateMostRecent_trainingPeriod`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        }, //meas_id, meas_typ, meas_unit, prsn_rk
-        body: JSON.stringify({
-          prsn_rk: prsn_rk,
-          trpe_end_dt: newEndDate,
-        }),
-      }
-    );
-  }
-  console.log(prsn_rk);
-  const response = await fetch(`${API_BASE_URL}/api/add-trainingPeriod`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      trpe_start_dt: trpe_start_dt,
-      prsn_rk: prsn_rk,
-    }),
-  });
-  const jsonData = await response.json();
-  //Throw error if the response wasn't clean ( Something went wrong in validations?)
-  if (!response.ok) {
-    console.log("ERROR HAS OCCURRED ", response.statusText);
-    throw new Error(jsonData.message || "Something went wrong");
-  }
-  return true;
+  const response = await trainingPeriodsApi.create(trpe_start_dt, prsn_rk);
+  return response.rows[0].trpe_rk;
 };
 const AddTRPEForm = ({ close, refresh }) => {
   const initialValues = {
@@ -74,13 +45,13 @@ const AddTRPEForm = ({ close, refresh }) => {
     console.log(values);
     setSubmitting(true);
     try {
-      const bAdded = await AddTRPE(
+      const trpe_rk = await AddTRPE(
         values.trpe_start_dt,
         getUser(),
         values.endDateRecent,
         setErrors
       );
-      if (bAdded) {
+      if (trpe_rk) {
         alert("Training Period Added Successfully");
         close();
         refresh();

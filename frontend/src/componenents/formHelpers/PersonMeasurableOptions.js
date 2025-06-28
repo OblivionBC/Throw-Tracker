@@ -1,32 +1,18 @@
 import React from "react";
 import { Field } from "formik";
 import { useEffect, useState } from "react";
-import { useUser } from "../contexts/UserContext";
-import { API_BASE_URL } from "../../config.js";
+import { measurablesApi } from "../../api";
 
 const PersonMeasurableOptions = ({ state, prsn_rk, name }) => {
   const [measurables, setMeasurables] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { getUser } = useUser();
 
   useEffect(() => {
     const fetchMeasurables = async () => {
       setLoading(true);
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/api//get-all-measurablesForPrsn`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              prsn_rk: getUser(),
-            }),
-          }
-        );
-        const jsonData = await response.json();
-        setMeasurables(jsonData.rows);
+        const response = await measurablesApi.getAllForPerson(prsn_rk);
+        setMeasurables(response);
       } catch (error) {
         console.error(error.message);
       }

@@ -3,7 +3,7 @@ import styled from "styled-components";
 import "typeface-nunito";
 import dayjs from "dayjs";
 import * as FaIcons from "react-icons/fa";
-import { API_BASE_URL } from "../config";
+import { practicesApi } from "../api";
 // This is your PracticeItem component
 //Test that this works and add it to the practices component
 
@@ -11,20 +11,24 @@ const LastPractice = () => {
   //Stuff
   const [datas, setDatas] = useState({});
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/get-last-practice`);
-      const jsonData = await response.json();
-      const row = jsonData.rows[0];
-      setDatas({
-        prac_rk: row.prac_rk,
-        meas_id: row.meas_id,
-        msrm_value: row.msrm_value,
-        meas_unit: row.meas_unit,
-        prac_dt: row.prac_dt,
-        TRPE_RK: row.TRPE_RK,
-      });
+      try {
+        const jsonData = await practicesApi.getLast();
+        const row = jsonData[0];
+        setDatas({
+          prac_rk: row.prac_rk,
+          meas_id: row.meas_id,
+          msrm_value: row.msrm_value,
+          meas_unit: row.meas_unit,
+          prac_dt: row.prac_dt,
+          TRPE_RK: row.TRPE_RK,
+        });
+      } catch (error) {
+        console.error("Error fetching last practice:", error);
+      }
       setLoading(false);
     };
     fetchData();
@@ -33,6 +37,7 @@ const LastPractice = () => {
   if (loading) {
     return <div>Loading</div>;
   }
+
   return (
     <CompWrap>
       <Title>Last Practice</Title>

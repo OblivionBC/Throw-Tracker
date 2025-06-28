@@ -13,9 +13,7 @@ import PracticeDetailsModal from "../modals/PracticeDetailsModal";
 import ConfirmPracDeleteModal from "../modals/ConfirmPracDeleteModal";
 import AddPracticeModal from "../modals/AddPracticeModal";
 import { useUser } from "../contexts/UserContext";
-import { API_BASE_URL } from "../../config.js";
-// This is your PracticeItem component
-//Test that this works and add it to the practices component
+import { practicesApi } from "../../api";
 
 const TableStyles = {
   pagination: {
@@ -75,31 +73,14 @@ const Practices = ({ trpe_rk, bAdd, bDetail, bDelete }) => {
       let response;
       //If the training period was passed in, we want to get the practices only from the training period
       if (trpe_rk) {
-        response = await fetch(`${API_BASE_URL}/api/get-practicesInTrpe`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            trpe_rk: trpe_rk,
-          }),
-        });
+        response = await practicesApi.getForTRPE(trpe_rk);
       } else {
         //No Training Period was specified so get all for the person
         console.log("Getting All for Person");
-        response = await fetch(`${API_BASE_URL}/api/get-all-practices`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            prsn_rk: getUser(),
-          }),
-        });
+        response = await practicesApi.getAllForPerson(getUser());
       }
 
-      const jsonData = await response.json();
-      setPracticeData(jsonData.rows);
+      setPracticeData(response);
     } catch (error) {
       console.error(error.message);
     }
@@ -111,7 +92,7 @@ const Practices = ({ trpe_rk, bAdd, bDetail, bDelete }) => {
     } catch (error) {
       console.error(error.message);
     }
-  }, [getUser()]);
+  }, [trpe_rk]);
 
   if (paginationNum <= 0) paginationNum = 8;
   const columns = [

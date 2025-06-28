@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
-import { API_BASE_URL } from "../../config.js";
+import { personsApi } from "../../api";
+
 // Create a Context for the user data
 const UserContext = createContext();
 
@@ -15,17 +16,11 @@ export const UserProvider = ({ children }) => {
 
   const login = async (values) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api//login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: values.username,
-          password: values.password,
-        }),
+      const jsonData = await personsApi.login({
+        username: values.username,
+        password: values.password,
       });
-      const jsonData = await response.json();
+
       if (jsonData.rowCount > 0) {
         setUser(jsonData.rows[0]);
         return true;
@@ -43,6 +38,7 @@ export const UserProvider = ({ children }) => {
     setSelectedAthlete();
     return;
   };
+
   const setSelectedAthlete = (athlete) => {
     return setSelectedAthleteVar(athlete);
   };
@@ -51,6 +47,7 @@ export const UserProvider = ({ children }) => {
     if (user.prsn_role === "COACH") return selectedAthlete;
     else return user.prsn_rk;
   };
+
   return (
     <UserContext.Provider
       value={{

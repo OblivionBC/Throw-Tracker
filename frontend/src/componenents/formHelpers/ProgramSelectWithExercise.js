@@ -1,6 +1,6 @@
 import React from "react";
 import { useEffect, useState } from "react";
-import { API_BASE_URL } from "../../config.js";
+import { programsApi } from "../../api";
 
 function checkMeasurable(row) {
   return row.meas_rk && row.is_measurable === "Y";
@@ -15,25 +15,12 @@ const ProgramSelectWithExercise = ({ trpe_rk, setData }) => {
       setLoading(true);
       try {
         if (trpe_rk > 0) {
-          const response = await fetch(
-            `${API_BASE_URL}/api/get-programsAndExerciseForTRPE`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                trpe_rk: trpe_rk,
-              }),
-            }
-          );
+          const response = await programsApi.getForTRPE(trpe_rk);
           console.log(response);
-          const jsonData = await response.json();
-          console.log(jsonData);
           let newMap = new Map();
-          if (jsonData.rowCount > 0) {
+          if (response.length > 0) {
             console.log("ROW COUNT IS GREAT");
-            jsonData.rows.forEach((element) => {
+            response.forEach((element) => {
               if (newMap.has(element.prog_rk)) {
                 newMap.get(element.prog_rk)?.push(element);
               } else {

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import React from "react";
+import { Formik, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import {
   StyledForm,
@@ -9,18 +9,13 @@ import {
   SubmitError,
   StyledInput,
 } from "../../styles/styles.js";
-import { useNavigate } from "react-router-dom";
-import { useUser } from "../contexts/UserContext.js";
 import "typeface-nunito";
-import { API_BASE_URL } from "../../config.js";
+import { personsApi } from "../../api";
 const ForgotPasswordForm = ({ off }) => {
-  const [failed, setFailed] = useState(false);
   const initialValues = {
     username: "",
     password: "",
   };
-  const navigate = useNavigate();
-  const { login } = useUser();
 
   const validationSchema = Yup.object().shape({
     fname: Yup.string().required("First name is required"),
@@ -36,31 +31,10 @@ const ForgotPasswordForm = ({ off }) => {
   });
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
-    // Handle form submission here
-    // For example, you could make an API call to authenticate the user\
     setSubmitting(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api//update-password`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          prsn_first_nm: values.fname,
-          prsn_last_nm: values.lname,
-          prsn_email: values.username,
-          prsn_pwrd: values.password,
-          prsn_role: values.role,
-        }),
-      });
-      if (response.ok === false) {
-        const jsonData = await response.json();
-        setErrors({ submit: jsonData.message });
-        return;
-      }
-      console.log(response);
-
-      alert("Submitted");
+      await personsApi.updatePassword(values);
+      alert("Password Updated Successfully");
       setSubmitting(false);
       off();
     } catch (error) {

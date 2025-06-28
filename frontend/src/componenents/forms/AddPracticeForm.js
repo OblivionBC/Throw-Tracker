@@ -17,21 +17,11 @@ import TrainingPeriodOptions from "../formHelpers/TrainingPeriodOptions";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import ProgramSelectWithExercise from "../formHelpers/ProgramSelectWithExercise";
-import { API_BASE_URL } from "../../config.js";
+import { practicesApi, measurementsApi } from "../../api";
 
 //Grab the initial values
 const addMeasurement = async (measurable, prac_rk) => {
-  const response = await fetch(`${API_BASE_URL}/api/add-measurement`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      meas_rk: measurable.meas_rk,
-      msrm_value: measurable.msrm_value,
-      prac_rk: prac_rk,
-    }),
-  });
+  const response = await measurementsApi.create(measurable, prac_rk);
   const jsonData = await response.json();
   if (response.ok === false) {
     console.log("ERROR HAS OCCURRED ", response.statusText);
@@ -39,18 +29,8 @@ const addMeasurement = async (measurable, prac_rk) => {
 };
 
 const addPractice = async (prac_dt, trpe_rk, prsn_rk, notes) => {
-  const response = await fetch(`${API_BASE_URL}/api//add-practice`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      prac_dt: prac_dt,
-      trpe_rk: trpe_rk,
-      prsn_rk: prsn_rk,
-      notes: notes,
-    }),
-  });
+  const response = await practicesApi.create(prac_dt, trpe_rk, prsn_rk, notes);
+
   const jsonData = await response.json();
   if (!response.ok) {
     console.log("ERROR HAS OCCURRED ", response.statusText);

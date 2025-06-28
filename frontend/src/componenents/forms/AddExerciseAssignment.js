@@ -13,36 +13,15 @@ import {
 import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
 import ExerciseSelect from "../formHelpers/ExerciseSelect";
-import { API_BASE_URL } from "../../config.js";
+import { exerciseAssignmentsApi } from "../../api";
 
 const addExerciseAssignment = async (props) => {
   console.log("Adding");
-  const response = await fetch(`${API_BASE_URL}/api/add-exerciseAssignment`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    }, //meas_id, meas_typ, meas_unit, prsn_rk
-    body: JSON.stringify({
-      prog_rk: props.prog_rk,
-      athlete_prsn_rk: props.athlete_prsn_rk,
-      assigner_prsn_rk: props.assigner_prsn_rk,
-      exas_notes: props.exas_notes,
-      excr_rk: props.excr_rk,
-      exas_reps: props.exas_reps,
-      exas_sets: props.exas_sets,
-      exas_weight: props.exas_weight,
-      is_measurable: props.is_measurable,
-    }),
-  });
+  const response = await exerciseAssignmentsApi.create(props);
+
   console.log("Past");
   console.log(response);
-  const jsonData = await response.json();
-  console.log(jsonData);
-  if (response.ok === false) {
-    console.log("Error?");
-    console.log("ERROR HAS OCCURRED ", response.statusText);
-  }
-  return jsonData.rows[0].prac_rk;
+  return response.rows[0].exas_rk;
 };
 
 const AddExerciseAssignmentForm = ({

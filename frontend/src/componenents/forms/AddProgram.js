@@ -11,27 +11,12 @@ import {
 } from "../../styles/styles.js";
 import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
-import { API_BASE_URL } from "../../config.js";
+import { programsApi } from "../../api";
 
 const AddProgram = async (props) => {
-  const response = await fetch(`${API_BASE_URL}/api/add-program`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      prog_nm: props.prog_nm,
-      coach_prsn_rk: props.coach_prsn_rk,
-      trpe_rk: props.trpe_rk,
-    }),
-  });
+  const response = await programsApi.create(props);
   console.log(response);
-  const jsonData = await response.json();
-  console.log(jsonData);
-  if (response.ok === false) {
-    console.log("Error?");
-    console.log("ERROR HAS OCCURRED ", response.statusText);
-  }
+  return response.rows[0].prog_rk;
 };
 
 const AddProgramForm = ({ close, refresh, props }) => {

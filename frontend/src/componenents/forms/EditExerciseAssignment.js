@@ -12,16 +12,14 @@ import {
 } from "../../styles/styles.js";
 import "typeface-nunito";
 import "react-datepicker/dist/react-datepicker.css";
-import { useUser } from "../contexts/UserContext";
 import ExerciseSelect from "../formHelpers/ExerciseSelect";
-import { API_BASE_URL } from "../../config.js";
+import { exerciseAssignmentsApi } from "../../api";
 const EditExerciseAssignmentForm = ({
   excr,
   refresh,
   close,
   athlete_prsn_rk,
 }) => {
-  const { getUser } = useUser();
   const initialValues = {
     exas_notes: excr.exas_notes,
     exas_rk: excr.exas_rk,
@@ -49,49 +47,15 @@ const EditExerciseAssignmentForm = ({
     is_measurable: Yup.bool("Must be a bool"),
   });
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
-    // Handle form submission here
-    //Make call on submit to update trpetice, and delete all measurments in for the trpe, then create a new one for each in the array
     setSubmitting(true);
-    if (values.trpe_end_dt === "") {
-      values.trpe_end_dt = null;
-    }
     try {
-      console.log(values);
-      const response = await fetch(
-        `${API_BASE_URL}/api/update-exerciseAssignment`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            exas_notes: values.exas_notes,
-            excr_rk: values.excr_rk,
-            exas_rk: excr.exas_rk,
-            athlete_prsn_rk: athlete_prsn_rk,
-            exas_reps: values.exas_reps,
-            exas_sets: values.exas_sets,
-            exas_weight: values.exas_weight,
-            is_measurable: values.is_measurable,
-            add_measurable:
-              initialValues.add_measurable !== values.is_measurable,
-          }),
-        }
-      );
-      const jsonData = await response.json();
-
-      //Throw error if the response wasn't clean ( Something went wrong in validations?)
-      if (!response.ok) {
-        console.log("ERROR HAS OCCURRED ", response.statusText);
-        throw new Error(jsonData.message || "Something went wrong");
-      }
-      refresh();
-      setSubmitting(false);
+      await exerciseAssignmentsApi.update(excr.exas_rk, values);
       alert("Excersise Updated Successfully");
       close();
+      refresh();
+      setSubmitting(false);
       return;
     } catch (error) {
-      //Set error for UI
       setErrors({ submit: error.message });
       console.error(error.message);
     }
@@ -105,7 +69,7 @@ const EditExerciseAssignmentForm = ({
         validateOnBlur={false}
         onSubmit={handleSubmit}
       >
-        {({ handleSubmit, isSubmitting, values, setFieldValue, errors }) => (
+        {({ handleSubmit, isSubmitting, errors }) => (
           <StyledForm onSubmit={handleSubmit}>
             <Field name="excr_rk" type="text">
               {({ field }) => (

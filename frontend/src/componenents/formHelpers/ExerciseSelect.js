@@ -2,7 +2,7 @@ import React from "react";
 import { Field } from "formik";
 import { useEffect, useState } from "react";
 import { useUser } from "../contexts/UserContext";
-import { API_BASE_URL } from "../../config.js";
+import { exercisesApi } from "../../api";
 
 const ExerciseSelect = ({ name }) => {
   const [exercises, setExercises] = useState([]);
@@ -12,21 +12,9 @@ const ExerciseSelect = ({ name }) => {
     const fetchExercises = async () => {
       setLoading(true);
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/api//get-exerciseForCoach`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              coach_prsn_rk: user.prsn_rk,
-            }),
-          }
-        );
-        const jsonData = await response.json();
-        setExercises(jsonData.rows);
-        console.log(jsonData.rows);
+        const response = await exercisesApi.getForCoach(user.prsn_rk);
+        setExercises(response);
+        console.log(response);
       } catch (error) {
         console.error(error.message);
       }

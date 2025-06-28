@@ -1,8 +1,7 @@
 import React from "react";
 import { Table, TableWrap, CompWrap } from "../../styles/styles.js";
 import { useEffect, useState } from "react";
-import { useUser } from "../contexts/UserContext";
-import { API_BASE_URL } from "../../config.js";
+import { practicesApi } from "../../api";
 const TableStyles = {
   pagination: {
     style: {
@@ -22,32 +21,19 @@ const TableStyles = {
 const MeasurementList = ({ prac_rk }) => {
   const [measurables, setMeasurables] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { getUser } = useUser();
   useEffect(() => {
     const fetchMeasurables = async () => {
       setLoading(true);
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/api//get-measurementsForPrac`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              prac_rk: prac_rk,
-            }),
-          }
-        );
-        const jsonData = await response.json();
-        setMeasurables(jsonData.rows);
+        const response = await practicesApi.getMeasurementsForPractice(prac_rk);
+        setMeasurables(response);
       } catch (error) {
         console.error(error.message);
       }
       setLoading(false);
     };
     fetchMeasurables();
-  }, [prac_rk, getUser()]);
+  }, [prac_rk]);
 
   const columns = [
     {

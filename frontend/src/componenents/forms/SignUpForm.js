@@ -11,7 +11,7 @@ import {
   StyledSelect,
 } from "../../styles/styles.js";
 import "typeface-nunito";
-import { API_BASE_URL } from "../../config.js";
+import { personsApi } from "../../api";
 const SignUpForm = ({ on, off }) => {
   const initialValues = {
     fname: "",
@@ -40,35 +40,15 @@ const SignUpForm = ({ on, off }) => {
   });
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
-    // Handle form submission here
-    // For example, you could make an API call to authenticate the user\
     setSubmitting(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api//add-person`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          prsn_first_nm: values.fname,
-          prsn_last_nm: values.lname,
-          prsn_email: values.username,
-          prsn_pwrd: values.password,
-          org_rk: values.org,
-          prsn_role: values.role,
-        }),
-      });
-      if (response.ok === false) {
-        const jsonData = await response.json();
-        setErrors({ submit: jsonData.message });
-        return;
-      }
-      alert("Submitted");
+      await personsApi.create(values);
+      alert("User Created Successfully");
       setSubmitting(false);
       off();
     } catch (error) {
       setErrors({ submit: error.message });
-      return false;
+      console.error(error.message);
     }
   };
   if (!on) {

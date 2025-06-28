@@ -9,25 +9,12 @@ import {
   DeleteButton,
   CancelButton,
 } from "../../styles/styles";
-import { API_BASE_URL } from "../../config.js";
+import { trainingPeriodsApi } from "../../api";
 const ConfirmTRPEDelete = ({ open, onClose, trpeObj, refresh }) => {
   async function deleteTRPE(meas_rk) {
-    alert("PRAC DELETED");
     try {
-      //Fix the route
-      const response = await fetch(
-        `${API_BASE_URL}/api//delete-trainingPeriod`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            trpe_rk: trpeObj.trpe_rk,
-          }),
-        }
-      );
-      console.log(response);
+      await trainingPeriodsApi.delete(trpeObj.trpe_rk);
+      alert("Training Period Deleted Successfully");
       onClose();
       refresh();
     } catch (error) {

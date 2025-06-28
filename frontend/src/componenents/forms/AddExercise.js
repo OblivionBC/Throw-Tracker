@@ -12,34 +12,7 @@ import {
 } from "../../styles/styles.js";
 import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
-import { API_BASE_URL } from "../../config.js";
-
-const addExercise = async (props) => {
-  console.log("Adding");
-
-  const response = await fetch(`${API_BASE_URL}/api/add-exercise`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      coach_prsn_rk: props.coach_prsn_rk,
-      excr_nm: props.excr_nm,
-      excr_notes: props.excr_notes,
-      excr_units: props.excr_units,
-      excr_typ: props.excr_typ,
-    }),
-  });
-  console.log("Past");
-  const jsonData = await response.json();
-  console.log(jsonData);
-  if (response.ok === false) {
-    console.log("ERROR HAS OCCURRED ", jsonData);
-
-    props.setErrors(jsonData.message);
-    throw new Error(jsonData.message);
-  }
-};
+import { exercisesApi } from "../../api";
 
 const AddExerciseForm = ({ close, refresh, prog_rk, coach_prsn_rk, props }) => {
   const initialValues = {
@@ -66,19 +39,14 @@ const AddExerciseForm = ({ close, refresh, prog_rk, coach_prsn_rk, props }) => {
     setSubmitting(true);
     console.log(values);
     try {
-      const exas = await addExercise({
+      await exercisesApi.create({
         coach_prsn_rk: props.coach_prsn_rk,
         excr_nm: values.excr_nm,
         excr_notes: values.excr_notes,
         excr_units: values.excr_units,
         excr_typ: values.excr_typ,
-        setErrors,
       });
-      console.log({ exas });
-      if (exas) {
-        setErrors(exas);
-        return false;
-      }
+
       alert("Exercise Added Successfully");
       refresh();
       close();
@@ -86,12 +54,13 @@ const AddExerciseForm = ({ close, refresh, prog_rk, coach_prsn_rk, props }) => {
       console.log("Done");
       return;
     } catch (error) {
-      console.log("Erorororoor");
+      console.log("Error occurred");
       setErrors({ submit: error.message });
       console.error(error.message);
       return false;
     }
   };
+
   return (
     <>
       <Formik

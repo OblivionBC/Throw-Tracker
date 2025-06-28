@@ -11,28 +11,18 @@ import {
 } from "../../styles/styles.js";
 import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
-import { API_BASE_URL } from "../../config.js";
+import { measurablesApi } from "../../api";
 
 const addMeasurable = async (meas_id, meas_typ, meas_unit, prsn_rk) => {
   console.log(meas_id);
-  const response = await fetch(`${API_BASE_URL}/api/add-measurable`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    }, //meas_id, meas_typ, meas_unit, prsn_rk
-    body: JSON.stringify({
-      meas_id: meas_id,
-      meas_typ: meas_typ,
-      meas_unit: meas_unit,
-      prsn_rk: prsn_rk,
-    }),
-  });
-  const jsonData = await response.json();
+  const response = await measurablesApi.create(
+    meas_id,
+    meas_typ,
+    meas_unit,
+    prsn_rk
+  );
+
   console.log(response);
-  if (response.ok === false) {
-    console.log("ERROR HAS OCCURRED ", response.statusText);
-    throw new Error(jsonData.message || "Something went wrong");
-  }
 };
 
 const AddMeasurableForm = ({ close, refresh }) => {

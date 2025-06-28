@@ -12,10 +12,8 @@ import {
 } from "../../styles/styles.js";
 import "typeface-nunito";
 import "react-datepicker/dist/react-datepicker.css";
-import { useUser } from "../contexts/UserContext";
-import { API_BASE_URL } from "../../config.js";
+import { exercisesApi } from "../../api";
 const EditExerciseForm = ({ props, close, refresh }) => {
-  const { getUser } = useUser();
   const initialValues = {
     excr_nm: props.excr_nm,
     excr_notes: props.excr_notes,
@@ -35,38 +33,15 @@ const EditExerciseForm = ({ props, close, refresh }) => {
     ),
   });
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
-    // Handle form submission here
-    //Make call on submit to update trpetice, and delete all measurments in for the trpe, then create a new one for each in the array
     setSubmitting(true);
     try {
-      console.log(values);
-      const response = await fetch(`${API_BASE_URL}/api/update-exercise`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          excr_rk: props.excr_rk,
-          excr_nm: values.excr_nm,
-          excr_notes: values.excr_notes,
-          excr_units: values.excr_units,
-          excr_typ: values.excr_typ,
-        }),
-      });
-      const jsonData = await response.json();
-
-      //Throw error if the response wasn't clean ( Something went wrong in validations?)
-      if (!response.ok) {
-        console.log("ERROR HAS OCCURRED ", response.statusText);
-        throw new Error(jsonData.message || "Something went wrong");
-      }
+      await exercisesApi.update(props.excr_rk, values);
       refresh();
       setSubmitting(false);
       alert("Excersise Updated Successfully");
       close();
       return;
     } catch (error) {
-      //Set error for UI
       setErrors({ submit: error.message });
       console.error(error.message);
     }
@@ -80,7 +55,7 @@ const EditExerciseForm = ({ props, close, refresh }) => {
         validateOnBlur={false}
         onSubmit={handleSubmit}
       >
-        {({ handleSubmit, isSubmitting, values, setFieldValue, errors }) => (
+        {({ handleSubmit, isSubmitting, errors }) => (
           <StyledForm onSubmit={handleSubmit}>
             <Field name="excr_nm" type="text">
               {({ field }) => (

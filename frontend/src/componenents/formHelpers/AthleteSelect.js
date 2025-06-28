@@ -1,30 +1,21 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import { useUser } from "../contexts/UserContext";
-import { API_BASE_URL } from "../../config.js";
+import { personsApi } from "../../api";
 
 const AthleteSelect = ({ prsn_rk, org_name, updateUser }) => {
   const [athletes, setAthletes] = useState([]);
   const [loading, setLoading] = useState(true);
   const { setSelectedAthlete, getUser } = useUser();
+
   useEffect(() => {
     const fetchAthletes = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`${API_BASE_URL}/api/athletes`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            coach_prsn_rk: prsn_rk,
-            org_name: org_name,
-          }),
-        });
-        const jsonData = await response.json();
-        setAthletes(jsonData.rows);
+        const data = await personsApi.getAthletes();
+        setAthletes(data);
         console.log("ATHLETES");
-        console.log(jsonData.rows);
+        console.log(data);
       } catch (error) {
         console.error(error.message);
       }
@@ -34,6 +25,7 @@ const AthleteSelect = ({ prsn_rk, org_name, updateUser }) => {
   }, [prsn_rk]);
 
   if (loading) return <div>Loading...</div>;
+
   return (
     <select
       onChange={(choice) => {
@@ -53,4 +45,5 @@ const AthleteSelect = ({ prsn_rk, org_name, updateUser }) => {
     </select>
   );
 };
+
 export default AthleteSelect;

@@ -11,10 +11,9 @@ import {
 } from "../../styles/styles.js";
 import ConfirmTRPEDelete from "../modals/ConfirmTRPEDelete";
 import AddTRPEModal from "../modals/AddTRPEModal";
-import { useUser } from "../contexts/UserContext";
 import TrainingPeriodEditModal from "../modals/TrainingPeriodEditModal";
 import ProgramsModal from "../modals/ProgramsModal";
-import { API_BASE_URL } from "../../config.js";
+import { trainingPeriodsApi } from "../../api";
 
 const TableStyles = {
   pagination: {
@@ -49,28 +48,13 @@ const TrainingPeriodList = ({
   const [programs, setPrograms] = useState(false);
   const [editTRPEOpen, setEditTRPEOpen] = useState(false);
   const [selectedTRPE, setSelectedTRPE] = useState({});
-  const { getUser } = useUser();
   let pagination = 3;
   paginationNum === undefined ? (pagination = 3) : (pagination = paginationNum);
   selectable === undefined ? (selectable = false) : (selectable = true);
-  let user = getUser();
-  if (prsn_rk !== undefined) user = prsn_rk;
   const getTRPEData = async () => {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/get-all-trainingPeriods`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            prsn_rk: user,
-          }),
-        }
-      );
-      const jsonData = await response.json();
-      setTrpeData(jsonData.rows);
+      const response = await trainingPeriodsApi.getAllForPerson(prsn_rk);
+      setTrpeData(response);
       console.log(trpeData);
     } catch (error) {
       console.error(error.message);
@@ -83,7 +67,7 @@ const TrainingPeriodList = ({
     } catch (error) {
       console.error(error.message);
     }
-  }, [getUser()]);
+  }, [prsn_rk]);
 
   const handleChange = ({ selectedRows }) => {
     if (selectedRows) {
@@ -177,7 +161,7 @@ const TrainingPeriodList = ({
         trpeObj={selectedTRPE}
       />
       <ProgramsModal
-        prsn_rk={user}
+        prsn_rk={prsn_rk}
         open={programs}
         onClose={() => setPrograms(false)}
         trpe_rk={selectedTRPE.trpe_rk}

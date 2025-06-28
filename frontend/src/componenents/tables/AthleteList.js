@@ -8,7 +8,7 @@ import {
 } from "../../styles/styles.js";
 import { useUser } from "../contexts/UserContext";
 import AthleteDetails from "../modals/AthleteDetails";
-import { API_BASE_URL } from "../../config.js";
+import { athletesApi } from "../../api";
 const TableStyles = {
   pagination: {
     style: {
@@ -33,20 +33,10 @@ const AthleteList = ({ paginationNum }) => {
   let pagination = 3;
   paginationNum === undefined ? (pagination = 3) : (pagination = paginationNum);
 
-  const getExerciseData = async () => {
+  const getAthleteData = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/athletes`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          coach_prsn_rk: user.prsn_rk,
-          org_name: user.org_name,
-        }),
-      });
-      const jsonData = await response.json();
-      setExcrData(jsonData.rows);
+      const response = await athletesApi.getForCoach(user.prsn_rk);
+      setExcrData(response);
     } catch (error) {
       console.error(error.message);
     }
@@ -54,7 +44,7 @@ const AthleteList = ({ paginationNum }) => {
 
   useEffect(() => {
     try {
-      getExerciseData();
+      getAthleteData();
     } catch (error) {
       console.error(error.message);
     }
