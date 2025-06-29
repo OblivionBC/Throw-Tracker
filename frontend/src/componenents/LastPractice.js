@@ -17,14 +17,13 @@ const LastPractice = () => {
       setLoading(true);
       try {
         const jsonData = await practicesApi.getLast();
-        const row = jsonData[0];
         setDatas({
-          prac_rk: row.prac_rk,
-          meas_id: row.meas_id,
-          msrm_value: row.msrm_value,
-          meas_unit: row.meas_unit,
-          prac_dt: row.prac_dt,
-          TRPE_RK: row.TRPE_RK,
+          prac_rk: jsonData.prac_rk,
+          meas_id: jsonData.meas_id,
+          msrm_value: jsonData.msrm_value,
+          meas_unit: jsonData.meas_unit,
+          prac_dt: jsonData.prac_dt,
+          TRPE_RK: jsonData.TRPE_RK,
         });
       } catch (error) {
         console.error("Error fetching last practice:", error);

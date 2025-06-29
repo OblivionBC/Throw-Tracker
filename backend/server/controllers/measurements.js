@@ -13,7 +13,7 @@ exports.addMeasurement = async (req, res) => {
       [msrm_value, prac_rk, meas_rk]
     );
     console.log("Added Measurement for practice " + prac_rk);
-    res.json(newMeasurement);
+    res.json(newMeasurement.rows[0]);
   } catch (err) {
     console.error(
       "Error occurred Adding Measurement Async Error:",
@@ -31,7 +31,7 @@ exports.getMeasurementsForPrac = async (req, res) => {
       "SELECT m.*, msrm.msrm_value from measurement msrm inner join measurable m on m.meas_rk = msrm.meas_rk inner join practice p on p.prac_rk = msrm.prac_rk where msrm.prac_rk = $1 order by p.prac_dt asc",
       [prac_rk]
     );
-    res.json(Measurements);
+    res.json(Measurements.rows);
     console.log("Got Measurements for Practice " + prac_rk);
   } catch (err) {
     console.error(
@@ -52,7 +52,7 @@ exports.getmeasurementsForTRPEs = async (req, res) => {
       "SELECT msrm.msrm_rk, msrm.prac_rk, m.meas_id, msrm.msrm_value, m.meas_unit, m.prsn_rk, p.prac_rk, p.trpe_rk, p.prac_dt from measurement msrm inner join measurable m on m.meas_rk = msrm.meas_rk  inner join practice p on p.prac_rk = msrm.prac_rk where p.trpe_rk = ANY($1) order by p.prac_dt desc;",
       [keys]
     );
-    res.json(measurements);
+    res.json(measurements.rows);
     console.log("Getting Measurements for TrainingPeriods " + keys);
   } catch (err) {
     console.error(

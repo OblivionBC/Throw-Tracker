@@ -13,7 +13,7 @@ import {
   Content,
   EditButton,
 } from "../../styles/styles";
-import { API_BASE_URL } from "../../config.js";
+import { programsApi } from "../../api";
 const TrainingPeriodEditModal = ({ open, onClose, trpeObj, refresh }) => {
   const [editing, setEditing] = useState(false);
   const [programData, setProgramData] = useState([]);
@@ -22,23 +22,10 @@ const TrainingPeriodEditModal = ({ open, onClose, trpeObj, refresh }) => {
   console.log({ trpeObj });
   const getProgramData = async () => {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/get-programsAndExerciseForTRPE`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            trpe_rk: trpeObj.trpe_rk,
-          }),
-        }
-      );
-
-      const jsonData = await response.json();
-      console.log(jsonData);
+      const response = await programsApi.getForTRPE(trpeObj.trpe_rk);
+      console.log(response);
       let newDataMap = new Map();
-      jsonData.rows.forEach((element) => {
+      response.forEach((element) => {
         console.log(element);
         if (!newDataMap.has(element.prog_rk)) {
           newDataMap.set(element.prog_rk, [

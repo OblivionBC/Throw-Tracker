@@ -10,14 +10,14 @@ const {
   deletePerson,
   updatePassword,
   login,
-  athletes,
+  athletesForCoach,
 } = require("../controllers/persons");
 
 // RESTful routes
 router
   .post("/", addPerson) // POST /persons
   .get("/", getAllPersons) // GET /persons
-  .get("/athletes", athletes) // GET /persons/athletes
+  .get("/athletes/:coach_prsn_rk", athletesForCoach) // GET /persons/athletes
   .get("/:prsn_rk", getPerson) // GET /persons/:prsn_rk
   .put("/:prsn_rk/password", updatePassword) // PUT /persons/:prsn_rk/password
   .delete("/:prsn_rk", deletePerson) // DELETE /persons/:prsn_rk

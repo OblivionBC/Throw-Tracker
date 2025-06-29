@@ -19,7 +19,7 @@ exports.addPractice = async (req, res) => {
     );
 
     console.log("Added Practice for Training Period " + trpe_rk);
-    res.json(newPractice);
+    res.json(newPractice.rows[0]);
   } catch (err) {
     console.error(
       "Error occurred while Adding Practice Async Error:",
@@ -31,13 +31,13 @@ exports.addPractice = async (req, res) => {
 
 exports.getAllPractices = async (req, res) => {
   try {
-    const { prsn_rk } = req.body;
+    const { prsn_rk } = req.query;
     const allPractice = await pool.query(
       "SELECT  p.prac_rk, p.prac_dt, p.trpe_rk, p.notes, COUNT(m.msrm_rk) AS measurement_count FROM practice p LEFT JOIN measurement m ON p.prac_rk = m.prac_rk inner join training_period tp on tp.trpe_rk = p.trpe_rk where tp.prsn_rk = $1 GROUP BY p.prac_rk ORDER BY p.prac_dt desc",
       [prsn_rk]
     );
     console.log("Getting All Practices for person " + prsn_rk);
-    res.json(allPractice);
+    res.json(allPractice.rows);
   } catch (err) {
     console.error(
       "Error occurred while Getting All Practice Async Error:",
@@ -57,7 +57,7 @@ exports.getPracticesInTrpe = async (req, res) => {
       [trpe_rk]
     );
     console.log("Getting Practices in the TRPE " + trpe_rk);
-    res.json(trpePractice);
+    res.json(trpePractice.rows);
   } catch (err) {
     console.error(
       "Error occurred while Getting Practices in the TRPE Async Error:",
@@ -74,7 +74,7 @@ exports.getLastPractice = async (req, res) => {
     const practice = await pool.query(
       "SELECT p.prac_dt, p.prac_rk, p.trpe_rk, me.meas_id, me.meas_unit, m.msrm_value FROM practice p join measurement m on m.prac_rk = p.prac_rk join measurable me on me.meas_rk = m.meas_rk order by prac_dt desc fetch first row only"
     );
-    res.json(practice);
+    res.json(practice.rows[0]);
     console.log("Getting Last Practice");
   } catch (err) {
     console.error(
@@ -95,7 +95,7 @@ exports.getPractice = async (req, res) => {
       [prac_rk]
     );
 
-    res.json(practice.rows);
+    res.json(practice.rows[0]);
     console.log("Getting practice " + prac_rk);
   } catch (err) {
     console.error(

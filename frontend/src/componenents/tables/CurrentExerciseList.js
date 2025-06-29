@@ -31,7 +31,7 @@ const TableStyles = {
   },
 };
 
-const CurrentExcersiseList = ({ paginationNum }) => {
+const CurrentExerciseList = ({ paginationNum }) => {
   const [excrData, setExcrData] = useState([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -152,4 +152,4 @@ const CurrentExcersiseList = ({ paginationNum }) => {
   );
 };
 
-export default CurrentExcersiseList;
+export default CurrentExerciseList;

@@ -10,16 +10,12 @@ const AthleteSelect = ({ prsn_rk, org_name, updateUser }) => {
 
   useEffect(() => {
     const fetchAthletes = async () => {
-      setLoading(true);
       try {
-        const data = await personsApi.getAthletes();
+        const data = await personsApi.getAthletesForCoach(prsn_rk);
         setAthletes(data);
-        console.log("ATHLETES");
-        console.log(data);
       } catch (error) {
-        console.error(error.message);
+        console.error("Error fetching athletes:", error);
       }
-      setLoading(false);
     };
     fetchAthletes();
   }, [prsn_rk]);

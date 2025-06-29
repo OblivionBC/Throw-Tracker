@@ -77,7 +77,7 @@ const Practices = ({ trpe_rk, bAdd, bDetail, bDelete }) => {
       } else {
         //No Training Period was specified so get all for the person
         console.log("Getting All for Person");
-        response = await practicesApi.getAllForPerson(getUser());
+        response = await practicesApi.getAll(getUser());
       }
 
       setPracticeData(response);

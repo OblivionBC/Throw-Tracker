@@ -20,9 +20,9 @@ const Navbar = () => {
           <UserIcon />
           <AccountDetailsModal on={profile} />
         </Profile>
-        {user.prsn_role === "ATHLETE" ? null : (
+        {user.prsn_role === "COACH" ? (
           <AthleteSelect prsn_rk={user.prsn_rk} org_name={user.org_name} />
-        )}
+        ) : null}
       </NavLeft>
       <NavCenter>
         <NavPath to="/home">Home</NavPath>

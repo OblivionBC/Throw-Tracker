@@ -36,7 +36,7 @@ const addPractice = async (prac_dt, trpe_rk, prsn_rk, notes) => {
     console.log("ERROR HAS OCCURRED ", response.statusText);
     throw new Error(jsonData.message || "Something went wrong");
   }
-  return jsonData.rows[0].prac_rk;
+  return jsonData.prac_rk;
 };
 
 const AddPracticeForm = ({ close, refresh }) => {

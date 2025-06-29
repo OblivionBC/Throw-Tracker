@@ -9,7 +9,6 @@
     "chart.js": "^4.4.9",
     "chartjs-adapter-date-fns": "^3.0.0",
     "cross-spawn": "^7.0.6",
-    "crypto": "^1.0.1",
     "crypto-browserify": "^3.12.1",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
@@ -17,15 +16,16 @@
     "formik": "^2.4.6",
     "npm": "^11.3.0",
     "os": "^0.1.2",
+    "os-browserify": "^0.3.0",
     "process": "^0.11.10",
-    "react": "^19.1.0",
+    "react": "^18.2.0",
     "react-app-rewired": "^2.2.1",
     "react-chartjs-2": "^5.3.0",
     "react-data-table-component": "^7.7.0",
     "react-datepicker": "^8.3.0",
-    "react-dom": "^19.1.0",
+    "react-dom": "^18.2.0",
     "react-icons": "^5.5.0",
-    "react-router-dom": "^7.5.2",
+    "react-router-dom": "^6.20.1",
     "react-scripts": "^5.0.1",
     "react-select": "^5.10.1",
     "stream-browserify": "^3.0.0",
@@ -40,10 +40,9 @@
   },
   "scripts": {
     "preinstall": "npx npm-force-resolutions",
-    "start": "set PORT=5001 && react-app-rewired start",
-    "build": "set PORT=5001 && react-app-rewired build",
-    "test": "set PORT=5001 && react-app-rewired test",
-    "eject": "set PORT=5001 && react-app-rewired eject"
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test"
   },
   "eslintConfig": {
     "extends": [
@@ -53,7 +52,29 @@
   },
   "resolutions": {
     "//": "See https://github.com/facebook/create-react-app/issues/11773",
-    "react-error-overlay": "6.0.9"
+    "react-error-overlay": "6.0.9",
+    "@eslint/config-array": "0.21.0",
+    "@eslint/object-schema": "2.1.6",
+    "sourcemap-codec": "@jridgewell/sourcemap-codec",
+    "rimraf": "^5.0.5",
+    "glob": "^10.3.10",
+    "rollup-plugin-terser": "@rollup/plugin-terser",
+    "svgo": "^3.2.0",
+    "eslint": "^9.0.0",
+    "@babel/plugin-proposal-private-methods": "^7.27.1",
+    "@babel/plugin-proposal-numeric-separator": "^7.27.1",
+    "@babel/plugin-proposal-class-properties": "^7.27.1",
+    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.27.1",
+    "@babel/plugin-proposal-private-property-in-object": "^7.27.1",
+    "@babel/plugin-proposal-optional-chaining": "^7.27.1",
+    "workbox-cacheable-response": "^7.0.0",
+    "workbox-google-analytics": "^7.0.0",
+    "abab": "^2.0.6",
+    "domexception": "^2.0.1",
+    "w3c-hr-time": "^1.0.2",
+    "stable": "^0.1.8",
+    "q": "^1.5.1",
+    "inflight": "^1.0.6"
   },
   "browserslist": {
     "production": [
@@ -68,6 +89,16 @@
     ]
   },
   "devDependencies": {
-    "react-error-overlay": "^6.1.0"
+    "@babel/plugin-transform-private-methods": "^7.27.1",
+    "@eslint/config-array": "^0.21.0",
+    "@eslint/object-schema": "^2.1.6",
+    "@jridgewell/sourcemap-codec": "^1.4.15",
+    "@rollup/plugin-terser": "^0.4.4",
+    "react-error-overlay": "^6.1.0",
+    "@babel/plugin-transform-numeric-separator": "^7.27.1",
+    "@babel/plugin-transform-class-properties": "^7.27.1",
+    "@babel/plugin-transform-nullish-coalescing-operator": "^7.27.1",
+    "@babel/plugin-transform-private-property-in-object": "^7.27.1",
+    "@babel/plugin-transform-optional-chaining": "^7.27.1"
   }
 }

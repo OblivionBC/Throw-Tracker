@@ -24,6 +24,7 @@ const MeetList = () => {
   const getMeetData = async () => {
     try {
       const response = await meetsApi.getAll();
+      console.log(response);
       setMeetData(response);
     } catch (error) {
       console.error(error.message);

@@ -13,8 +13,8 @@ export const personsApi = {
   },
 
   // Get athletes
-  getAthletes: async () => {
-    return await apiCall("/persons/athletes");
+  getAthletesForCoach: async (coach_prsn_rk) => {
+    return await apiCall(`/persons/athletes/${coach_prsn_rk}`);
   },
 
   // Create new person

@@ -9,9 +9,10 @@ import { DataChangeProvider } from "./componenents/contexts/DataChangeContext";
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <UserProvider value={{}}>
-      <DataChangeProvider />
-      <App />
+    <UserProvider>
+      <DataChangeProvider>
+        <App />
+      </DataChangeProvider>
     </UserProvider>
   </React.StrictMode>
 );

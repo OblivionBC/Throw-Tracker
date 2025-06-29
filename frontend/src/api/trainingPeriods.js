@@ -3,8 +3,8 @@ import { apiCall } from "./config";
 // Training Periods API functions
 export const trainingPeriodsApi = {
   // Get all training periods
-  getAll: async () => {
-    return await apiCall("/training-periods");
+  getAll: async (prsn_rk) => {
+    return await apiCall(`/training-periods?prsn_rk=${prsn_rk}`);
   },
 
   // Get training period by ID

@@ -16,16 +16,15 @@ import "react-datepicker/dist/react-datepicker.css";
 import { trainingPeriodsApi } from "../../api";
 
 //Name says it, but this is just a function to add the trpe when submitting
-const AddTRPE = async (trpe_start_dt, prsn_rk, endDateRecent) => {
-  if (endDateRecent) {
-    const dateString = new Date(trpe_start_dt);
-    dateString.setDate(dateString.getDate() - 1);
-    const newEndDate = dateString.toISOString().split("T")[0];
-    await trainingPeriodsApi.getEndDateMostRecent(prsn_rk, newEndDate);
-  }
-
+const addTRPE = async (trpe_start_dt, prsn_rk) => {
   const response = await trainingPeriodsApi.create(trpe_start_dt, prsn_rk);
-  return response.rows[0].trpe_rk;
+
+  const jsonData = await response.json();
+  if (!response.ok) {
+    console.log("ERROR HAS OCCURRED ", response.statusText);
+    throw new Error(jsonData.message || "Something went wrong");
+  }
+  return jsonData.trpe_rk;
 };
 const AddTRPEForm = ({ close, refresh }) => {
   const initialValues = {
@@ -45,12 +44,7 @@ const AddTRPEForm = ({ close, refresh }) => {
     console.log(values);
     setSubmitting(true);
     try {
-      const trpe_rk = await AddTRPE(
-        values.trpe_start_dt,
-        getUser(),
-        values.endDateRecent,
-        setErrors
-      );
+      const trpe_rk = await addTRPE(values.trpe_start_dt, getUser());
       if (trpe_rk) {
         alert("Training Period Added Successfully");
         close();

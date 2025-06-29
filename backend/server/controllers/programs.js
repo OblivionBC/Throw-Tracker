@@ -15,7 +15,7 @@ exports.addProgram = async (req, res) => {
       [prog_nm, coach_prsn_rk, trpe_rk]
     );
 
-    res.json(newProgram);
+    res.json(newProgram.rows[0]);
   } catch (err) {
     console.error("Async Error:", err.message);
     res.status(500).json({ message: "Error occurred Adding Program." });

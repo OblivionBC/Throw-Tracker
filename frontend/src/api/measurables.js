@@ -4,7 +4,7 @@ import { apiCall } from "./config";
 export const measurablesApi = {
   // Get all measurables for a person
   getAllForPerson: async (prsn_rk) => {
-    return await apiCall(`/measurables/person/${prsn_rk}`);
+    return await apiCall(`/measurables?prsn_rk=${prsn_rk}`);
   },
 
   // Get measurables for a practice

@@ -28,7 +28,7 @@ exports.addPerson = async (req, res) => {
       [prsn_first_nm, prsn_last_nm, prsn_email, prsn_pwrd, org_rk, prsn_role]
     );
 
-    res.json(newPerson);
+    res.json(newPerson.rows[0]);
     console.log("Adding Person with email " + prsn_email);
   } catch (err) {
     console.error("Error occurred Adding Person Async Error:", err.message);
@@ -39,7 +39,7 @@ exports.addPerson = async (req, res) => {
 exports.getAllPersons = async (req, res) => {
   try {
     const allPersons = await pool.query("SELECT * FROM person");
-    res.json(allPersons);
+    res.json(allPersons.rows);
   } catch (err) {
     console.error("Async Error:", err.message);
     res.status(500).json({ message: "Error occurred Getting All Persons." });
@@ -53,7 +53,7 @@ exports.getPerson = async (req, res) => {
       prsn_rk,
     ]);
 
-    res.json(person.rows);
+    res.json(person.rows[0]);
     console.log("Got Person " + prsn_rk);
   } catch (err) {
     console.error("Error occurred Getting Person Async Error:", err.message);
@@ -108,20 +108,20 @@ exports.login = async (req, res) => {
       return;
     }
     console.log("Login Successfulas " + username);
-    res.json(result);
+    res.json(result.rows[0]);
   } catch (err) {
     console.error("Error occurred while Logging In Async Error:", err.message);
     res.status(500).json({ message: "Error occurred while Logging In." });
   }
 };
 
-exports.athletes = async (req, res) => {
+exports.athletesForCoach = async (req, res) => {
   try {
-    const { coach_prsn_rk, org_name } = req.body;
+    const { coach_prsn_rk } = req.params;
     console.log("Attempting to get athletes for coach: " + coach_prsn_rk);
     const result = await pool.query(
-      "SELECT p.prsn_rk, p.prsn_first_nm, p.prsn_last_nm, p.prsn_email, p.prsn_role, o.org_name FROM person p inner join organization o on o.org_rk = p.org_rk WHERE p.coach_prsn_rk = $1 and o.org_name = $2;",
-      [coach_prsn_rk, org_name]
+      "SELECT p.prsn_rk, p.prsn_first_nm, p.prsn_last_nm, p.prsn_email, p.prsn_role, o.org_name FROM person p inner join organization o on o.org_rk = p.org_rk WHERE p.coach_prsn_rk = $1;",
+      [coach_prsn_rk]
     );
     if (result.rows.length == 0) {
       res.status(404).json("Record does not exist");
@@ -129,7 +129,7 @@ exports.athletes = async (req, res) => {
       return;
     }
     console.log("Athlete Grab Successful " + coach_prsn_rk);
-    res.json(result);
+    res.json(result.rows);
   } catch (err) {
     console.error(
       "Error occurred while Athlete Grab Async Error:",
@@ -159,7 +159,7 @@ exports.updatePassword = async (req, res) => {
       return;
     }
     console.log(result.rows);
-    res.json(result);
+    res.json(result.rows[0]);
   } catch (err) {
     console.error("Async Error:", err.message);
     res.status(500).json({

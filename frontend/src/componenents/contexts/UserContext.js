@@ -9,27 +9,21 @@ export const UserProvider = ({ children }) => {
   // set to not null for testing
   const [user, setUser] = useState({});
   const [selectedAthlete, setSelectedAthleteVar] = useState(0);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const loginComplete = (userData) => {
     setUser(userData);
   };
 
-  const login = async (values) => {
+  const login = async (username, password) => {
     try {
-      const jsonData = await personsApi.login({
-        username: values.username,
-        password: values.password,
-      });
-
-      if (jsonData.rowCount > 0) {
-        setUser(jsonData.rows[0]);
-        return true;
-      } else {
-        return false;
-      }
+      const jsonData = await personsApi.login({ username, password });
+      setUser(jsonData);
+      setIsAuthenticated(true);
+      return { success: true };
     } catch (error) {
-      console.error(error.message);
-      return false;
+      console.error("Login failed:", error);
+      return { success: false, error: error.message };
     }
   };
 
@@ -53,7 +47,6 @@ export const UserProvider = ({ children }) => {
       value={{
         getUser,
         user,
-        useUser,
         setSelectedAthlete,
         signOut,
         login,

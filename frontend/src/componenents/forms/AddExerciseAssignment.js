@@ -16,12 +16,9 @@ import ExerciseSelect from "../formHelpers/ExerciseSelect";
 import { exerciseAssignmentsApi } from "../../api";
 
 const addExerciseAssignment = async (props) => {
-  console.log("Adding");
   const response = await exerciseAssignmentsApi.create(props);
-
-  console.log("Past");
   console.log(response);
-  return response.rows[0].exas_rk;
+  return response.exas_rk;
 };
 
 const AddExerciseAssignmentForm = ({

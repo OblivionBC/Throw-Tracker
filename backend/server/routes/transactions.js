@@ -12,7 +12,7 @@ router.use("/meets", require("./meets"));
 router.use("/events", require("./events"));
 router.use("/measurables", require("./measurables"));
 router.use("/measurements", require("./measurements"));
-router.use("/exercise-assignments", require("./exercise_assignments"));
+router.use("/exercise-assignments", require("./exerciseAssignments"));
 router.use("/programs", require("./programs"));
 
 module.exports = router;

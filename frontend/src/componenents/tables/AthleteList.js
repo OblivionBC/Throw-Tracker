@@ -8,7 +8,7 @@ import {
 } from "../../styles/styles.js";
 import { useUser } from "../contexts/UserContext";
 import AthleteDetails from "../modals/AthleteDetails";
-import { athletesApi } from "../../api";
+import { personsApi } from "../../api";
 const TableStyles = {
   pagination: {
     style: {
@@ -35,7 +35,7 @@ const AthleteList = ({ paginationNum }) => {
 
   const getAthleteData = async () => {
     try {
-      const response = await athletesApi.getForCoach(user.prsn_rk);
+      const response = await personsApi.getAthletesForCoach(user.prsn_rk);
       setExcrData(response);
     } catch (error) {
       console.error(error.message);

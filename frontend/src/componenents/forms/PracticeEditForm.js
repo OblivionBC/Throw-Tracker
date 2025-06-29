@@ -19,7 +19,7 @@ import { practicesApi } from "../../api";
 //Grabs measurements to fill the initial values
 const findMeasurements = async (prac_rk) => {
   const response = await practicesApi.getMeasurementsForPrac(prac_rk);
-  return response.rows;
+  return response;
 };
 
 const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {

@@ -13,10 +13,15 @@ import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
 import { programsApi } from "../../api";
 
-const AddProgram = async (props) => {
-  const response = await programsApi.create(props);
-  console.log(response);
-  return response.rows[0].prog_rk;
+const addProgram = async (prog_nm, coach_prsn_rk, trpe_rk) => {
+  const response = await programsApi.create(prog_nm, coach_prsn_rk, trpe_rk);
+
+  const jsonData = await response.json();
+  if (!response.ok) {
+    console.log("ERROR HAS OCCURRED ", response.statusText);
+    throw new Error(jsonData.message || "Something went wrong");
+  }
+  return jsonData.prog_rk;
 };
 
 const AddProgramForm = ({ close, refresh, props }) => {
@@ -38,11 +43,11 @@ const AddProgramForm = ({ close, refresh, props }) => {
     setSubmitting(true);
     console.log(values);
     try {
-      const exas = AddProgram({
-        prog_nm: values.prog_nm,
-        coach_prsn_rk: values.coach_prsn_rk,
-        trpe_rk: values.trpe_rk,
-      });
+      const exas = await addProgram(
+        values.prog_nm,
+        values.coach_prsn_rk,
+        values.trpe_rk
+      );
       console.log(exas);
       alert("Prgoram Added Successfully");
       refresh();

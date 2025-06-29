@@ -10,9 +10,9 @@ import {
   StyledInput,
 } from "../../styles/styles.js";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
 import ForgotPasswordForm from "./ForgotPasswordForm.js";
+import { personsApi } from "../../api";
 
 const LoginForm = ({ on, off }) => {
   const [failed, setFailed] = useState(false);
@@ -23,7 +23,6 @@ const LoginForm = ({ on, off }) => {
     password: "",
   };
   const navigate = useNavigate();
-  const { login } = useUser();
 
   const validationSchema = Yup.object().shape({
     username: Yup.string("Must be a string")
@@ -38,8 +37,8 @@ const LoginForm = ({ on, off }) => {
     setSubmitting(true);
     const getLogin = async () => {
       setFailed(false);
-      const loginSuccess = await login(values);
-      if (loginSuccess === true) {
+      const loginSuccess = await personsApi.login(values);
+      if (loginSuccess.prsn_rk) {
         navigate("/home");
       } else {
         setFailed(true);

@@ -20,7 +20,7 @@ exports.addMeasurable = async (req, res) => {
         .json({ message: "There is a measurable already with this name" });
     }
     const newMeasurable = await pool.query(
-      "INSERT INTO Measurable (meas_id, meas_typ, meas_unit, prsn_rk) VALUES($1, $2, $3, $4) RETURNING *",
+      "INSERT INTO measurable (meas_id, meas_typ, meas_unit, prsn_rk) VALUES($1, $2, $3, $4) RETURNING *",
       [meas_id, meas_typ, meas_unit, prsn_rk]
     );
 
@@ -30,7 +30,7 @@ exports.addMeasurable = async (req, res) => {
         " for the prsn in row " +
         prsn_rk
     );
-    res.status(200).json({ message: "Measurable Added" });
+    res.json(newMeasurable.rows[0]);
     return { status: 200, data: newMeasurable };
   } catch (err) {
     console.error("Async Error:", err.message);
@@ -49,7 +49,7 @@ exports.getAllMeasurablesForPerson = async (req, res) => {
       "SELECT m.* FROM measurable m  where m.prsn_rk = $1",
       [prsn_rk]
     );
-    res.json(measurables);
+    res.json(measurables.rows);
     console.log("Got all Measurables for Person " + prsn_rk);
   } catch (err) {
     console.error(
@@ -71,7 +71,7 @@ exports.getMeasurablesForPrac = async (req, res) => {
       "SELECT p.prac_dt, p.prac_rk, p.trpe_rk, me.meas_id, me.meas_unit, m.msrm_value FROM practice p join measurement m on m.prac_rk = p.prac_rk join measurable me on me.meas_rk = m.meas_rk where p.prac_rk = $1",
       [key]
     );
-    res.json(measurables);
+    res.json(measurables.rows);
     console.log("Retreived Measurables for Practice " + key);
   } catch (err) {
     console.error(
@@ -88,8 +88,8 @@ exports.updateMeasurable = async (req, res) => {
   try {
     const { meas_id, meas_typ, meas_unit, meas_rk, prsn_rk } = req.body;
     const updateTodo = await pool.query(
-      "UPDATE Measurable SET meas_id = $1, meas_typ = $2, meas_unit = $3, prsn_rk = $4 WHERE meas_rk = $5",
-      [meas_id, meas_typ, meas_unit, prsn_rk, meas_rk]
+      "UPDATE measurable SET meas_id = $1, meas_typ = $2, meas_unit = $3 WHERE meas_rk = $4",
+      [meas_id, meas_typ, meas_unit, meas_rk]
     );
     res.json("Measurable was Updated");
     console.log("Measurable " + meas_rk + " Was Updated");
@@ -106,7 +106,7 @@ exports.deleteMeasurable = async (req, res) => {
   try {
     const { meas_rk } = req.body;
     const deleteMeasurable = await pool.query(
-      "DELETE FROM Measurable WHERE meas_rk = $1",
+      "DELETE FROM measurable WHERE meas_rk = $1",
       [meas_rk]
     );
     console.log("Measurable " + meas_rk + " Has been deleted");
@@ -117,5 +117,37 @@ exports.deleteMeasurable = async (req, res) => {
       err.message
     );
     res.status(500).json({ message: "Error occurred Deleting Measurable." });
+  }
+};
+
+exports.getAllMeasurables = async (req, res) => {
+  try {
+    const { prsn_rk } = req.query;
+    const allMeasurables = await pool.query(
+      "SELECT * FROM measurable WHERE prsn_rk = $1",
+      [prsn_rk]
+    );
+    res.json(allMeasurables.rows);
+  } catch (err) {
+    console.error("Async Error:", err.message);
+    res
+      .status(500)
+      .json({ message: "Error occurred Getting All Measurables." });
+  }
+};
+
+exports.getMeasurable = async (req, res) => {
+  try {
+    const { meas_rk } = req.params;
+    const measurable = await pool.query(
+      "SELECT * FROM measurable WHERE meas_rk = $1",
+      [meas_rk]
+    );
+
+    res.json(measurable.rows[0]);
+    console.log("Getting Measurable " + meas_rk);
+  } catch (err) {
+    console.error("Async Error:", err.message);
+    res.status(500).json({ message: "Error occurred Getting Measurable." });
   }
 };

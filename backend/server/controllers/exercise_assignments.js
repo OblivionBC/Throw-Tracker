@@ -78,6 +78,7 @@ exports.addExerciseAssignment = async (req, res) => {
         meas_rk,
       ]
     );
+    res.json(newExercise.rows[0]);
   } catch (err) {
     console.error("Async Error:", err.message);
     return res.status(500).json({ message: "Error occurred Adding Exercise." });
@@ -91,7 +92,7 @@ exports.getExerciseAssignmentsInProgram = async (req, res) => {
       "SELECT * FROM exercise_assignment exas join program prog on exas.prog_rk = prog.prog_rk where prog.prog_rk = prog_rk",
       [prog_rk]
     );
-    res.json(allExercises);
+    res.json(allExercises.rows);
   } catch (err) {
     console.error("Async Error:", err.message);
     res.status(500).json({
@@ -107,7 +108,7 @@ exports.getProgramsAndExerciseForTRPE = async (req, res) => {
       "SELECT prog.prog_rk, prog.prog_nm, excr.excr_nm, exas.excr_rk, exas.exas_rk,exas.meas_rk, exas.exas_reps, exas.exas_sets, exas.exas_weight, excr.excr_notes,  exas.exas_notes, exas.is_measurable FROM program prog left join exercise_assignment exas on exas.prog_rk = prog.prog_rk left join exercise excr on excr.excr_rk = exas.excr_rk where prog.trpe_rk = $1",
       [trpe_rk]
     );
-    res.json(allExercises);
+    res.json(allExercises.rows);
   } catch (err) {
     console.error("Async Error:", err.message);
     res.status(500).json({
@@ -124,7 +125,7 @@ exports.getExerciseAssignment = async (req, res) => {
       [exas_rk]
     );
 
-    res.json(ExerciseAssignment.rows);
+    res.json(ExerciseAssignment.rows[0]);
     console.log(req.params);
   } catch (err) {
     console.error("Async Error:", err.message);
