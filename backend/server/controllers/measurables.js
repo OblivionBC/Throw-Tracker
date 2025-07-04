@@ -6,7 +6,8 @@ const { pool } = require(".././db");
 
 exports.addMeasurable = async (req, res) => {
   try {
-    const { meas_id, meas_typ, meas_unit, prsn_rk } = req.body;
+    const { meas_id, meas_typ, meas_unit } = req.body;
+    const prsn_rk = req.user.id;
     console.log("Attempting Add Measurables for person " + prsn_rk);
     const alreadyExists = await pool.query(
       "select from measurable where meas_id = $1 and prsn_rk = $2",
@@ -43,7 +44,7 @@ exports.addMeasurable = async (req, res) => {
 exports.getAllMeasurablesForPerson = async (req, res) => {
   try {
     console.log("Finding");
-    const { prsn_rk } = req.body;
+    const prsn_rk = req.user.id;
 
     const measurables = await pool.query(
       "SELECT m.* FROM measurable m  where m.prsn_rk = $1",
@@ -122,7 +123,7 @@ exports.deleteMeasurable = async (req, res) => {
 
 exports.getAllMeasurables = async (req, res) => {
   try {
-    const { prsn_rk } = req.query;
+    const prsn_rk = req.user.id;
     const allMeasurables = await pool.query(
       "SELECT * FROM measurable WHERE prsn_rk = $1",
       [prsn_rk]

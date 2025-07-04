@@ -3,6 +3,7 @@
 */
 
 const router = require("express").Router();
+const { requireAuth } = require("../middleware/auth");
 const {
   getProgramsAndExerciseForTRPE,
   addExerciseAssignment,
@@ -10,11 +11,11 @@ const {
   deleteExerciseAssignment,
 } = require("../controllers/exercise_assignments");
 
-// RESTful routes
+// All exercise assignment routes require authentication
 router
-  .post("/", addExerciseAssignment) // POST /exercise-assignments
-  .get("/training-period/:trpe_rk", getProgramsAndExerciseForTRPE) // GET /exercise-assignments/training-period/:trpe_rk
-  .put("/:assignment_rk", updateExerciseAssignment) // PUT /exercise-assignments/:assignment_rk
-  .delete("/:assignment_rk", deleteExerciseAssignment); // DELETE /exercise-assignments/:assignment_rk
+  .post("/", requireAuth, addExerciseAssignment) // POST /exercise-assignments
+  .get("/training-period/:trpe_rk", requireAuth, getProgramsAndExerciseForTRPE) // GET /exercise-assignments/training-period/:trpe_rk
+  .put("/:assignment_rk", requireAuth, updateExerciseAssignment) // PUT /exercise-assignments/:assignment_rk
+  .delete("/:assignment_rk", requireAuth, deleteExerciseAssignment); // DELETE /exercise-assignments/:assignment_rk
 
 module.exports = router;

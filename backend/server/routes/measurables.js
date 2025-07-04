@@ -3,6 +3,7 @@
 */
 
 const router = require("express").Router();
+const { requireAuth } = require("../middleware/auth");
 const {
   addMeasurable,
   getAllMeasurablesForPerson,
@@ -11,12 +12,12 @@ const {
   deleteMeasurable,
 } = require("../controllers/measurables");
 
-// RESTful routes
+// All measurable routes require authentication
 router
-  .post("/", addMeasurable) // POST /measurables
-  .get("/person/:prsn_rk", getAllMeasurablesForPerson) // GET /measurables/person/:prsn_rk
-  .get("/practice/:prac_rk", getMeasurablesForPrac) // GET /measurables/practice/:prac_rk
-  .put("/:meas_rk", updateMeasurable) // PUT /measurables/:meas_rk
-  .delete("/:meas_rk", deleteMeasurable); // DELETE /measurables/:meas_rk
+  .post("/", requireAuth, addMeasurable) // POST /measurables
+  .get("/person", requireAuth, getAllMeasurablesForPerson) // GET /measurables/person (uses req.user.id)
+  .get("/practice/:prac_rk", requireAuth, getMeasurablesForPrac) // GET /measurables/practice/:prac_rk
+  .put("/:meas_rk", requireAuth, updateMeasurable) // PUT /measurables/:meas_rk
+  .delete("/:meas_rk", requireAuth, deleteMeasurable); // DELETE /measurables/:meas_rk
 
 module.exports = router;

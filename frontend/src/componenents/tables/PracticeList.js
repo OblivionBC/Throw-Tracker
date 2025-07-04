@@ -12,7 +12,6 @@ import dayjs from "dayjs";
 import PracticeDetailsModal from "../modals/PracticeDetailsModal";
 import ConfirmPracDeleteModal from "../modals/ConfirmPracDeleteModal";
 import AddPracticeModal from "../modals/AddPracticeModal";
-import { useUser } from "../contexts/UserContext";
 import { practicesApi } from "../../api";
 
 const TableStyles = {
@@ -40,26 +39,19 @@ const Practices = ({ trpe_rk, bAdd, bDetail, bDelete }) => {
   const [selectedPrac, setSelectedPrac] = useState({});
   const [paginationNum, setPaginationNum] = useState(4);
 
-  const { getUser } = useUser();
   const updateVisibleRows = () => {
     const height = window.innerHeight;
-    console.log(window.innerHeight);
-    console.log("Calling Update Rows");
+
     let newPaginationNum;
     if (height < 400) {
       newPaginationNum = 1;
-      console.log("Set to 2");
     } else if (height < 600) {
       newPaginationNum = 2;
-      console.log("Set to 4");
     } else if (height < 800) {
       newPaginationNum = 4;
-      console.log("Set to 4");
     } else {
       newPaginationNum = 7;
-      console.log("Set to 7");
     }
-    console.log("Pagination is " + paginationNum);
     setPaginationNum(newPaginationNum);
   };
   useEffect(() => {
@@ -76,8 +68,8 @@ const Practices = ({ trpe_rk, bAdd, bDetail, bDelete }) => {
         response = await practicesApi.getForTRPE(trpe_rk);
       } else {
         //No Training Period was specified so get all for the person
-        console.log("Getting All for Person");
-        response = await practicesApi.getAll(getUser());
+
+        response = await practicesApi.getAll();
       }
 
       setPracticeData(response);

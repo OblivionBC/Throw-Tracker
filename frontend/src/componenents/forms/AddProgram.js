@@ -9,7 +9,6 @@ import {
   SubmitError,
   StyledInput,
 } from "../../styles/styles.js";
-import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
 import { programsApi } from "../../api";
 
@@ -18,18 +17,15 @@ const addProgram = async (prog_nm, coach_prsn_rk, trpe_rk) => {
 
   const jsonData = await response.json();
   if (!response.ok) {
-    console.log("ERROR HAS OCCURRED ", response.statusText);
     throw new Error(jsonData.message || "Something went wrong");
   }
   return jsonData.prog_rk;
 };
 
 const AddProgramForm = ({ close, refresh, props }) => {
-  console.log(props);
-  const { user } = useUser();
   const initialValues = {
     prog_nm: undefined,
-    coach_prsn_rk: user.prsn_rk,
+    coach_prsn_rk: props.prsn_rk,
     trpe_rk: props.trpe_rk,
   };
 
@@ -41,14 +37,12 @@ const AddProgramForm = ({ close, refresh, props }) => {
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     setSubmitting(true);
-    console.log(values);
     try {
       const exas = await addProgram(
         values.prog_nm,
         values.coach_prsn_rk,
         values.trpe_rk
       );
-      console.log(exas);
       alert("Prgoram Added Successfully");
       refresh();
       close();

@@ -21,10 +21,14 @@ const validateExerciseData = (data) => {
 
 exports.addExercise = async (req, res) => {
   try {
-    const { excr_nm, excr_notes, coach_prsn_rk, excr_units } = req.body;
+    const { excr_nm, excr_notes, excr_units } = req.body;
+    const coach_prsn_rk = req.user.id;
 
     // Input validation
-    const validationErrors = validateExerciseData(req.body);
+    const validationErrors = validateExerciseData({
+      ...req.body,
+      coach_prsn_rk,
+    });
     if (validationErrors.length > 0) {
       return res.status(400).json({
         message: "Validation failed",
@@ -58,11 +62,7 @@ exports.getAllExercises = async (req, res) => {
 
 exports.getExerciseForCoach = async (req, res) => {
   try {
-    const { coach_prsn_rk } = req.params;
-
-    if (!coach_prsn_rk) {
-      return res.status(400).json({ message: "Coach person rank is required" });
-    }
+    const coach_prsn_rk = req.user.id;
 
     const allExercises = await pool.query(
       "SELECT * FROM Exercise where coach_prsn_rk = $1;",

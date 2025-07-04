@@ -6,10 +6,10 @@ import {
   CompWrap,
   AddButton,
 } from "../../styles/styles.js";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AddExerciseAssignment from "../modals/AddExerciseAssignmentModal";
 import ExerciseAssignmentDetails from "../modals/ExerciseAssignmentDetails";
-import { useUser } from "../contexts/UserContext";
+import useUserStore, { useUser } from "../../stores/userStore";
 const TableStyles = {
   pagination: {
     style: {
@@ -30,7 +30,6 @@ const ProgramContent = ({
   paginationNum,
   data,
   prog_rk,
-  prsn_rk,
   refresh,
   bAdd,
   bEdit,
@@ -41,10 +40,8 @@ const ProgramContent = ({
   const [selectedExcr, setSelectedExcr] = useState({});
   const [editExcr, setEditExcr] = useState(false);
   let pagination = 3;
-  console.log(data);
-  const { user } = useUser();
+  const user = useUser();
   paginationNum === undefined ? (pagination = 3) : (pagination = paginationNum);
-  console.log(data);
   let columns = [];
   if (data.length === 1 && !data[0].excr_nm) {
     columns = [
@@ -119,20 +116,18 @@ const ProgramContent = ({
         onClose={() => setAssignExercise(false)}
         refresh={() => refresh()}
         prog_rk={prog_rk}
-        prsn_rk={prsn_rk}
       />
       <ExerciseAssignmentDetails
         open={editExcr}
         onClose={() => setEditExcr(!editExcr)}
         refresh={() => refresh()}
         excrObj={selectedExcr}
-        bEdit={user.prsn_role === "COACH" && bEdit}
-        bDelete={user.prsn_role === "COACH" && bDelete}
-        prsn_rk={prsn_rk}
+        bEdit={user?.role === "COACH" && bEdit}
+        bDelete={user?.role === "COACH" && bDelete}
       />
       <RowDiv>
         <Title>Program : {data[0]?.prog_nm} </Title>
-        {user.prsn_role === "COACH" && bAdd && (
+        {user?.role === "COACH" && bAdd && (
           <AddButton onClick={() => setAssignExercise(true)}>
             Add Exercise
           </AddButton>

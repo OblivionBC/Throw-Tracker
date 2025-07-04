@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Formik, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import {
@@ -9,30 +9,29 @@ import {
   FieldLabel,
   SubmitError,
 } from "../../styles/styles.js";
-import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
 import { measurablesApi } from "../../api";
+import useUserStore, { useUser } from "../../stores/userStore";
 
 const addMeasurable = async (meas_id, meas_typ, meas_unit, prsn_rk) => {
-  console.log(meas_id);
-  const response = await measurablesApi.create(
+  const response = await measurablesApi.create({
     meas_id,
     meas_typ,
     meas_unit,
-    prsn_rk
-  );
+    prsn_rk,
+  });
 
-  console.log(response);
+  return response;
 };
 
 const AddMeasurableForm = ({ close, refresh }) => {
   const [failed, setFailed] = useState(false);
+  const user = useUser();
   const initialValues = {
     meas_id: "",
     meas_unit: "",
     meas_typ: "",
   };
-  const { getUser } = useUser();
   const validationSchema = Yup.object().shape({
     meas_id: Yup.string()
       .min(3, "Measurable Name must be at least 5 characters long")
@@ -47,24 +46,20 @@ const AddMeasurableForm = ({ close, refresh }) => {
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     // Handle form submission here
     //Make call on submit to update practice, and delete all measurments in for the prac, then create a new one for each in the array
-    console.log(values);
     setSubmitting(true);
     try {
       const measurable = await addMeasurable(
         values.meas_id,
         values.meas_typ,
         values.meas_unit,
-        getUser()
+        user.id
       );
-      console.log("Added Successfully", measurable);
       alert("Measurable Added Successfully");
       close();
       refresh();
       setSubmitting(false);
       return;
     } catch (error) {
-      console.log("HERE");
-      console.log(error);
       setFailed(true);
       setErrors({ submit: error.message });
       console.error(error.message);

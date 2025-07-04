@@ -2,6 +2,7 @@ const API_BASE_URL = "http://localhost:3000/api";
 
 // Common fetch options
 const defaultOptions = {
+  credentials: "include", // This is required for cookies to be sent
   headers: {
     "Content-Type": "application/json",
   },

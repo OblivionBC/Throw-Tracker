@@ -3,7 +3,8 @@ const rules = require("./rules");
 
 exports.addPractice = async (req, res) => {
   try {
-    const { prac_dt, trpe_rk, prsn_rk, notes } = req.body;
+    const { prac_dt, trpe_rk, notes } = req.body;
+    const prsn_rk = req.user.id;
     const PracDateWithinTRPE = await rules.PracDateWithinTRPE(
       prac_dt,
       prsn_rk,
@@ -31,7 +32,7 @@ exports.addPractice = async (req, res) => {
 
 exports.getAllPractices = async (req, res) => {
   try {
-    const { prsn_rk } = req.query;
+    const prsn_rk = req.user.id;
     const allPractice = await pool.query(
       "SELECT  p.prac_rk, p.prac_dt, p.trpe_rk, p.notes, COUNT(m.msrm_rk) AS measurement_count FROM practice p LEFT JOIN measurement m ON p.prac_rk = m.prac_rk inner join training_period tp on tp.trpe_rk = p.trpe_rk where tp.prsn_rk = $1 GROUP BY p.prac_rk ORDER BY p.prac_dt desc",
       [prsn_rk]
@@ -108,7 +109,8 @@ exports.getPractice = async (req, res) => {
 
 exports.updatePractice = async (req, res) => {
   try {
-    const { prac_rk, prac_dt, trpe_rk, prsn_rk, notes } = req.body;
+    const { prac_rk, prac_dt, trpe_rk, notes } = req.body;
+    const prsn_rk = req.user.id;
     console.log(req.body);
     const PracDateWithinTRPE = await rules.PracDateWithinTRPE(
       prac_dt,

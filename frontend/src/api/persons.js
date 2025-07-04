@@ -13,8 +13,8 @@ export const personsApi = {
   },
 
   // Get athletes
-  getAthletesForCoach: async (coach_prsn_rk) => {
-    return await apiCall(`/persons/athletes/${coach_prsn_rk}`);
+  getAthletesForCoach: async () => {
+    return await apiCall(`/persons/athletes`);
   },
 
   // Create new person
@@ -37,6 +37,21 @@ export const personsApi = {
   delete: async (prsn_rk) => {
     return await apiCall(`/persons/${prsn_rk}`, {
       method: "DELETE",
+    });
+  },
+
+  fetchUser: async () => {
+    try {
+      return await apiCall("/persons/me");
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      return null;
+    }
+  },
+
+  logout: async () => {
+    return await apiCall("/persons/logout", {
+      method: "POST",
     });
   },
 

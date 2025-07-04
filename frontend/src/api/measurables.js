@@ -3,8 +3,8 @@ import { apiCall } from "./config";
 // Measurables API functions
 export const measurablesApi = {
   // Get all measurables for a person
-  getAllForPerson: async (prsn_rk) => {
-    return await apiCall(`/measurables?prsn_rk=${prsn_rk}`);
+  getAllForPerson: async () => {
+    return await apiCall(`/measurables/person`);
   },
 
   // Get measurables for a practice

@@ -9,7 +9,6 @@ exports.addExerciseAssignment = async (req, res) => {
     const {
       prog_rk,
       athlete_prsn_rk,
-      assigner_prsn_rk,
       exas_notes,
       excr_rk,
       exas_reps,
@@ -17,6 +16,7 @@ exports.addExerciseAssignment = async (req, res) => {
       exas_weight,
       is_measurable,
     } = req.body;
+    const assigner_prsn_rk = req.user.id;
     let meas_rk = undefined;
     //Make a measurable for the person
     if (is_measurable === true) {

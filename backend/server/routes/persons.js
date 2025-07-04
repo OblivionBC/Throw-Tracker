@@ -3,6 +3,7 @@
 */
 
 const router = require("express").Router();
+const { requireAuth } = require("../middleware/auth");
 const {
   addPerson,
   getPerson,
@@ -11,18 +12,26 @@ const {
   updatePassword,
   login,
   athletesForCoach,
+  getMe,
+  logout,
 } = require("../controllers/persons");
 
-// RESTful routes
+// Auth routes (no authentication required)
 router
-  .post("/", addPerson) // POST /persons
-  .get("/", getAllPersons) // GET /persons
-  .get("/athletes/:coach_prsn_rk", athletesForCoach) // GET /persons/athletes
-  .get("/:prsn_rk", getPerson) // GET /persons/:prsn_rk
-  .put("/:prsn_rk/password", updatePassword) // PUT /persons/:prsn_rk/password
-  .delete("/:prsn_rk", deletePerson) // DELETE /persons/:prsn_rk
+  .post("/login", login) // POST /persons/login
+  .post("/logout", logout); // POST /persons/logout
 
-  // Auth routes
-  .post("/login", login); // POST /persons/login
+// Protected routes (authentication required)
+router
+  .get("/me", requireAuth, getMe) // GET /persons/me
+  .get("/athletes", requireAuth, athletesForCoach); // GET /persons/athletes (uses req.user.id)
+
+// Admin routes (authentication required)
+router
+  .post("/", requireAuth, addPerson) // POST /persons
+  .get("/", requireAuth, getAllPersons) // GET /persons
+  .get("/:prsn_rk", requireAuth, getPerson) // GET /persons/:prsn_rk
+  .put("/:prsn_rk/password", requireAuth, updatePassword) // PUT /persons/:prsn_rk/password
+  .delete("/:prsn_rk", requireAuth, deletePerson); // DELETE /persons/:prsn_rk
 
 module.exports = router;

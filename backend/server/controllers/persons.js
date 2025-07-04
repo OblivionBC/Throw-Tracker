@@ -3,6 +3,7 @@
       The table is selected through the SQL Queries
 */
 const { pool } = require(".././db");
+const jwt = require("jsonwebtoken");
 
 exports.addPerson = async (req, res) => {
   try {
@@ -95,9 +96,6 @@ exports.deletePerson = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
-    console.log("Attempting Login as User: " + username);
-    //$1 is the variable to add in the db, runs sql query in quotes which is same as in the CLI
-    //Returning * returns back the data
     const result = await pool.query(
       "SELECT p.prsn_rk, p.prsn_first_nm, p.prsn_last_nm, p.prsn_email, p.prsn_role, o.org_name FROM person p inner join organization o on o.org_rk = p.org_rk WHERE p.prsn_email = $1 AND p.prsn_pwrd = crypt($2, p.prsn_pwrd);",
       [username, password]
@@ -107,17 +105,66 @@ exports.login = async (req, res) => {
       console.log("Unsuccessful Login as User: " + username);
       return;
     }
-    console.log("Login Successfulas " + username);
-    res.json(result.rows[0]);
+    const token = jwt.sign(
+      {
+        id: result.rows[0].prsn_rk,
+        role: result.rows[0].prsn_role,
+        first_nm: result.rows[0].prsn_first_nm,
+        last_nm: result.rows[0].prsn_last_nm,
+        org_name: result.rows[0].org_name,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN }
+    );
+
+    console.log("Setting cookie with token:", token.substring(0, 20) + "...");
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "Strict" : "Lax",
+      maxAge: 3600000,
+    });
+    console.log("Login Successful as " + username);
+
+    res.json({ message: "Logged in" });
   } catch (err) {
     console.error("Error occurred while Logging In Async Error:", err.message);
     res.status(500).json({ message: "Error occurred while Logging In." });
   }
 };
 
+exports.getMe = async (req, res) => {
+  try {
+    const user = await pool.query("SELECT * FROM person WHERE prsn_rk = $1", [
+      req.user.id,
+    ]);
+
+    if (user.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    console.log(user.rows[0]);
+    res.json({
+      id: user.rows[0].prsn_rk,
+      email: user.rows[0].prsn_email,
+      role: user.rows[0].prsn_role,
+    });
+  } catch (err) {
+    console.error("Error occurred while getting user data:", err.message);
+    res
+      .status(500)
+      .json({ message: "Error occurred while getting user data." });
+  }
+};
+
+exports.logout = async (req, res) => {
+  res.clearCookie("token");
+  res.json({ message: "Logged out" });
+};
+
 exports.athletesForCoach = async (req, res) => {
   try {
-    const { coach_prsn_rk } = req.params;
+    const coach_prsn_rk = req.user.id;
     console.log("Attempting to get athletes for coach: " + coach_prsn_rk);
     const result = await pool.query(
       "SELECT p.prsn_rk, p.prsn_first_nm, p.prsn_last_nm, p.prsn_email, p.prsn_role, o.org_name FROM person p inner join organization o on o.org_rk = p.org_rk WHERE p.coach_prsn_rk = $1;",

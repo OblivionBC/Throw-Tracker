@@ -22,7 +22,7 @@ const ConfirmTRPEDelete = ({ open, onClose, trpeObj, refresh }) => {
     }
   }
   if (!open) return null;
-  console.log(trpeObj);
+
   return (
     <Overlay>
       <ModalContainer>

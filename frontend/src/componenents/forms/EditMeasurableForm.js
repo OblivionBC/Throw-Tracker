@@ -32,7 +32,7 @@ const EditMeasurableForm = ({ measObj, refresh, close }) => {
   const handleSubmit = async (values, { setSubmitting }) => {
     // Handle form submission here
     //Make call on submit to update trpetice, and delete all measurments in for the trpe, then create a new one for each in the array
-    console.log(values);
+
     setSubmitting(true);
     try {
       await measurablesApi.update(measObj.meas_rk, values);

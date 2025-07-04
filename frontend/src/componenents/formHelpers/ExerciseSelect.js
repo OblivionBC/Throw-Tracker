@@ -1,18 +1,16 @@
 import React from "react";
 import { Field } from "formik";
 import { useEffect, useState } from "react";
-import { useUser } from "../contexts/UserContext";
 import { exercisesApi } from "../../api";
 
 const ExerciseSelect = ({ name }) => {
   const [exercises, setExercises] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useUser();
   useEffect(() => {
     const fetchExercises = async () => {
       setLoading(true);
       try {
-        const response = await exercisesApi.getForCoach(user.prsn_rk);
+        const response = await exercisesApi.getForCoach();
         setExercises(response);
         console.log(response);
       } catch (error) {

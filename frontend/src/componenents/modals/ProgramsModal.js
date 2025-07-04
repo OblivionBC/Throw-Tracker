@@ -13,17 +13,16 @@ import {
   RowDiv,
 } from "../../styles/styles";
 import { programsApi } from "../../api";
-const ProgramsModal = ({ open, onClose, refresh, prsn_rk, trpe_rk }) => {
+const ProgramsModal = ({ open, onClose, refresh, trpe_rk }) => {
   const [loading, setLoading] = useState(false);
   const [programData, setProgramData] = useState(new Map());
   const [addProgram, setAddProgram] = useState(false);
   const getProgramData = async () => {
     try {
       const response = await programsApi.getForTRPE(trpe_rk);
-      console.log(response);
+
       let newDataMap = new Map();
       response.forEach((element) => {
-        console.log(element);
         if (!newDataMap.has(element.prog_rk)) {
           newDataMap.set(element.prog_rk, [
             {
@@ -63,7 +62,6 @@ const ProgramsModal = ({ open, onClose, refresh, prsn_rk, trpe_rk }) => {
   };
   useEffect(() => {
     getProgramData();
-    console.log("REFRESHING THE PROGRAMS");
   }, [trpe_rk]);
   if (!open || loading) return null;
   return (
@@ -97,7 +95,6 @@ const ProgramsModal = ({ open, onClose, refresh, prsn_rk, trpe_rk }) => {
               <ProgramContent
                 data={row}
                 prog_rk={key}
-                prsn_rk={prsn_rk}
                 bAdd
                 bDelete
                 bEdit

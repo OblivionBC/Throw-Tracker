@@ -13,20 +13,25 @@ import "typeface-nunito";
 import { personsApi } from "../../api";
 const ForgotPasswordForm = ({ off }) => {
   const initialValues = {
-    username: "",
-    password: "",
+    prsn_first_nm: "",
+    prsn_last_nm: "",
+    prsn_email: "",
+    prsn_pwrd: "",
+    confirmPassword: "",
   };
 
   const validationSchema = Yup.object().shape({
-    fname: Yup.string().required("First name is required"),
-    lname: Yup.string().required("Last Name is required"),
-    username: Yup.string().email("Invalid Email").required("Email is required"),
-    password: Yup.string()
+    prsn_first_nm: Yup.string().required("First name is required"),
+    prsn_last_nm: Yup.string().required("Last Name is required"),
+    prsn_email: Yup.string()
+      .email("Invalid Email")
+      .required("Email is required"),
+    prsn_pwrd: Yup.string()
       .min(8, "Password must be at least 8 characters")
       .required("Password is required"),
     confirmPassword: Yup.string()
       .min(8, "Password must be at least 8 characters")
-      .oneOf([Yup.ref("password")], "Passwords must match")
+      .oneOf([Yup.ref("prsn_pwrd")], "Passwords must match")
       .required("Password is required"),
   });
 
@@ -53,7 +58,7 @@ const ForgotPasswordForm = ({ off }) => {
       >
         {({ handleSubmit, isSubmitting, errors }) => (
           <StyledForm onSubmit={handleSubmit}>
-            <Field name="fname">
+            <Field name="prsn_first_nm">
               {({ field }) => (
                 <FieldOutputContainer>
                   <FieldLabel>First Name: </FieldLabel>
@@ -61,9 +66,9 @@ const ForgotPasswordForm = ({ off }) => {
                 </FieldOutputContainer>
               )}
             </Field>
-            <ErrorMessage name="fname" component={SubmitError} />
+            <ErrorMessage name="prsn_first_nm" component={SubmitError} />
 
-            <Field name="lname">
+            <Field name="prsn_last_nm">
               {({ field }) => (
                 <FieldOutputContainer>
                   <FieldLabel>Last Name: </FieldLabel>
@@ -75,9 +80,9 @@ const ForgotPasswordForm = ({ off }) => {
                 </FieldOutputContainer>
               )}
             </Field>
-            <ErrorMessage name="lname" component={SubmitError} />
+            <ErrorMessage name="prsn_last_nm" component={SubmitError} />
 
-            <Field name="username">
+            <Field name="prsn_email">
               {({ field }) => (
                 <FieldOutputContainer>
                   <FieldLabel>Email: </FieldLabel>
@@ -85,9 +90,9 @@ const ForgotPasswordForm = ({ off }) => {
                 </FieldOutputContainer>
               )}
             </Field>
-            <ErrorMessage name="username" component={SubmitError} />
+            <ErrorMessage name="prsn_email" component={SubmitError} />
 
-            <Field name="password">
+            <Field name="prsn_pwrd">
               {({ field }) => (
                 <FieldOutputContainer>
                   <FieldLabel>New Password: </FieldLabel>
@@ -99,7 +104,7 @@ const ForgotPasswordForm = ({ off }) => {
                 </FieldOutputContainer>
               )}
             </Field>
-            <ErrorMessage name="password" component={SubmitError} />
+            <ErrorMessage name="prsn_pwrd" component={SubmitError} />
 
             <Field name="confirmPassword">
               {({ field }) => (

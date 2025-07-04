@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import "typeface-rubik";
-import { useUser } from "../componenents/contexts/UserContext";
 import ErrorBoundary from "../componenents/ErrorBoundary";
 import logo from "../images/LogoIcon.png";
 import text from "../images/LogoText.png";

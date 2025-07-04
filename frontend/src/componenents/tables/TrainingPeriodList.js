@@ -53,9 +53,8 @@ const TrainingPeriodList = ({
   selectable === undefined ? (selectable = false) : (selectable = true);
   const getTRPEData = async () => {
     try {
-      const response = await trainingPeriodsApi.getAllForPerson(prsn_rk);
+      const response = await trainingPeriodsApi.getAllForPerson();
       setTrpeData(response);
-      console.log(trpeData);
     } catch (error) {
       console.error(error.message);
     }
@@ -67,7 +66,7 @@ const TrainingPeriodList = ({
     } catch (error) {
       console.error(error.message);
     }
-  }, [prsn_rk]);
+  }, []);
 
   const handleChange = ({ selectedRows }) => {
     if (selectedRows) {
@@ -161,7 +160,6 @@ const TrainingPeriodList = ({
         trpeObj={selectedTRPE}
       />
       <ProgramsModal
-        prsn_rk={prsn_rk}
         open={programs}
         onClose={() => setPrograms(false)}
         trpe_rk={selectedTRPE.trpe_rk}

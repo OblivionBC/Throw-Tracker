@@ -3,6 +3,7 @@
 */
 
 const router = require("express").Router();
+const { requireAuth } = require("../middleware/auth");
 const {
   addMeasurement,
   getMeasurementsForPrac,
@@ -11,12 +12,12 @@ const {
   getmeasurementsForTRPEs,
 } = require("../controllers/measurements");
 
-// RESTful routes
+// All measurement routes require authentication
 router
-  .post("/", addMeasurement) // POST /measurements
-  .get("/practice/:prac_rk", getMeasurementsForPrac) // GET /measurements/practice/:prac_rk
-  .get("/training-periods", getmeasurementsForTRPEs) // GET /measurements/training-periods
-  .delete("/:meas_rk", deleteMeasurement) // DELETE /measurements/:meas_rk
-  .delete("/practice/:prac_rk", deleteMeasurementsForPrac); // DELETE /measurements/practice/:prac_rk
+  .post("/", requireAuth, addMeasurement) // POST /measurements
+  .get("/practice/:prac_rk", requireAuth, getMeasurementsForPrac) // GET /measurements/practice/:prac_rk
+  .get("/training-periods", requireAuth, getmeasurementsForTRPEs) // GET /measurements/training-periods
+  .delete("/:meas_rk", requireAuth, deleteMeasurement) // DELETE /measurements/:meas_rk
+  .delete("/practice/:prac_rk", requireAuth, deleteMeasurementsForPrac); // DELETE /measurements/practice/:prac_rk
 
 module.exports = router;

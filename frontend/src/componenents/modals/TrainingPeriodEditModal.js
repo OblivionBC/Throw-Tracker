@@ -5,7 +5,6 @@ import dayjs from "dayjs";
 import EditTRPEForm from "../forms/EditTRPEForm";
 import Practices from "../tables/PracticeList";
 import ProgramContent from "../tables/ProgramContentList";
-import { useUser } from "../contexts/UserContext";
 import {
   Overlay,
   ModalContainer,
@@ -17,16 +16,13 @@ import { programsApi } from "../../api";
 const TrainingPeriodEditModal = ({ open, onClose, trpeObj, refresh }) => {
   const [editing, setEditing] = useState(false);
   const [programData, setProgramData] = useState([]);
-  const { getUser } = useUser();
-  console.log(trpeObj);
-  console.log({ trpeObj });
+
   const getProgramData = async () => {
     try {
       const response = await programsApi.getForTRPE(trpeObj.trpe_rk);
-      console.log(response);
+
       let newDataMap = new Map();
       response.forEach((element) => {
-        console.log(element);
         if (!newDataMap.has(element.prog_rk)) {
           newDataMap.set(element.prog_rk, [
             {
@@ -87,7 +83,7 @@ const TrainingPeriodEditModal = ({ open, onClose, trpeObj, refresh }) => {
             <ProgramContent
               data={row}
               prog_rk={key}
-              prsn_rk={getUser()}
+              prsn_rk={trpeObj.prsn_rk}
               bAdd={false}
               bEdit={false}
               refresh={() => getProgramData()}

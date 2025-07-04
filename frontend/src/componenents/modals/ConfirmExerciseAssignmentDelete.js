@@ -19,8 +19,6 @@ const ConfirmExerciseAssignmentDelete = ({
 }) => {
   async function deleteExas() {
     try {
-      console.log("DELETING");
-
       await exerciseAssignmentsApi.delete(excr.exas_rk);
       alert("Exercise Assignment DELETED");
 

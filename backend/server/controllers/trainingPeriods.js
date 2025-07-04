@@ -7,14 +7,13 @@ const { TRPEDoesNotOverlap } = require("./rules");
 
 exports.addTrainingPeriod = async (req, res) => {
   try {
-    const { trpe_start_dt, prsn_rk } = req.body;
+    const { trpe_start_dt } = req.body;
+    const prsn_rk = req.user.id;
     const overlap = await TRPEDoesNotOverlap(trpe_start_dt, prsn_rk);
     if (!overlap.pass) {
       return res.status(400).json({ message: overlap.message });
     }
     var newTrainingPeriod;
-    //$1 is the variable to add in the db, runs sql query in quotes which is same as in the CLI
-    //Returning * returns back the data
 
     console.log("Adding with End Date");
     newTrainingPeriod = await pool.query(
@@ -32,7 +31,7 @@ exports.addTrainingPeriod = async (req, res) => {
 
 exports.getAllTrainingPeriods = async (req, res) => {
   try {
-    const { prsn_rk } = req.query;
+    const prsn_rk = req.user.id;
     const allTrainingPeriods = await pool.query(
       "SELECT * FROM training_period WHERE prsn_rk = $1",
       [prsn_rk]
@@ -66,7 +65,8 @@ exports.getTrainingPeriod = async (req, res) => {
 
 exports.endDateMostRecentTrainingPeriod = async (req, res) => {
   try {
-    const { prsn_rk, trpe_end_dt } = req.body;
+    const { trpe_end_dt } = req.body;
+    const prsn_rk = req.user.id;
     const TrainingPeriod = await pool.query(
       "UPDATE training_period SET trpe_end_dt = $1 WHERE trpe_rk = ( SELECT trpe_rk FROM training_period where prsn_rk = $2 ORDER BY trpe_start_dt DESC LIMIT 1)",
       [trpe_end_dt, prsn_rk]
@@ -91,7 +91,8 @@ exports.endDateMostRecentTrainingPeriod = async (req, res) => {
 };
 exports.updateTrainingPeriod = async (req, res) => {
   try {
-    const { trpe_rk, trpe_start_dt, trpe_end_dt, prsn_rk } = req.body;
+    const { trpe_rk, trpe_start_dt, trpe_end_dt } = req.body;
+    const prsn_rk = req.user.id;
     //First we want to check that the start date is not overlapped by an existing trpe
     let overlapStart = await TRPEDoesNotOverlap(trpe_start_dt, prsn_rk);
     if (!overlapStart.pass) {

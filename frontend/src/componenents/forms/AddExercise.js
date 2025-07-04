@@ -10,7 +10,6 @@ import {
   SubmitError,
   ParagraphInput,
 } from "../../styles/styles.js";
-import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
 import { exercisesApi } from "../../api";
 
@@ -21,7 +20,6 @@ const AddExerciseForm = ({ close, refresh, prog_rk, coach_prsn_rk, props }) => {
     excr_units: "",
     excr_typ: "Competitive",
   };
-  const { user } = useUser();
   const validationSchema = Yup.object().shape({
     excr_nm: Yup.string("Must be a valid string").required(
       "This Field is required"

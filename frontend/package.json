@@ -36,7 +36,8 @@
     "uuidv4": "^6.2.13",
     "vm-browserify": "^1.1.2",
     "web-vitals": "^4.2.4",
-    "yup": "^1.6.1"
+    "yup": "^1.6.1",
+    "zustand": "^5.0.6"
   },
   "scripts": {
     "preinstall": "npx npm-force-resolutions",
@@ -60,7 +61,7 @@
     "glob": "^10.3.10",
     "rollup-plugin-terser": "@rollup/plugin-terser",
     "svgo": "^3.2.0",
-    "eslint": "^9.0.0",
+    "eslint": "^8.57.0",
     "@babel/plugin-proposal-private-methods": "^7.27.1",
     "@babel/plugin-proposal-numeric-separator": "^7.27.1",
     "@babel/plugin-proposal-class-properties": "^7.27.1",
@@ -89,16 +90,16 @@
     ]
   },
   "devDependencies": {
+    "@babel/plugin-transform-class-properties": "^7.27.1",
+    "@babel/plugin-transform-nullish-coalescing-operator": "^7.27.1",
+    "@babel/plugin-transform-numeric-separator": "^7.27.1",
+    "@babel/plugin-transform-optional-chaining": "^7.27.1",
     "@babel/plugin-transform-private-methods": "^7.27.1",
+    "@babel/plugin-transform-private-property-in-object": "^7.27.1",
     "@eslint/config-array": "^0.21.0",
     "@eslint/object-schema": "^2.1.6",
     "@jridgewell/sourcemap-codec": "^1.4.15",
     "@rollup/plugin-terser": "^0.4.4",
-    "react-error-overlay": "^6.1.0",
-    "@babel/plugin-transform-numeric-separator": "^7.27.1",
-    "@babel/plugin-transform-class-properties": "^7.27.1",
-    "@babel/plugin-transform-nullish-coalescing-operator": "^7.27.1",
-    "@babel/plugin-transform-private-property-in-object": "^7.27.1",
-    "@babel/plugin-transform-optional-chaining": "^7.27.1"
+    "react-error-overlay": "^6.1.0"
   }
 }

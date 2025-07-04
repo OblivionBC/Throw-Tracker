@@ -3,9 +3,10 @@
 */
 
 const router = require("express").Router();
+const { requireAuth } = require("../middleware/auth");
 const { addProgram } = require("../controllers/programs");
 
-// RESTful routes
-router.post("/", addProgram); // POST /programs
+// All program routes require authentication
+router.post("/", requireAuth, addProgram); // POST /programs
 
 module.exports = router;

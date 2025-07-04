@@ -1,3 +1,5 @@
 backend\server\.env
+backend\docs\*
+frontend\docs\*
 *\.env
 *.sql

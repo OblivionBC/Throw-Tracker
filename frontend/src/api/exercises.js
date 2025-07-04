@@ -13,8 +13,8 @@ export const exercisesApi = {
   },
 
   // Get exercises for a specific coach
-  getForCoach: async (coach_prsn_rk) => {
-    return await apiCall(`/exercises/coach/${coach_prsn_rk}`);
+  getForCoach: async () => {
+    return await apiCall(`/exercises/coach`);
   },
 
   // Create new exercise

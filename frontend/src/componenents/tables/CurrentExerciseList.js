@@ -11,9 +11,9 @@ import {
 import DynamicModal from "../dynamicModals/DynamicModal";
 import EditExerciseForm from "../forms/EditExercise";
 import AddExerciseForm from "../forms/AddExercise";
-import { useUser } from "../contexts/UserContext";
 import ConfirmExerciseDelete from "../modals/ConfirmExceriseDelete";
-import { exercisesApi } from "../../api";
+import { exercisesApi, personsApi } from "../../api";
+import useUserStore, { useUser, useIsCoach } from "../../stores/userStore";
 
 const TableStyles = {
   pagination: {
@@ -37,13 +37,20 @@ const CurrentExerciseList = ({ paginationNum }) => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState([]);
-  const { user } = useUser();
+  const user = useUser();
+  const isCoach = useIsCoach();
+  const { logout: logoutUser } = useUserStore();
+
+  useEffect(() => {
+    const fetchUser = async () => {};
+    fetchUser();
+  }, []);
   let pagination = 3;
   paginationNum === undefined ? (pagination = 3) : (pagination = paginationNum);
 
   const getExerciseData = async () => {
     try {
-      const data = await exercisesApi.getForCoach(user.prsn_rk);
+      const data = await exercisesApi.getForCoach();
       setExcrData(data);
     } catch (error) {
       console.error(error.message);
@@ -108,7 +115,7 @@ const CurrentExerciseList = ({ paginationNum }) => {
         onClose={() => setAddModalOpen(false)}
         refresh={() => getExerciseData()}
         Component={AddExerciseForm}
-        props={{ coach_prsn_rk: user.prsn_rk }}
+        props={{ coach_prsn_rk: user.id }}
       />
       <DynamicModal
         open={editModalOpen}

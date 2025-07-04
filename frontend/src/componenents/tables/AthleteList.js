@@ -6,9 +6,10 @@ import {
   CompWrap,
   AddButton,
 } from "../../styles/styles.js";
-import { useUser } from "../contexts/UserContext";
 import AthleteDetails from "../modals/AthleteDetails";
 import { personsApi } from "../../api";
+import useUserStore, { useUser } from "../../stores/userStore";
+
 const TableStyles = {
   pagination: {
     style: {
@@ -29,13 +30,13 @@ const AthleteList = ({ paginationNum }) => {
   const [excrData, setExcrData] = useState([]);
   const [programOpen, setProgramOpen] = useState(false);
   const [selectedPrsn, setSelectedPrsn] = useState();
-  const { user } = useUser();
+  const user = useUser();
   let pagination = 3;
   paginationNum === undefined ? (pagination = 3) : (pagination = paginationNum);
 
   const getAthleteData = async () => {
     try {
-      const response = await personsApi.getAthletesForCoach(user.prsn_rk);
+      const response = await personsApi.getAthletesForCoach();
       setExcrData(response);
     } catch (error) {
       console.error(error.message);

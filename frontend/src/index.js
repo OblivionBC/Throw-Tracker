@@ -3,17 +3,14 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import { UserProvider } from "./componenents/contexts/UserContext";
 import { DataChangeProvider } from "./componenents/contexts/DataChangeContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <UserProvider>
-      <DataChangeProvider>
-        <App />
-      </DataChangeProvider>
-    </UserProvider>
+    <DataChangeProvider>
+      <App />
+    </DataChangeProvider>
   </React.StrictMode>
 );
 

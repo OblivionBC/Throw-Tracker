@@ -12,11 +12,13 @@ import {
 import { useNavigate } from "react-router-dom";
 import "typeface-nunito";
 import ForgotPasswordForm from "./ForgotPasswordForm.js";
-import { personsApi } from "../../api";
+import useUserStore, { useError } from "../../stores/userStore";
 
 const LoginForm = ({ on, off }) => {
   const [failed, setFailed] = useState(false);
   const [forgot, setForgot] = useState(false);
+  const error = useError();
+  const { login, clearError } = useUserStore();
 
   const initialValues = {
     username: "",
@@ -32,20 +34,20 @@ const LoginForm = ({ on, off }) => {
   });
 
   const handleSubmit = async (values, { setSubmitting }) => {
-    // Handle form submission here
-    // For example, you could make an API call to authenticate the user\
     setSubmitting(true);
-    const getLogin = async () => {
-      setFailed(false);
-      const loginSuccess = await personsApi.login(values);
-      if (loginSuccess.prsn_rk) {
+    clearError();
+
+    try {
+      const userData = await login(values);
+      if (userData) {
         navigate("/home");
       } else {
         setFailed(true);
       }
-    };
+    } catch (err) {
+      setFailed(true);
+    }
 
-    getLogin();
     setSubmitting(false);
   };
   if (!on) {
@@ -90,9 +92,10 @@ const LoginForm = ({ on, off }) => {
             <StyledButton type="submit" disabled={isSubmitting}>
               Login
             </StyledButton>
-            {failed ? (
+            {failed || error ? (
               <SubmitError>
-                Either the password or email is incorrect, please try again
+                {error ||
+                  "Either the password or email is incorrect, please try again"}
               </SubmitError>
             ) : null}
           </StyledForm>

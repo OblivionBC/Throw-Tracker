@@ -3,7 +3,7 @@ import { Field } from "formik";
 import { useEffect, useState } from "react";
 import { measurablesApi } from "../../api";
 
-const PersonMeasurableOptions = ({ state, prsn_rk, name }) => {
+const PersonMeasurableOptions = ({ state, name }) => {
   const [measurables, setMeasurables] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -11,7 +11,7 @@ const PersonMeasurableOptions = ({ state, prsn_rk, name }) => {
     const fetchMeasurables = async () => {
       setLoading(true);
       try {
-        const response = await measurablesApi.getAllForPerson(prsn_rk);
+        const response = await measurablesApi.getAllForPerson();
         setMeasurables(response);
       } catch (error) {
         console.error(error.message);

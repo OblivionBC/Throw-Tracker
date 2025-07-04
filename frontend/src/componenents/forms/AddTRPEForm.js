@@ -9,19 +9,17 @@ import {
   FieldLabel,
   SubmitError,
 } from "../../styles/styles.js";
-import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { trainingPeriodsApi } from "../../api";
 
 //Name says it, but this is just a function to add the trpe when submitting
-const addTRPE = async (trpe_start_dt, prsn_rk) => {
-  const response = await trainingPeriodsApi.create(trpe_start_dt, prsn_rk);
+const addTRPE = async (trpe_start_dt) => {
+  const response = await trainingPeriodsApi.create(trpe_start_dt);
 
   const jsonData = await response.json();
   if (!response.ok) {
-    console.log("ERROR HAS OCCURRED ", response.statusText);
     throw new Error(jsonData.message || "Something went wrong");
   }
   return jsonData.trpe_rk;
@@ -31,7 +29,6 @@ const AddTRPEForm = ({ close, refresh }) => {
     trpe_start_dt: "",
     endDateRecent: false,
   };
-  const { getUser } = useUser();
   const validationSchema = Yup.object().shape({
     trpe_start_dt: Yup.date("Must be a date").required(
       "Measurable Name is required"
@@ -41,10 +38,10 @@ const AddTRPEForm = ({ close, refresh }) => {
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     // Handle form submission here
     //Make call on submit to update practice, and delete all measurments in for the prac, then create a new one for each in the array
-    console.log(values);
+
     setSubmitting(true);
     try {
-      const trpe_rk = await addTRPE(values.trpe_start_dt, getUser());
+      const trpe_rk = await addTRPE(values.trpe_start_dt);
       if (trpe_rk) {
         alert("Training Period Added Successfully");
         close();

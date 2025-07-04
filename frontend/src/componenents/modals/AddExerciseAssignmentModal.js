@@ -31,9 +31,7 @@ const AddExerciseAssignment = ({
         <Content>
           <AddExerciseAssignmentForm
             close={() => {
-              console.log("CLOSING");
               onClose();
-              console.log("CLOSING");
             }}
             refresh={() => refresh()}
             prog_rk={prog_rk}

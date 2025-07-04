@@ -10,7 +10,7 @@ import {
 } from "../../styles/styles";
 const AthleteDetails = ({ open, onClose, refresh, athlete }) => {
   const [loading, setLoading] = useState(false);
-  console.log(athlete);
+
   if (!open || loading) return null;
   return (
     <Overlay>

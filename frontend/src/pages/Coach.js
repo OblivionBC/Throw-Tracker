@@ -5,16 +5,15 @@ import TrainingPeriodList from "../componenents/tables/TrainingPeriodList";
 import CurrentExcersiseList from "../componenents/tables/CurrentExerciseList";
 import Measurables from "../componenents/tables/MeasurableList";
 import "typeface-rubik";
-import { useUser } from "../componenents/contexts/UserContext";
+
 import ErrorBoundary from "../componenents/ErrorBoundary";
 import AthleteList from "../componenents/tables/AthleteList";
 
 const Coach = () => {
   const [activeTRPE, setActiveTRPE] = useState([]);
-  const { getUser } = useUser();
   useEffect(() => {
     setActiveTRPE([]);
-  }, [getUser()]);
+  }, []);
 
   return (
     <Page>

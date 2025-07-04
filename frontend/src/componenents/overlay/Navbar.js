@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import * as FaIcons from "react-icons/fa";
 import styled from "styled-components";
@@ -7,12 +7,19 @@ import text from "../../images/LogoText.png";
 import "typeface-nunito";
 import AccountDetailsModal from "../modals/AccountDetailModal";
 import AthleteSelect from "../formHelpers/AthleteSelect";
-import { useUser } from "../contexts/UserContext";
+import useUserStore, { useUser, useIsCoach } from "../../stores/userStore";
 
 const Navbar = () => {
+  const user = useUser();
+  const isCoach = useIsCoach();
+  const { fetchUser, logout } = useUserStore();
+
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
+
   const [profile, setProfile] = useState(false);
   // Example of updating user data
-  const { user } = useUser();
   return (
     <NavWrap>
       <NavLeft>
@@ -20,17 +27,15 @@ const Navbar = () => {
           <UserIcon />
           <AccountDetailsModal on={profile} />
         </Profile>
-        {user.prsn_role === "COACH" ? (
-          <AthleteSelect prsn_rk={user.prsn_rk} org_name={user.org_name} />
+        {isCoach ? (
+          <AthleteSelect org_name={user?.org_name} updateUser={true} />
         ) : null}
       </NavLeft>
       <NavCenter>
         <NavPath to="/home">Home</NavPath>
         <NavPath to="/practices">Practices</NavPath>
         <NavPath to="/meets">Meets</NavPath>
-        {user.prsn_role === "COACH" ? (
-          <NavPath to="/coach">Coach</NavPath>
-        ) : null}
+        {isCoach ? <NavPath to="/coach">Coach</NavPath> : null}
       </NavCenter>
       <NavRight>
         <Logo src={logo} />

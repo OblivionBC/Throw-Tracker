@@ -24,7 +24,6 @@ const ExerciseAssignmentDetails = ({
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const Details = () => {
-    console.log(excrObj);
     return (
       <>
         <RowContainer>

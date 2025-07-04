@@ -7,7 +7,8 @@ const { pool } = require(".././db");
 exports.addMeet = async (req, res) => {
   try {
     console.log(req.body);
-    const { meet_nm, meet_dt, meet_location, prsn_rk } = req.body;
+    const { meet_nm, meet_dt, meet_location } = req.body;
+    const prsn_rk = req.user.id;
     //$1 is the variable to add in the db, runs sql query in quotes which is same as in the CLI
     //Returning * returns back the data
     const newMeet = await pool.query(
@@ -50,7 +51,8 @@ exports.getMeet = async (req, res) => {
 exports.updateMeet = async (req, res) => {
   try {
     const { meet_rk } = req.params;
-    const { meet_nm, meet_dt, meet_location, prsn_rk } = req.body;
+    const { meet_nm, meet_dt, meet_location } = req.body;
+    const prsn_rk = req.user.id;
     const updateTodo = await pool.query(
       "UPDATE Meet SET meet_nm = $1, meet_dt = $2, meet_location = $3, prsn_rk = $4 WHERE meet_rk = $5",
       [meet_nm, meet_dt, meet_location, prsn_rk, meet_rk]

@@ -8,7 +8,6 @@ import {
   AddButton,
   EditButton,
 } from "../../styles/styles.js";
-import { useUser } from "../contexts/UserContext";
 import AddMeasurableModal from "../modals/AddMeasurableModal";
 import ConfirmMeasurableDeleteModal from "../modals/ConfirmMeasurableDeleteModal";
 import MeasurableEditModal from "../modals/MeasurableEditModal";
@@ -40,11 +39,9 @@ const Measurables = ({ paginationNum }) => {
   const [editMeas, setEditMeas] = useState(false);
 
   const [selectedMeas, setSelectedMeas] = useState({});
-  const { getUser } = useUser();
-  console.log(useUser());
   const getMeasurableData = async () => {
     try {
-      const response = await measurablesApi.getAllForPerson(getUser());
+      const response = await measurablesApi.getAllForPerson();
       setMeasurableData(response);
     } catch (error) {
       console.error(error.message);
@@ -54,11 +51,10 @@ const Measurables = ({ paginationNum }) => {
   useEffect(() => {
     try {
       getMeasurableData();
-      console.log("REFRESHINGGGGG");
     } catch (error) {
       console.error(error.message);
     }
-  }, [getUser()]);
+  }, []);
 
   const columns = [
     {

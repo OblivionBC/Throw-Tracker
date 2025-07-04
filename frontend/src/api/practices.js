@@ -3,8 +3,8 @@ import { apiCall } from "./config";
 // Practices API functions
 export const practicesApi = {
   // Get all practices
-  getAll: async (prsn_rk) => {
-    return await apiCall(`/practices?prsn_rk=${prsn_rk}`);
+  getAll: async () => {
+    return await apiCall(`/practices`);
   },
 
   // Get practice by ID

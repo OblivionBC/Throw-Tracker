@@ -3,6 +3,7 @@
 */
 
 const router = require("express").Router();
+const { requireAuth } = require("../middleware/auth");
 const {
   addEvent,
   getEvent,
@@ -11,12 +12,12 @@ const {
   updateEvent,
 } = require("../controllers/events");
 
-// RESTful routes
+// All event routes require authentication
 router
-  .post("/", addEvent) // POST /events
-  .get("/", getAllEvents) // GET /events
-  .get("/:even_rk", getEvent) // GET /events/:even_rk
-  .put("/:even_rk", updateEvent) // PUT /events/:even_rk
-  .delete("/:even_rk", deleteEvent); // DELETE /events/:even_rk
+  .post("/", requireAuth, addEvent) // POST /events
+  .get("/", requireAuth, getAllEvents) // GET /events
+  .get("/:even_rk", requireAuth, getEvent) // GET /events/:even_rk
+  .put("/:even_rk", requireAuth, updateEvent) // PUT /events/:even_rk
+  .delete("/:even_rk", requireAuth, deleteEvent); // DELETE /events/:even_rk
 
 module.exports = router;

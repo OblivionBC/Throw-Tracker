@@ -5,7 +5,6 @@ import TrainingPeriodList from "../componenents/tables/TrainingPeriodList";
 import MeasurementChart from "../componenents/MeasurementChart";
 import Measurables from "../componenents/tables/MeasurableList";
 import "typeface-rubik";
-import { useUser } from "../componenents/contexts/UserContext";
 import ErrorBoundary from "../componenents/ErrorBoundary";
 const ExpandedChart = ({ back }) => {
   const [activeTRPE, setActiveTRPE] = useState([]);

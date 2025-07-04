@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Formik, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import {
@@ -10,14 +10,13 @@ import {
   SubmitError,
   ParagraphInput,
 } from "../../styles/styles.js";
-import { useUser } from "../contexts/UserContext";
 import "typeface-nunito";
 import ExerciseSelect from "../formHelpers/ExerciseSelect";
 import { exerciseAssignmentsApi } from "../../api";
+import useUserStore, { useUser } from "../../stores/userStore";
 
 const addExerciseAssignment = async (props) => {
   const response = await exerciseAssignmentsApi.create(props);
-  console.log(response);
   return response.exas_rk;
 };
 
@@ -27,6 +26,7 @@ const AddExerciseAssignmentForm = ({
   prog_rk,
   athlete_prsn_rk,
 }) => {
+  const user = useUser();
   const initialValues = {
     exas_notes: "",
     excr_rk: undefined,
@@ -35,7 +35,6 @@ const AddExerciseAssignmentForm = ({
     exas_weight: 0,
     is_measurable: false,
   };
-  const { user } = useUser();
   const validationSchema = Yup.object().shape({
     exas_notes: Yup.string("Must be a valid string"),
     excr_rk: Yup.number("Must be a valid Number").required(
@@ -55,10 +54,9 @@ const AddExerciseAssignmentForm = ({
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     setSubmitting(true);
-    console.log(values);
     try {
       const exas = addExerciseAssignment({
-        assigner_prsn_rk: user.prsn_rk,
+        assigner_prsn_rk: user.id,
         prog_rk: prog_rk,
         athlete_prsn_rk: athlete_prsn_rk,
         exas_notes: values.exas_notes,
@@ -68,15 +66,12 @@ const AddExerciseAssignmentForm = ({
         exas_weight: values.exas_weight,
         is_measurable: values.is_measurable,
       });
-      console.log(exas);
       alert("Exercise Assignment Added Successfully");
       refresh();
       close();
       setSubmitting(false);
-      console.log("Done");
       return;
     } catch (error) {
-      console.log("Erorororoor");
       setErrors({ submit: error.message });
       console.error(error.message);
       return false;

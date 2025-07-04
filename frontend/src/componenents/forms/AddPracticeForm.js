@@ -11,7 +11,6 @@ import {
 } from "../../styles/styles.js";
 import "typeface-nunito";
 import dayjs from "dayjs";
-import { useUser } from "../contexts/UserContext";
 import { MeasurableFieldArray } from "../formHelpers/MeasurableFieldArray.js";
 import TrainingPeriodOptions from "../formHelpers/TrainingPeriodOptions";
 import DatePicker from "react-datepicker";
@@ -28,12 +27,11 @@ const addMeasurement = async (measurable, prac_rk) => {
   }
 };
 
-const addPractice = async (prac_dt, trpe_rk, prsn_rk, notes) => {
-  const response = await practicesApi.create(prac_dt, trpe_rk, prsn_rk, notes);
+const addPractice = async (prac_dt, trpe_rk, notes) => {
+  const response = await practicesApi.create(prac_dt, trpe_rk, notes);
 
   const jsonData = await response.json();
   if (!response.ok) {
-    console.log("ERROR HAS OCCURRED ", response.statusText);
     throw new Error(jsonData.message || "Something went wrong");
   }
   return jsonData.prac_rk;
@@ -59,7 +57,6 @@ const AddPracticeForm = ({ close, refresh }) => {
     measurables: [],
     notes: "",
   };
-  const { getUser } = useUser();
   const validationSchema = Yup.object().shape({
     trpe: Yup.number("Must be a number").required(
       "Training Period is a required field"
@@ -83,12 +80,7 @@ const AddPracticeForm = ({ close, refresh }) => {
     //Make call on submit to update practice, and delete all measurments in for the prac, then create a new one for each in the array
     setSubmitting(true);
     try {
-      const prac_rk = await addPractice(
-        values.date,
-        values.trpe,
-        getUser(),
-        values.notes
-      );
+      const prac_rk = await addPractice(values.date, values.trpe, values.notes);
       values.measurables.forEach((element) => {
         addMeasurement(element, prac_rk);
       });
@@ -121,7 +113,7 @@ const AddPracticeForm = ({ close, refresh }) => {
               {({ field }) => (
                 <FieldOutputContainer>
                   <FieldLabel>Training Period:</FieldLabel>
-                  <TrainingPeriodOptions prsn_rk={getUser()} name="trpe" />
+                  <TrainingPeriodOptions name="trpe" />
                 </FieldOutputContainer>
               )}
             </Field>

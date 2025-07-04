@@ -6,7 +6,8 @@ const { pool } = require(".././db");
 
 exports.addProgram = async (req, res) => {
   try {
-    const { prog_nm, coach_prsn_rk, trpe_rk } = req.body;
+    const { prog_nm, trpe_rk } = req.body;
+    const coach_prsn_rk = req.user.id;
     //$1 is the variable to add in the db, runs sql query in quotes which is same as in the CLI
     //Returning * returns back the data
     console.log("Creating Program for Training Period : " + trpe_rk);
@@ -40,7 +41,8 @@ exports.getProgramAndExercises = async (req, res) => {
 
 exports.updateProgram = async (req, res) => {
   try {
-    const { prog_rk, prog_nm, coach_prsn_rk, trpe_rk } = req.body;
+    const { prog_rk, prog_nm, trpe_rk } = req.body;
+    const coach_prsn_rk = req.user.id;
     const updateTodo = await pool.query(
       "UPDATE program SET prog_nm = $2, coach_prsn_rk = $3, trpe_rk = $4 WHERE prog_rk = $1",
       [prog_rk, prog_nm, coach_prsn_rk, trpe_rk]

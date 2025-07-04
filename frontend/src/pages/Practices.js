@@ -5,7 +5,7 @@ import TrainingPeriodList from "../componenents/tables/TrainingPeriodList";
 import MeasurementChart from "../componenents/MeasurementChart";
 import Measurables from "../componenents/tables/MeasurableList";
 import "typeface-rubik";
-import { useUser } from "../componenents/contexts/UserContext";
+
 import ErrorBoundary from "../componenents/ErrorBoundary";
 import ExpandedChart from "./ExpandedChart";
 import { Col } from "../styles/styles";
@@ -16,10 +16,9 @@ const Practices = () => {
   const [expandContent, setExpandContent] = useState(
     <ExpandedChart back={() => setExpand(false)} />
   );
-  const { getUser } = useUser();
   useEffect(() => {
     setActiveTRPE([]);
-  }, [getUser()]);
+  }, []);
   if (expand) return expandContent;
   return (
     <Page>

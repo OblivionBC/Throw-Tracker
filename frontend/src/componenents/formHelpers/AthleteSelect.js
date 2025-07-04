@@ -1,24 +1,25 @@
 import React from "react";
 import { useEffect, useState } from "react";
-import { useUser } from "../contexts/UserContext";
 import { personsApi } from "../../api";
+import useUserStore, { useSelectedAthlete } from "../../stores/userStore";
 
-const AthleteSelect = ({ prsn_rk, org_name, updateUser }) => {
+const AthleteSelect = ({ org_name, updateUser }) => {
   const [athletes, setAthletes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { setSelectedAthlete, getUser } = useUser();
+  const selectedAthlete = useSelectedAthlete();
+  const { setSelectedAthlete } = useUserStore();
 
   useEffect(() => {
     const fetchAthletes = async () => {
       try {
-        const data = await personsApi.getAthletesForCoach(prsn_rk);
+        const data = await personsApi.getAthletesForCoach();
         setAthletes(data);
       } catch (error) {
         console.error("Error fetching athletes:", error);
       }
     };
     fetchAthletes();
-  }, [prsn_rk]);
+  }, []);
 
   if (loading) return <div>Loading...</div>;
 
