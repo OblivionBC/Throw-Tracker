@@ -1,5 +1,7 @@
-backend\server\.env
-backend\docs\*
-frontend\docs\*
-*\.env
+backend/docs/*
+frontend/docs/*
 *.sql
+.env
+*.env
+*/.env
+**/.env
