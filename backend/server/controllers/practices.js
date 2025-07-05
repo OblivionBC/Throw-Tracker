@@ -52,7 +52,7 @@ exports.getAllPractices = async (req, res) => {
 
 exports.getPracticesInTrpe = async (req, res) => {
   try {
-    const { trpe_rk } = req.body;
+    const { trpe_rk } = req.params;
     const trpePractice = await pool.query(
       "SELECT p.prac_rk, p.prac_dt, p.notes, COUNT(m.msrm_rk) AS measurement_count FROM practice p LEFT JOIN measurement m ON p.prac_rk = m.prac_rk where p.trpe_rk = $1 GROUP BY p.prac_rk",
       [trpe_rk]

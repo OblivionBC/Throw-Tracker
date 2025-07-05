@@ -1,6 +1,6 @@
 import React from "react";
 import { useEffect, useState } from "react";
-import { programsApi } from "../../api";
+import { exerciseAssignmentsApi } from "../../api";
 
 function checkMeasurable(row) {
   return row.meas_rk && row.is_measurable === "Y";
@@ -15,7 +15,10 @@ const ProgramSelectWithExercise = ({ trpe_rk, setData }) => {
       setLoading(true);
       try {
         if (trpe_rk > 0) {
-          const response = await programsApi.getForTRPE(trpe_rk);
+          const response =
+            await exerciseAssignmentsApi.getProgramsAndExercisesForTRPE({
+              trpe_rk: trpe_rk,
+            });
           console.log(response);
           let newMap = new Map();
           if (response.length > 0) {

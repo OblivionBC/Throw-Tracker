@@ -18,10 +18,9 @@ export const practicesApi = {
   },
 
   // Get practices in training period
-  getInTrainingPeriod: async (trainingPeriodData) => {
-    return await apiCall("/practices/training-period", {
-      method: "POST",
-      body: JSON.stringify(trainingPeriodData),
+  getInTrainingPeriod: async (trpe_rk) => {
+    return await apiCall(`/practices/training-period/${trpe_rk}`, {
+      method: "GET",
     });
   },
 

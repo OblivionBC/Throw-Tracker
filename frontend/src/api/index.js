@@ -1,4 +1,5 @@
 // Main API exports
+export { authApi } from "./auth";
 export { exercisesApi } from "./exercises";
 export { personsApi } from "./persons";
 export { practicesApi } from "./practices";

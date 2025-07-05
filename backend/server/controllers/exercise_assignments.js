@@ -103,7 +103,7 @@ exports.getExerciseAssignmentsInProgram = async (req, res) => {
 
 exports.getProgramsAndExerciseForTRPE = async (req, res) => {
   try {
-    const { trpe_rk } = req.body;
+    const { trpe_rk } = req.params;
     const allExercises = await pool.query(
       "SELECT prog.prog_rk, prog.prog_nm, excr.excr_nm, exas.excr_rk, exas.exas_rk,exas.meas_rk, exas.exas_reps, exas.exas_sets, exas.exas_weight, excr.excr_notes,  exas.exas_notes, exas.is_measurable FROM program prog left join exercise_assignment exas on exas.prog_rk = prog.prog_rk left join exercise excr on excr.excr_rk = exas.excr_rk where prog.trpe_rk = $1",
       [trpe_rk]

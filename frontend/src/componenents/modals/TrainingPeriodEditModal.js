@@ -12,14 +12,25 @@ import {
   Content,
   EditButton,
 } from "../../styles/styles";
-import { programsApi } from "../../api";
+import { exerciseAssignmentsApi } from "../../api";
 const TrainingPeriodEditModal = ({ open, onClose, trpeObj, refresh }) => {
   const [editing, setEditing] = useState(false);
   const [programData, setProgramData] = useState([]);
 
   const getProgramData = async () => {
+    // Don't make API call if trpeObj or trpe_rk is not available
+    if (!trpeObj || !trpeObj.trpe_rk) {
+      console.warn(
+        "TrainingPeriodEditModal: trpeObj or trpe_rk is not available"
+      );
+      return;
+    }
+
     try {
-      const response = await programsApi.getForTRPE(trpeObj.trpe_rk);
+      const response =
+        await exerciseAssignmentsApi.getProgramsAndExercisesForTRPE({
+          trpe_rk: trpeObj.trpe_rk,
+        });
 
       let newDataMap = new Map();
       response.forEach((element) => {
@@ -59,8 +70,11 @@ const TrainingPeriodEditModal = ({ open, onClose, trpeObj, refresh }) => {
     }
   };
   useEffect(() => {
-    getProgramData();
-  }, [trpeObj]);
+    // Only fetch data if modal is open and we have valid trpeObj
+    if (open && trpeObj && trpeObj.trpe_rk) {
+      getProgramData();
+    }
+  }, [trpeObj, open]);
   const Details = () => {
     if (editing)
       return (

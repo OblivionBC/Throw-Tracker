@@ -13,6 +13,7 @@ import PracticeDetailsModal from "../modals/PracticeDetailsModal";
 import ConfirmPracDeleteModal from "../modals/ConfirmPracDeleteModal";
 import AddPracticeModal from "../modals/AddPracticeModal";
 import { practicesApi } from "../../api";
+import { useDataChange } from "../contexts/DataChangeContext";
 
 const TableStyles = {
   pagination: {
@@ -39,6 +40,15 @@ const Practices = ({ trpe_rk, bAdd, bDetail, bDelete }) => {
   const [selectedPrac, setSelectedPrac] = useState({});
   const [paginationNum, setPaginationNum] = useState(4);
 
+  const {
+    isCacheValid,
+    setCacheData,
+    setCacheLoading,
+    getCachedData,
+    invalidateCache,
+    refreshFlags,
+  } = useDataChange();
+
   const updateVisibleRows = () => {
     const height = window.innerHeight;
 
@@ -54,37 +64,58 @@ const Practices = ({ trpe_rk, bAdd, bDetail, bDelete }) => {
     }
     setPaginationNum(newPaginationNum);
   };
+
   useEffect(() => {
     window.addEventListener("resize", updateVisibleRows);
     updateVisibleRows();
     return () => window.removeEventListener("resize", updateVisibleRows);
   }, []);
 
-  const getPracticeData = async () => {
+  const getPracticeData = async (forceRefresh = false) => {
+    const cacheKey = `practices_${trpe_rk || "all"}`;
+
+    // Check if we have valid cached data and don't need to force refresh
+    if (!forceRefresh && isCacheValid(cacheKey)) {
+      const cachedData = getCachedData(cacheKey);
+      if (cachedData && cachedData.data) {
+        setPracticeData(cachedData.data);
+        return;
+      }
+    }
+
+    // Set loading state
+    setCacheLoading(cacheKey, true);
+
     try {
       let response;
       //If the training period was passed in, we want to get the practices only from the training period
       if (trpe_rk) {
-        response = await practicesApi.getForTRPE(trpe_rk);
+        response = await practicesApi.getInTrainingPeriod(trpe_rk);
       } else {
         //No Training Period was specified so get all for the person
-
         response = await practicesApi.getAll();
       }
 
       setPracticeData(response);
+      setCacheData(cacheKey, response);
     } catch (error) {
       console.error(error.message);
+    } finally {
+      setCacheLoading(cacheKey, false);
     }
   };
 
   useEffect(() => {
-    try {
-      getPracticeData();
-    } catch (error) {
-      console.error(error.message);
-    }
-  }, [trpe_rk]);
+    getPracticeData();
+  }, [trpe_rk, refreshFlags.practices]);
+
+  const handleRefresh = () => {
+    getPracticeData(true);
+  };
+
+  const handleDataChange = () => {
+    invalidateCache("practices");
+  };
 
   if (paginationNum <= 0) paginationNum = 8;
   const columns = [
@@ -140,29 +171,35 @@ const Practices = ({ trpe_rk, bAdd, bDetail, bDelete }) => {
     });
   return (
     <CompWrap>
-      <PracticeDetailsModal
-        open={detailModalOpen}
-        onClose={() => setDetailModalOpen(false)}
-        pracObj={selectedPrac}
-        refresh={() => getPracticeData()}
-      />
-      <ConfirmPracDeleteModal
-        open={confirmPracDelete}
-        onClose={() => setConfirmPracDelete(false)}
-        pracObj={selectedPrac}
-        refresh={() => getPracticeData()}
-      />
-      <AddPracticeModal
-        open={addPracticeOpen}
-        onClose={() => setAddPracticeOpen(false)}
-        refresh={() => getPracticeData()}
-      />
+      {detailModalOpen && (
+        <PracticeDetailsModal
+          open={detailModalOpen}
+          onClose={() => setDetailModalOpen(false)}
+          pracObj={selectedPrac}
+          refresh={handleDataChange}
+        />
+      )}
+      {confirmPracDelete && (
+        <ConfirmPracDeleteModal
+          open={confirmPracDelete}
+          onClose={() => setConfirmPracDelete(false)}
+          pracObj={selectedPrac}
+          refresh={handleDataChange}
+        />
+      )}
+      {addPracticeOpen && (
+        <AddPracticeModal
+          open={addPracticeOpen}
+          onClose={() => setAddPracticeOpen(false)}
+          refresh={handleDataChange}
+        />
+      )}
       <RowDiv>
         <Title>Practices</Title>
         {bAdd ? (
           <AddButton onClick={() => setAddPracticeOpen(true)}>Add</AddButton>
         ) : null}
-        <AddButton onClick={() => getPracticeData()}>Refresh</AddButton>
+        <AddButton onClick={handleRefresh}>Refresh</AddButton>
       </RowDiv>
 
       <TableWrap>

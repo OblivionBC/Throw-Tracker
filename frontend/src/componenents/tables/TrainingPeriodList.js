@@ -14,6 +14,7 @@ import AddTRPEModal from "../modals/AddTRPEModal";
 import TrainingPeriodEditModal from "../modals/TrainingPeriodEditModal";
 import ProgramsModal from "../modals/ProgramsModal";
 import { trainingPeriodsApi } from "../../api";
+import { useDataChange } from "../contexts/DataChangeContext";
 
 const TableStyles = {
   pagination: {
@@ -48,25 +49,57 @@ const TrainingPeriodList = ({
   const [programs, setPrograms] = useState(false);
   const [editTRPEOpen, setEditTRPEOpen] = useState(false);
   const [selectedTRPE, setSelectedTRPE] = useState({});
+
+  const {
+    isCacheValid,
+    setCacheData,
+    setCacheLoading,
+    getCachedData,
+    invalidateCache,
+    refreshFlags,
+  } = useDataChange();
+
   let pagination = 3;
   paginationNum === undefined ? (pagination = 3) : (pagination = paginationNum);
   selectable === undefined ? (selectable = false) : (selectable = true);
-  const getTRPEData = async () => {
+
+  const getTRPEData = async (forceRefresh = false) => {
+    const cacheKey = "trainingPeriods";
+
+    // Check if we have valid cached data and don't need to force refresh
+    if (!forceRefresh && isCacheValid(cacheKey)) {
+      const cachedData = getCachedData(cacheKey);
+      if (cachedData && cachedData.data) {
+        setTrpeData(cachedData.data);
+        return;
+      }
+    }
+
+    // Set loading state
+    setCacheLoading(cacheKey, true);
+
     try {
       const response = await trainingPeriodsApi.getAllForPerson();
       setTrpeData(response);
+      setCacheData(cacheKey, response);
     } catch (error) {
       console.error(error.message);
+    } finally {
+      setCacheLoading(cacheKey, false);
     }
   };
 
   useEffect(() => {
-    try {
-      getTRPEData();
-    } catch (error) {
-      console.error(error.message);
-    }
-  }, []);
+    getTRPEData();
+  }, [refreshFlags.trainingPeriods]);
+
+  const handleRefresh = () => {
+    getTRPEData(true);
+  };
+
+  const handleDataChange = () => {
+    invalidateCache("trainingPeriods");
+  };
 
   const handleChange = ({ selectedRows }) => {
     if (selectedRows) {
@@ -142,34 +175,42 @@ const TrainingPeriodList = ({
   //Add the Detail/Edit modal now
   return (
     <CompWrap>
-      <ConfirmTRPEDelete
-        open={deleteTRPEOpen}
-        onClose={() => setDeleteTRPEOpen(false)}
-        trpeObj={selectedTRPE}
-        refresh={() => getTRPEData()}
-      />
-      <AddTRPEModal
-        open={addTRPEOpen}
-        onClose={() => setAddTRPEOpen(false)}
-        refresh={() => getTRPEData()}
-      />
-      <TrainingPeriodEditModal
-        open={editTRPEOpen}
-        onClose={() => setEditTRPEOpen(false)}
-        refresh={() => getTRPEData()}
-        trpeObj={selectedTRPE}
-      />
-      <ProgramsModal
-        open={programs}
-        onClose={() => setPrograms(false)}
-        trpe_rk={selectedTRPE.trpe_rk}
-      />
+      {deleteTRPEOpen && (
+        <ConfirmTRPEDelete
+          open={deleteTRPEOpen}
+          onClose={() => setDeleteTRPEOpen(false)}
+          trpeObj={selectedTRPE}
+          refresh={handleDataChange}
+        />
+      )}
+      {addTRPEOpen && (
+        <AddTRPEModal
+          open={addTRPEOpen}
+          onClose={() => setAddTRPEOpen(false)}
+          refresh={handleDataChange}
+        />
+      )}
+      {editTRPEOpen && selectedTRPE && selectedTRPE.trpe_rk && (
+        <TrainingPeriodEditModal
+          open={editTRPEOpen}
+          onClose={() => setEditTRPEOpen(false)}
+          refresh={handleDataChange}
+          trpeObj={selectedTRPE}
+        />
+      )}
+      {programs && selectedTRPE && selectedTRPE.trpe_rk && (
+        <ProgramsModal
+          open={programs}
+          onClose={() => setPrograms(false)}
+          trpe_rk={selectedTRPE.trpe_rk}
+        />
+      )}
       <RowDiv>
         <Title>Training Periods</Title>
         {bAdd === true && (
           <AddButton onClick={() => setAddTRPEOpen(true)}>Add</AddButton>
         )}
-        <AddButton onClick={() => getTRPEData()}>Refresh</AddButton>
+        <AddButton onClick={handleRefresh}>Refresh</AddButton>
       </RowDiv>
       <TableWrap>
         <Table

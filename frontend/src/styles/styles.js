@@ -4,11 +4,14 @@ import { Form, FieldArray } from "formik";
 //Pages
 export const AppLayout = styled.div`
   display: flex; /* Flexbox layout for sidebar and main content */
+  min-height: 100vh;
 `;
 export const AppRHS = styled.div`
   display: flex;
   flex-direction: column;
-  width: 100%;
+  flex: 1;
+  margin-left: 220px; /* Account for fixed sidebar width */
+  min-width: 0; /* Allow content to shrink */
 `;
 export const AppRow = styled.div`
   display: flex;

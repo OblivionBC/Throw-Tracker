@@ -48,18 +48,4 @@ export const personsApi = {
       return null;
     }
   },
-
-  logout: async () => {
-    return await apiCall("/persons/logout", {
-      method: "POST",
-    });
-  },
-
-  // Login
-  login: async (loginData) => {
-    return await apiCall("/persons/login", {
-      method: "POST",
-      body: JSON.stringify(loginData),
-    });
-  },
 };

@@ -15,12 +15,7 @@ import { MeasurableFieldArray } from "../formHelpers/MeasurableFieldArray.js";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import TrainingPeriodOptions from "../formHelpers/TrainingPeriodOptions";
-import { practicesApi } from "../../api";
-//Grabs measurements to fill the initial values
-const findMeasurements = async (prac_rk) => {
-  const response = await practicesApi.getMeasurementsForPrac(prac_rk);
-  return response;
-};
+import { measurementsApi, practicesApi } from "../../api";
 
 const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
   const [measurementContainer, setMeasurementContainer] = useState([]);
@@ -29,7 +24,7 @@ const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
   useEffect(() => {
     const fetchMeasurements = async () => {
       try {
-        const measurements = await findMeasurements(prac.prac_rk);
+        const measurements = await measurementsApi.getForPractice(prac.prac_rk);
         const container = measurements.map((element) => ({
           meas_rk: element.meas_rk,
           msrm_value: element.msrm_value,
@@ -74,7 +69,7 @@ const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     setSubmitting(true);
     try {
-      await practicesApi.update(prac.prac_rk, values);
+      await practicesApi.updatePractice(prac.prac_rk, values);
       refresh();
       setSubmitting(false);
       alert("Practice Updated Successfully");

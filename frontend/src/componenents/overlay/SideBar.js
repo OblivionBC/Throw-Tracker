@@ -3,12 +3,20 @@ import { useLocation, useNavigate, NavLink } from "react-router-dom";
 import styled from "styled-components";
 import logo from "../../images/LogoIcon.png";
 import useUserStore, { useUser, useIsCoach } from "../../stores/userStore";
+import { authApi } from "../../api";
 
 const Sidebar = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
   const [practicesOpen, setPracticesOpen] = useState(false);
   const [meetsOpen, setMeetsOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [notification, setNotification] = useState({
+    message: "",
+    type: "",
+    show: false,
+  });
+  const [tokenStatus, setTokenStatus] = useState(null);
   const profileRef = useRef(null);
   const user = useUser();
   const isCoach = useIsCoach();
@@ -27,10 +35,26 @@ const Sidebar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Hide sidebar on login or root
-  if (location.pathname === "/login" || location.pathname === "/") {
-    return null;
-  }
+  // Initialize token refresh when component mounts
+  useEffect(() => {
+    // Don't start token refresh if no user
+    if (!user) {
+      setTokenStatus(null);
+      return;
+    }
+    // Token status checks are handled by the user store, not the sidebar
+    // This prevents duplicate interval setup and multiple API calls
+  }, [user]);
+
+  // Auto-hide notification after 3 seconds
+  useEffect(() => {
+    if (notification.show) {
+      const timer = setTimeout(() => {
+        setNotification({ message: "", type: "", show: false });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification.show]);
 
   // Profile modal logic
   const handleProfileClick = () => {
@@ -43,17 +67,103 @@ const Sidebar = () => {
       setIsModalOpen(!isModalOpen);
     }
   };
+
   const handleSignOut = () => {
     navigate("/login");
     logoutUser();
+  };
+
+  // Manual token refresh
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const refreshResponse = await authApi.refreshToken();
+
+      // Update token cache with new expiration
+      if (
+        refreshResponse &&
+        refreshResponse.accessTokenExpiresIn &&
+        refreshResponse.refreshTokenExpiresIn
+      ) {
+        useUserStore
+          .getState()
+          .setTokenExpiration(
+            refreshResponse.accessTokenExpiresIn,
+            refreshResponse.refreshTokenExpiresIn
+          );
+      }
+
+      // Update token status after refresh
+      await checkTokenStatus();
+      // Show success feedback
+      setNotification({
+        message: "Token refreshed successfully!",
+        type: "success",
+        show: true,
+      });
+    } catch (error) {
+      console.error("Manual token refresh failed:", error);
+      setNotification({
+        message: "Token refresh failed. Please log in again.",
+        type: "error",
+        show: true,
+      });
+      handleSignOut();
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   // Dropdown toggles
   const togglePractices = () => setPracticesOpen((open) => !open);
   const toggleMeets = () => setMeetsOpen((open) => !open);
 
+  // Function to check token status (only for manual refresh)
+  const checkTokenStatus = async () => {
+    // Don't check token status if no user is authenticated
+    if (!user) {
+      setTokenStatus(null);
+      return;
+    }
+
+    try {
+      const status = await authApi.checkTokenStatus();
+      setTokenStatus(status);
+
+      // Update token cache with current expiration (refresh token stays the same)
+      if (status && status.expiresIn) {
+        const { refreshTokenExpirationTime } = useUserStore.getState();
+        const refreshTokenExpiresIn = refreshTokenExpirationTime
+          ? Math.floor((refreshTokenExpirationTime - Date.now()) / 1000)
+          : 604800; // 7 days default
+        useUserStore
+          .getState()
+          .setTokenExpiration(status.expiresIn, refreshTokenExpiresIn);
+      }
+    } catch (error) {
+      console.error("Failed to check token status:", error);
+      setTokenStatus(null);
+
+      // If token is expired, immediately handle expired token
+      if (
+        error.message.includes("401") ||
+        error.message.includes("403") ||
+        error.message.includes("Authentication failed")
+      ) {
+        useUserStore.getState().handleExpiredToken();
+      }
+    }
+  };
+
   return (
     <SidebarContainer>
+      {/* Notification */}
+      {notification.show && (
+        <NotificationContainer type={notification.type}>
+          {notification.message}
+        </NotificationContainer>
+      )}
+
       {/* User Profile Section */}
       <ProfileTrigger ref={profileRef} onClick={handleProfileClick}>
         <ProfilePicture
@@ -64,6 +174,31 @@ const Sidebar = () => {
       <UserName>{user ? `${user.first_nm} ${user.last_nm}` : "User"}</UserName>
       <UserDetails>{user?.role}</UserDetails>
       <UserDetails>{user?.org_name}</UserDetails>
+
+      {/* Token Status Indicator */}
+      {tokenStatus && (
+        <TokenStatusContainer isexpiring={tokenStatus.isexpiring}>
+          <TokenStatusText>
+            {tokenStatus.isExpiringSoon
+              ? `⚠️ Session expires in ${Math.floor(
+                  tokenStatus.expiresIn / 60
+                )}m`
+              : `✅ Session valid (${Math.floor(
+                  tokenStatus.expiresIn / 60
+                )}m left)`}
+          </TokenStatusText>
+        </TokenStatusContainer>
+      )}
+
+      {/* Refresh Token Button */}
+      <RefreshButtonContainer>
+        <SidebarRefreshButton
+          onClick={handleManualRefresh}
+          disabled={isRefreshing}
+        >
+          {isRefreshing ? "🔄 Refreshing..." : "🔄 Refresh Token"}
+        </SidebarRefreshButton>
+      </RefreshButtonContainer>
 
       <NavSection>
         <NavItem>
@@ -155,6 +290,9 @@ const Sidebar = () => {
             <UserDetails>{user?.role}</UserDetails>
             <UserDetails>{user?.org_name}</UserDetails>
           </List>
+          <RefreshButton onClick={handleManualRefresh} disabled={isRefreshing}>
+            {isRefreshing ? "Refreshing..." : "🔄 Refresh Token"}
+          </RefreshButton>
           <SignOut onClick={handleSignOut}>Sign Out</SignOut>
         </Modal>
       )}
@@ -164,6 +302,7 @@ const Sidebar = () => {
 
 // Styled Components
 const SidebarContainer = styled.div`
+  min-width: 150px;
   width: 220px;
   height: 100vh;
   background: linear-gradient(180deg, #fafbfc 0%, #f5f7fa 100%);
@@ -174,6 +313,11 @@ const SidebarContainer = styled.div`
   padding: 20px 0;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
   overflow-y: auto;
+  flex-shrink: 0; /* Prevent sidebar from shrinking */
+  position: fixed; /* Keep sidebar fixed */
+  left: 0;
+  top: 0;
+  z-index: 1;
 `;
 
 const NavSection = styled.div`
@@ -378,6 +522,37 @@ const List = styled.li`
   margin: 0;
 `;
 
+const RefreshButton = styled.button`
+  background: linear-gradient(45deg, #4caf50 0%, #45a049 100%);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+
+  &:hover:not(:disabled) {
+    box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+    transform: translateY(-2px);
+  }
+
+  &:active:not(:disabled) {
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    background: linear-gradient(45deg, #cccccc 0%, #bbbbbb 100%);
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+`;
+
 const SignOut = styled.button`
   background: linear-gradient(45deg, #ff4757 0%, #ff3742 100%);
   border: none;
@@ -400,6 +575,66 @@ const SignOut = styled.button`
     box-shadow: 0 2px 8px rgba(255, 71, 87, 0.3);
     transform: translateY(0);
   }
+`;
+
+const RefreshButtonContainer = styled.div`
+  margin-top: 10px;
+  margin-bottom: 10px;
+`;
+
+const SidebarRefreshButton = styled.button`
+  background: linear-gradient(45deg, #4caf50 0%, #45a049 100%);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  transition: all 0.3s ease;
+  width: 100%;
+
+  &:hover:not(:disabled) {
+    box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+    transform: translateY(-2px);
+  }
+
+  &:active:not(:disabled) {
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    background: linear-gradient(45deg, #cccccc 0%, #bbbbbb 100%);
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+`;
+
+const NotificationContainer = styled.div`
+  background-color: ${(props) =>
+    props.type === "success" ? "#dff2bf" : "#ffd2d2"};
+  border: 1px solid
+    ${(props) => (props.type === "success" ? "#4f8a10" : "#a94442")};
+  color: ${(props) => (props.type === "success" ? "#4f8a10" : "#a94442")};
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+`;
+
+const TokenStatusContainer = styled.div`
+  background-color: ${(props) => (props.isexpiring ? "#ffd2d2" : "#dff2bf")};
+  border: 1px solid ${(props) => (props.isexpiring ? "#a94442" : "#4f8a10")};
+  color: ${(props) => (props.isexpiring ? "#a94442" : "#4f8a10")};
+  padding: 5px 10px;
+  border-radius: 4px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+`;
+
+const TokenStatusText = styled.span`
+  font-size: 12px;
+  font-weight: bold;
 `;
 
 export default Sidebar;

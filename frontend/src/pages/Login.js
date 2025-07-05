@@ -1,14 +1,23 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import "typeface-rubik";
+import { Navigate } from "react-router-dom";
 import ErrorBoundary from "../componenents/ErrorBoundary";
 import logo from "../images/LogoIcon.png";
 import text from "../images/LogoText.png";
 import { Col, FormContainer, Logo, PageContent, Row } from "../styles/styles";
 import LoginForm from "../componenents/forms/LoginForm";
 import SignUpForm from "../componenents/forms/SignUpForm";
+import useUserStore, { useIsAuthenticated } from "../stores/userStore";
+
 const Login = () => {
   const [loginOpen, setLoginOpen] = useState(true);
+  const isAuthenticated = useIsAuthenticated();
+
+  // Redirect authenticated users to home
+  if (isAuthenticated) {
+    return <Navigate to="/home" replace />;
+  }
 
   return (
     <Page>

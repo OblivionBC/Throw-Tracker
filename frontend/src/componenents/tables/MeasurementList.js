@@ -1,7 +1,7 @@
 import React from "react";
 import { Table, TableWrap, CompWrap } from "../../styles/styles.js";
 import { useEffect, useState } from "react";
-import { practicesApi } from "../../api";
+import { measurementsApi } from "../../api";
 const TableStyles = {
   pagination: {
     style: {
@@ -23,9 +23,16 @@ const MeasurementList = ({ prac_rk }) => {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     const fetchMeasurables = async () => {
+      // Don't make API call if prac_rk is not available
+      if (!prac_rk) {
+        console.warn("MeasurementList: prac_rk is not available");
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       try {
-        const response = await practicesApi.getMeasurementsForPractice(prac_rk);
+        const response = await measurementsApi.getForPractice(prac_rk);
         setMeasurables(response);
       } catch (error) {
         console.error(error.message);

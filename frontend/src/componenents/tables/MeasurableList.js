@@ -12,6 +12,7 @@ import AddMeasurableModal from "../modals/AddMeasurableModal";
 import ConfirmMeasurableDeleteModal from "../modals/ConfirmMeasurableDeleteModal";
 import MeasurableEditModal from "../modals/MeasurableEditModal";
 import { measurablesApi } from "../../api";
+import { useDataChange } from "../contexts/DataChangeContext";
 // This is your PracticeItem component
 //Test that this works and add it to the practices component
 
@@ -37,24 +38,54 @@ const Measurables = ({ paginationNum }) => {
   const [addMeasurableOpen, setaddMeasurableOpen] = useState(false);
   const [confirmMeasDelete, setConfirmMeasDelete] = useState(false);
   const [editMeas, setEditMeas] = useState(false);
-
   const [selectedMeas, setSelectedMeas] = useState({});
-  const getMeasurableData = async () => {
+
+  const {
+    isCacheValid,
+    setCacheData,
+    setCacheLoading,
+    getCachedData,
+    invalidateCache,
+    refreshFlags,
+  } = useDataChange();
+
+  const getMeasurableData = async (forceRefresh = false) => {
+    const cacheKey = "measurables";
+
+    // Check if we have valid cached data and don't need to force refresh
+    if (!forceRefresh && isCacheValid(cacheKey)) {
+      const cachedData = getCachedData(cacheKey);
+      if (cachedData && cachedData.data) {
+        setMeasurableData(cachedData.data);
+        return;
+      }
+    }
+
+    // Set loading state
+    setCacheLoading(cacheKey, true);
+
     try {
       const response = await measurablesApi.getAllForPerson();
       setMeasurableData(response);
+      setCacheData(cacheKey, response);
     } catch (error) {
       console.error(error.message);
+    } finally {
+      setCacheLoading(cacheKey, false);
     }
   };
 
   useEffect(() => {
-    try {
-      getMeasurableData();
-    } catch (error) {
-      console.error(error.message);
-    }
-  }, []);
+    getMeasurableData();
+  }, [refreshFlags.measurables]);
+
+  const handleRefresh = () => {
+    getMeasurableData(true);
+  };
+
+  const handleDataChange = () => {
+    invalidateCache("measurables");
+  };
 
   const columns = [
     {
@@ -106,27 +137,33 @@ const Measurables = ({ paginationNum }) => {
   ];
   return (
     <CompWrap>
-      <ConfirmMeasurableDeleteModal
-        open={confirmMeasDelete}
-        onClose={() => setConfirmMeasDelete(false)}
-        measObj={selectedMeas}
-        refresh={() => getMeasurableData()}
-      />
-      <AddMeasurableModal
-        open={addMeasurableOpen}
-        onClose={() => setaddMeasurableOpen(false)}
-        refresh={() => getMeasurableData()}
-      />
-      <MeasurableEditModal
-        open={editMeas}
-        onClose={() => setEditMeas(false)}
-        measObj={selectedMeas}
-        refresh={() => getMeasurableData()}
-      />
+      {confirmMeasDelete && (
+        <ConfirmMeasurableDeleteModal
+          open={confirmMeasDelete}
+          onClose={() => setConfirmMeasDelete(false)}
+          measObj={selectedMeas}
+          refresh={handleDataChange}
+        />
+      )}
+      {addMeasurableOpen && (
+        <AddMeasurableModal
+          open={addMeasurableOpen}
+          onClose={() => setaddMeasurableOpen(false)}
+          refresh={handleDataChange}
+        />
+      )}
+      {editMeas && (
+        <MeasurableEditModal
+          open={editMeas}
+          onClose={() => setEditMeas(false)}
+          measObj={selectedMeas}
+          refresh={handleDataChange}
+        />
+      )}
       <RowDiv>
         <Title>Measurables</Title>
         <AddButton onClick={() => setaddMeasurableOpen(true)}>Add</AddButton>
-        <AddButton onClick={() => getMeasurableData()}>Refresh</AddButton>
+        <AddButton onClick={handleRefresh}>Refresh</AddButton>
       </RowDiv>
 
       <TableWrap>

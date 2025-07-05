@@ -9,7 +9,7 @@ import {
   SubmitError,
   StyledInput,
 } from "../../styles/styles.js";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "typeface-nunito";
 import ForgotPasswordForm from "./ForgotPasswordForm.js";
 import useUserStore, { useError } from "../../stores/userStore";
@@ -19,12 +19,13 @@ const LoginForm = ({ on, off }) => {
   const [forgot, setForgot] = useState(false);
   const error = useError();
   const { login, clearError } = useUserStore();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const initialValues = {
     username: "",
     password: "",
   };
-  const navigate = useNavigate();
 
   const validationSchema = Yup.object().shape({
     username: Yup.string("Must be a string")
@@ -40,7 +41,9 @@ const LoginForm = ({ on, off }) => {
     try {
       const userData = await login(values);
       if (userData) {
-        navigate("/home");
+        // Redirect to the intended page or home
+        const from = location.state?.from?.pathname || "/home";
+        navigate(from, { replace: true });
       } else {
         setFailed(true);
       }

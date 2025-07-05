@@ -12,14 +12,23 @@ import {
   AddButton,
   RowDiv,
 } from "../../styles/styles";
-import { programsApi } from "../../api";
+import { exerciseAssignmentsApi } from "../../api";
 const ProgramsModal = ({ open, onClose, refresh, trpe_rk }) => {
   const [loading, setLoading] = useState(false);
   const [programData, setProgramData] = useState(new Map());
   const [addProgram, setAddProgram] = useState(false);
   const getProgramData = async () => {
+    // Don't make API call if trpe_rk is not available
+    if (!trpe_rk) {
+      console.warn("ProgramsModal: trpe_rk is not available");
+      return;
+    }
+
     try {
-      const response = await programsApi.getForTRPE(trpe_rk);
+      const response =
+        await exerciseAssignmentsApi.getProgramsAndExercisesForTRPE({
+          trpe_rk: trpe_rk,
+        });
 
       let newDataMap = new Map();
       response.forEach((element) => {
@@ -61,8 +70,11 @@ const ProgramsModal = ({ open, onClose, refresh, trpe_rk }) => {
     }
   };
   useEffect(() => {
-    getProgramData();
-  }, [trpe_rk]);
+    // Only fetch data if modal is open and we have valid trpe_rk
+    if (open && trpe_rk) {
+      getProgramData();
+    }
+  }, [trpe_rk, open]);
   if (!open || loading) return null;
   return (
     <Overlay>

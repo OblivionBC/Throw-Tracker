@@ -4,6 +4,7 @@ const express = require("express");
 const router = express.Router();
 
 // Mount each feature router
+router.use("/auth", require("./auth"));
 router.use("/persons", require("./persons"));
 router.use("/practices", require("./practices"));
 router.use("/training-periods", require("./trainingPeriods"));

@@ -10,16 +10,9 @@ const {
   getAllPersons,
   deletePerson,
   updatePassword,
-  login,
   athletesForCoach,
   getMe,
-  logout,
 } = require("../controllers/persons");
-
-// Auth routes (no authentication required)
-router
-  .post("/login", login) // POST /persons/login
-  .post("/logout", logout); // POST /persons/logout
 
 // Protected routes (authentication required)
 router

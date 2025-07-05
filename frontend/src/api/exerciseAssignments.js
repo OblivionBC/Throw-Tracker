@@ -4,10 +4,19 @@ import { apiCall } from "./config";
 export const exerciseAssignmentsApi = {
   // Get programs and exercises for training period
   getProgramsAndExercisesForTRPE: async (trpeData) => {
-    return await apiCall("/exercise-assignments/training-period", {
-      method: "POST",
-      body: JSON.stringify(trpeData),
-    });
+    console.log(trpeData);
+
+    // Validate that trpeData and trpe_rk are available
+    if (!trpeData || !trpeData.trpe_rk) {
+      throw new Error("Training period ID (trpe_rk) is required");
+    }
+
+    return await apiCall(
+      `/exercise-assignments/training-period/${trpeData.trpe_rk}`,
+      {
+        method: "GET",
+      }
+    );
   },
 
   // Create new exercise assignment
