@@ -1,7 +1,12 @@
-backend/docs/*
-frontend/docs/*
-*.sql
 .env
 *.env
 */.env
 **/.env
+
+**/docs/
+
+**/node_modules/
+
+*.sql
+
+backend/sql/
