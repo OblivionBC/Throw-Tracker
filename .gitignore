@@ -1,2 +1,4 @@
-backend\server\.env
-*\.env
+.env
+*.env
+*/.env
+**/.env
