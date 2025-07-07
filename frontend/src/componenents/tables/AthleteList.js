@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Table,
   TableWrap,
@@ -9,6 +9,10 @@ import {
 import AthleteDetails from "../modals/AthleteDetails";
 import { personsApi } from "../../api";
 import useUserStore, { useUser } from "../../stores/userStore";
+import {
+  getPaginationNumber,
+  getContainerHeight,
+} from "../../utils/tableUtils";
 
 const TableStyles = {
   pagination: {
@@ -27,12 +31,12 @@ const TableStyles = {
 };
 
 const AthleteList = ({ paginationNum }) => {
+  const containerRef = useRef(null);
+  const [containerHeight, setContainerHeight] = useState(600);
   const [excrData, setExcrData] = useState([]);
   const [programOpen, setProgramOpen] = useState(false);
   const [selectedPrsn, setSelectedPrsn] = useState();
   const user = useUser();
-  let pagination = 3;
-  paginationNum === undefined ? (pagination = 3) : (pagination = paginationNum);
 
   const getAthleteData = async () => {
     try {
@@ -42,6 +46,19 @@ const AthleteList = ({ paginationNum }) => {
       console.error(error.message);
     }
   };
+
+  // Update container height on mount and resize
+  useEffect(() => {
+    const updateHeight = () => {
+      if (containerRef.current) {
+        setContainerHeight(containerRef.current.clientHeight);
+      }
+    };
+
+    updateHeight();
+    window.addEventListener("resize", updateHeight);
+    return () => window.removeEventListener("resize", updateHeight);
+  }, []);
 
   useEffect(() => {
     try {
@@ -80,8 +97,12 @@ const AthleteList = ({ paginationNum }) => {
       ),
     },
   ];
+
+  // Calculate optimal pagination
+  const optimalPagination = getPaginationNumber(paginationNum, containerHeight);
+
   return (
-    <CompWrap>
+    <CompWrap ref={containerRef}>
       <AthleteDetails
         athlete={selectedPrsn}
         open={programOpen}
@@ -94,7 +115,7 @@ const AthleteList = ({ paginationNum }) => {
           data={excrData}
           fixedHeader
           pagination
-          paginationPerPage={pagination}
+          paginationPerPage={optimalPagination}
           paginationComponentOptions={{
             rowsPerPageText: "Rows per page:",
             rangeSeparatorText: "of",

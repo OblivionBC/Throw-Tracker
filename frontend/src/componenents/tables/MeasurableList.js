@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Table,
   TableWrap,
@@ -13,6 +13,10 @@ import ConfirmMeasurableDeleteModal from "../modals/ConfirmMeasurableDeleteModal
 import MeasurableEditModal from "../modals/MeasurableEditModal";
 import { measurablesApi } from "../../api";
 import { useDataChange } from "../contexts/DataChangeContext";
+import {
+  getPaginationNumber,
+  getContainerHeight,
+} from "../../utils/tableUtils";
 // This is your PracticeItem component
 //Test that this works and add it to the practices component
 
@@ -33,7 +37,8 @@ const TableStyles = {
 };
 
 const Measurables = ({ paginationNum }) => {
-  if (!paginationNum) paginationNum = 8;
+  const containerRef = useRef(null);
+  const [containerHeight, setContainerHeight] = useState(600);
   const [measurableData, setMeasurableData] = useState([]);
   const [addMeasurableOpen, setaddMeasurableOpen] = useState(false);
   const [confirmMeasDelete, setConfirmMeasDelete] = useState(false);
@@ -74,6 +79,19 @@ const Measurables = ({ paginationNum }) => {
       setCacheLoading(cacheKey, false);
     }
   };
+
+  // Update container height on mount and resize
+  useEffect(() => {
+    const updateHeight = () => {
+      if (containerRef.current) {
+        setContainerHeight(containerRef.current.clientHeight);
+      }
+    };
+
+    updateHeight();
+    window.addEventListener("resize", updateHeight);
+    return () => window.removeEventListener("resize", updateHeight);
+  }, []);
 
   useEffect(() => {
     getMeasurableData();
@@ -135,8 +153,11 @@ const Measurables = ({ paginationNum }) => {
       ),
     },
   ];
+  // Calculate optimal pagination
+  const optimalPagination = getPaginationNumber(paginationNum, containerHeight);
+
   return (
-    <CompWrap>
+    <CompWrap ref={containerRef}>
       {confirmMeasDelete && (
         <ConfirmMeasurableDeleteModal
           open={confirmMeasDelete}
@@ -172,7 +193,7 @@ const Measurables = ({ paginationNum }) => {
           data={measurableData}
           fixedHeader
           pagination
-          paginationPerPage={paginationNum}
+          paginationPerPage={optimalPagination}
           paginationComponentOptions={{
             rowsPerPageText: "Rows per page:",
             rangeSeparatorText: "of",

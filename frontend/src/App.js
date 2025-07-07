@@ -17,6 +17,17 @@ import Coach from "./pages/Coach";
 import Sidebar from "./componenents/overlay/SideBar";
 import ProtectedRoute from "./componenents/ProtectedRoute";
 import { DataChangeProvider } from "./componenents/contexts/DataChangeContext";
+// New pages for sidebar navigation
+import MeasurablesPage from "./pages/MeasurablesPage";
+import TrainingPeriodsPage from "./pages/TrainingPeriodsPage";
+import PracticeListPage from "./pages/PracticeListPage";
+import ChartPage from "./pages/ChartPage";
+import MeetsChartPage from "./pages/MeetsChartPage";
+import MeetsListPage from "./pages/MeetsListPage";
+import MeetsCalendarPage from "./pages/MeetsCalendarPage";
+import AthletesPage from "./pages/AthletesPage";
+import ProgramsPage from "./pages/ProgramsPage";
+import Profile from "./pages/Profile";
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -48,14 +59,7 @@ const AppContent = () => {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/practices"
-            element={
-              <ProtectedRoute>
-                <Practices />
-              </ProtectedRoute>
-            }
-          />
+
           <Route
             path="/meets"
             element={
@@ -65,10 +69,101 @@ const AppContent = () => {
             }
           />
           <Route
+            path="/meets-list"
+            element={
+              <ProtectedRoute>
+                <MeetsListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/coach"
             element={
               <ProtectedRoute>
                 <Coach />
+              </ProtectedRoute>
+            }
+          />
+          {/* New sidebar navigation routes */}
+          <Route
+            path="/measurables"
+            element={
+              <ProtectedRoute>
+                <MeasurablesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training-periods"
+            element={
+              <ProtectedRoute>
+                <TrainingPeriodsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/practices"
+            element={
+              <ProtectedRoute>
+                <Practices />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/practice-list"
+            element={
+              <ProtectedRoute>
+                <PracticeListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/practice-charts"
+            element={
+              <ProtectedRoute>
+                <ChartPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/meet-charts"
+            element={
+              <ProtectedRoute>
+                <MeetsChartPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/meet-calendar"
+            element={
+              <ProtectedRoute>
+                <MeetsCalendarPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* Coach dropdown routes */}
+          <Route
+            path="/athletes"
+            element={
+              <ProtectedRoute>
+                <AthletesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/programs"
+            element={
+              <ProtectedRoute>
+                <ProgramsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             }
           />

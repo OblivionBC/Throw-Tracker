@@ -5,8 +5,6 @@ import styled from "styled-components";
 import logo from "../../images/LogoIcon.png";
 import text from "../../images/LogoText.png";
 import "typeface-nunito";
-import AccountDetailsModal from "../modals/AccountDetailModal";
-import AthleteSelect from "../formHelpers/AthleteSelect";
 import useUserStore, { useUser, useIsCoach } from "../../stores/userStore";
 
 const Navbar = () => {
@@ -19,28 +17,14 @@ const Navbar = () => {
   }, [fetchUser]);
 
   const [profile, setProfile] = useState(false);
-  // Example of updating user data
   return (
     <NavWrap>
-      <NavLeft>
-        <Profile onClick={() => setProfile(!profile)}>
-          <UserIcon />
-          <AccountDetailsModal on={profile} />
-        </Profile>
-        {isCoach ? (
-          <AthleteSelect org_name={user?.org_name} updateUser={true} />
-        ) : null}
-      </NavLeft>
+      <NavLeft></NavLeft>
       <NavCenter>
-        <NavPath to="/home">Home</NavPath>
-        <NavPath to="/practices">Practices</NavPath>
-        <NavPath to="/meets">Meets</NavPath>
-        {isCoach ? <NavPath to="/coach">Coach</NavPath> : null}
-      </NavCenter>
-      <NavRight>
         <Logo src={logo} />
         <Text src={text} />
-      </NavRight>
+      </NavCenter>
+      <NavRight></NavRight>
     </NavWrap>
   );
 };
@@ -67,7 +51,7 @@ const NavLeft = styled.div`
 
 const NavCenter = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   flex: 1;
 

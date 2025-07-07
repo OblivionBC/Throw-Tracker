@@ -77,7 +77,6 @@ function MeasurementChart({ activeTRPE }) {
   async function GetTrainingPeriodMeasurements() {
     //First case is that the user has selected the training period, meaning we will set new data
     if (activeTRPE.length > 0) {
-      console.log("TRPES are selected");
       const params = {
         keys: JSON.stringify(activeTRPE),
       };
@@ -110,20 +109,15 @@ function MeasurementChart({ activeTRPE }) {
             });
           }
         });
-        console.log(newDataMap);
-        console.log("Starting Phase 2 of having a training period");
         let datasetArray = [];
         let newLabels = [];
         newDataMap.forEach((row, key) => {
           newLabels = row?.map((item) => {
             return item.prac_dt.split("T")[0];
           });
-          console.log(newLabels);
           const values = row?.map((item) => {
             return { x: item.prac_dt.split("T")[0], y: item.msrm_value };
           });
-          console.log(values);
-          console.log(newLabels);
           datasetArray.push({
             //Label is the block at the top that you can click to filter, not using this yet
             label: `${key}`,
@@ -135,9 +129,6 @@ function MeasurementChart({ activeTRPE }) {
           });
         });
 
-        console.log("Sorting Complete");
-        console.log(newLabels);
-        console.log(datasetArray);
         setChartData({
           labels: newLabels,
           datasets: datasetArray,
@@ -157,7 +148,6 @@ function MeasurementChart({ activeTRPE }) {
               intersect: false,
               callbacks: {
                 label: function (tooltipItem) {
-                  console.log(tooltipItem);
                   return `${tooltipItem?.dataset?.label}, ${tooltipItem?.formattedValue}`;
                 },
               },
@@ -202,7 +192,6 @@ function MeasurementChart({ activeTRPE }) {
         console.error("Error fetching training period measurements:", error);
       }
     } else {
-      console.log("NO ACTIVE TRPES");
       setChartData({
         labels: [],
         datasets: [

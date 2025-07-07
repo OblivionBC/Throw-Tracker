@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Table,
   TableWrap,
@@ -14,6 +14,10 @@ import ConfirmPracDeleteModal from "../modals/ConfirmPracDeleteModal";
 import AddPracticeModal from "../modals/AddPracticeModal";
 import { practicesApi } from "../../api";
 import { useDataChange } from "../contexts/DataChangeContext";
+import {
+  getPaginationNumber,
+  getContainerHeight,
+} from "../../utils/tableUtils";
 
 const TableStyles = {
   pagination: {
@@ -32,13 +36,20 @@ const TableStyles = {
   headRow: { style: { minHeight: "25px", maxHeight: "40px" } }, // Set your desired height here
 };
 
-const Practices = ({ trpe_rk, bAdd, bDetail, bDelete }) => {
+const Practices = ({
+  trpe_rk,
+  bAdd,
+  bDetail,
+  bDelete,
+  paginationNum: propPaginationNum,
+}) => {
+  const containerRef = useRef(null);
+  const [containerHeight, setContainerHeight] = useState(600);
   const [practiceData, setPracticeData] = useState([]);
   const [addPracticeOpen, setAddPracticeOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [confirmPracDelete, setConfirmPracDelete] = useState(false);
   const [selectedPrac, setSelectedPrac] = useState({});
-  const [paginationNum, setPaginationNum] = useState(4);
 
   const {
     isCacheValid,
@@ -49,26 +60,17 @@ const Practices = ({ trpe_rk, bAdd, bDetail, bDelete }) => {
     refreshFlags,
   } = useDataChange();
 
-  const updateVisibleRows = () => {
-    const height = window.innerHeight;
-
-    let newPaginationNum;
-    if (height < 400) {
-      newPaginationNum = 1;
-    } else if (height < 600) {
-      newPaginationNum = 2;
-    } else if (height < 800) {
-      newPaginationNum = 4;
-    } else {
-      newPaginationNum = 7;
-    }
-    setPaginationNum(newPaginationNum);
-  };
-
+  // Update container height on mount and resize
   useEffect(() => {
-    window.addEventListener("resize", updateVisibleRows);
-    updateVisibleRows();
-    return () => window.removeEventListener("resize", updateVisibleRows);
+    const updateHeight = () => {
+      if (containerRef.current) {
+        setContainerHeight(containerRef.current.clientHeight);
+      }
+    };
+
+    updateHeight();
+    window.addEventListener("resize", updateHeight);
+    return () => window.removeEventListener("resize", updateHeight);
   }, []);
 
   const getPracticeData = async (forceRefresh = false) => {
@@ -117,7 +119,11 @@ const Practices = ({ trpe_rk, bAdd, bDetail, bDelete }) => {
     invalidateCache("practices");
   };
 
-  if (paginationNum <= 0) paginationNum = 8;
+  // Calculate optimal pagination
+  const optimalPagination = getPaginationNumber(
+    propPaginationNum,
+    containerHeight
+  );
   const columns = [
     {
       name: "ID",
@@ -170,7 +176,7 @@ const Practices = ({ trpe_rk, bAdd, bDetail, bDelete }) => {
       ),
     });
   return (
-    <CompWrap>
+    <CompWrap ref={containerRef}>
       {detailModalOpen && (
         <PracticeDetailsModal
           open={detailModalOpen}
@@ -207,7 +213,7 @@ const Practices = ({ trpe_rk, bAdd, bDetail, bDelete }) => {
           columns={columns}
           data={practiceData}
           pagination
-          paginationPerPage={paginationNum}
+          paginationPerPage={optimalPagination}
           paginationRowsPerPageOptions={[2, 4, 7, 10]}
           paginationComponentOptions={{
             rowsPerPageText: "Rows",
@@ -215,7 +221,7 @@ const Practices = ({ trpe_rk, bAdd, bDetail, bDelete }) => {
             selectAllRowsItem: false,
           }}
           customStyles={TableStyles}
-          key={paginationNum}
+          key={optimalPagination}
         />
       </TableWrap>
     </CompWrap>

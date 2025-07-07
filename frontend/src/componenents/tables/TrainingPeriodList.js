@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import dayjs from "dayjs";
 import {
   Table,
@@ -15,6 +15,10 @@ import TrainingPeriodEditModal from "../modals/TrainingPeriodEditModal";
 import ProgramsModal from "../modals/ProgramsModal";
 import { trainingPeriodsApi } from "../../api";
 import { useDataChange } from "../contexts/DataChangeContext";
+import {
+  getPaginationNumber,
+  getContainerHeight,
+} from "../../utils/tableUtils";
 
 const TableStyles = {
   pagination: {
@@ -43,6 +47,8 @@ const TrainingPeriodList = ({
   selectable,
   setSharedState,
 }) => {
+  const containerRef = useRef(null);
+  const [containerHeight, setContainerHeight] = useState(600);
   const [trpeData, setTrpeData] = useState([]);
   const [addTRPEOpen, setAddTRPEOpen] = useState(false);
   const [deleteTRPEOpen, setDeleteTRPEOpen] = useState(false);
@@ -59,8 +65,21 @@ const TrainingPeriodList = ({
     refreshFlags,
   } = useDataChange();
 
-  let pagination = 3;
-  paginationNum === undefined ? (pagination = 3) : (pagination = paginationNum);
+  // Update container height on mount and resize
+  useEffect(() => {
+    const updateHeight = () => {
+      if (containerRef.current) {
+        setContainerHeight(containerRef.current.clientHeight);
+      }
+    };
+
+    updateHeight();
+    window.addEventListener("resize", updateHeight);
+    return () => window.removeEventListener("resize", updateHeight);
+  }, []);
+
+  // Calculate optimal pagination
+  const optimalPagination = getPaginationNumber(paginationNum, containerHeight);
   selectable === undefined ? (selectable = false) : (selectable = true);
 
   const getTRPEData = async (forceRefresh = false) => {
@@ -174,7 +193,7 @@ const TrainingPeriodList = ({
     });
   //Add the Detail/Edit modal now
   return (
-    <CompWrap>
+    <CompWrap ref={containerRef}>
       {deleteTRPEOpen && (
         <ConfirmTRPEDelete
           open={deleteTRPEOpen}
@@ -217,7 +236,7 @@ const TrainingPeriodList = ({
           columns={columns}
           data={trpeData}
           pagination
-          paginationPerPage={pagination}
+          paginationPerPage={optimalPagination}
           paginationComponentOptions={{
             rowsPerPageText: "Rows per page:",
             rangeSeparatorText: "of",

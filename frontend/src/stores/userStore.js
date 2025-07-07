@@ -22,7 +22,10 @@ const useUserStore = create(
       tokenRefreshStarted: false,
 
       // Actions
-      setUser: (user) => set({ user }),
+      setUser: (user) => {
+        console.log("User data set:", user);
+        set({ user });
+      },
 
       setSelectedAthlete: (athleteId) => set({ selectedAthlete: athleteId }),
 
@@ -216,6 +219,7 @@ const useUserStore = create(
         set({ isLoading: true, error: null });
         try {
           const userData = await personsApi.fetchUser();
+          console.log("Fetched user data:", userData);
           if (userData) {
             set({ user: userData, isLoading: false });
             // Note: fetchUser doesn't provide expiration info, so we don't set token cache here
@@ -262,6 +266,9 @@ const useUserStore = create(
           }
 
           const userData = await get().fetchUser();
+
+          console.log("Login successful - User data:", userData);
+          console.log("Login response:", loginResponse);
 
           set({ isLoading: false });
           return userData;

@@ -121,7 +121,7 @@ exports.login = async (req, res) => {
     }
 
     const user = result.rows[0];
-
+    console.log(user);
     // Generate access token using JWT_EXPIRES_IN
     const accessTokenExpiresIn = parseJwtExpiration(process.env.JWT_EXPIRES_IN);
     const accessToken = jwt.sign(

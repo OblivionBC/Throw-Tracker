@@ -238,6 +238,14 @@ export const Table = styled(DataTable)`
   .rdt_TableHeadRow {
     background-color: #a9a5ba;
     font-weight: bold;
+    height: 50px !important;
+    min-height: 50px !important;
+    max-height: 50px !important;
+  }
+  .rdt_TableHead {
+    height: 50px !important;
+    min-height: 50px !important;
+    max-height: 50px !important;
   }
   .rdt_TableRow {
     &:nth-of-type(odd) {

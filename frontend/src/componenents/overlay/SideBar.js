@@ -4,18 +4,15 @@ import styled from "styled-components";
 import logo from "../../images/LogoIcon.png";
 import useUserStore, { useUser, useIsCoach } from "../../stores/userStore";
 import { authApi } from "../../api";
+import AthleteSelect from "../formHelpers/AthleteSelect";
 
 const Sidebar = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
   const [practicesOpen, setPracticesOpen] = useState(false);
   const [meetsOpen, setMeetsOpen] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [notification, setNotification] = useState({
-    message: "",
-    type: "",
-    show: false,
-  });
+  const [coachOpen, setCoachOpen] = useState(false);
+
   const [tokenStatus, setTokenStatus] = useState(null);
   const profileRef = useRef(null);
   const user = useUser();
@@ -28,7 +25,11 @@ const Sidebar = () => {
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
-        setIsModalOpen(false);
+        // Check if click is outside the modal
+        const modal = document.querySelector("[data-modal]");
+        if (modal && !modal.contains(event.target)) {
+          setIsModalOpen(false);
+        }
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -46,20 +47,11 @@ const Sidebar = () => {
     // This prevents duplicate interval setup and multiple API calls
   }, [user]);
 
-  // Auto-hide notification after 3 seconds
-  useEffect(() => {
-    if (notification.show) {
-      const timer = setTimeout(() => {
-        setNotification({ message: "", type: "", show: false });
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [notification.show]);
-
   // Profile modal logic
   const handleProfileClick = () => {
     if (profileRef.current) {
       const rect = profileRef.current.getBoundingClientRect();
+
       setModalPosition({
         top: rect.bottom + window.scrollY,
         left: rect.left + window.scrollX,
@@ -69,54 +61,14 @@ const Sidebar = () => {
   };
 
   const handleSignOut = () => {
-    navigate("/login");
     logoutUser();
-  };
-
-  // Manual token refresh
-  const handleManualRefresh = async () => {
-    setIsRefreshing(true);
-    try {
-      const refreshResponse = await authApi.refreshToken();
-
-      // Update token cache with new expiration
-      if (
-        refreshResponse &&
-        refreshResponse.accessTokenExpiresIn &&
-        refreshResponse.refreshTokenExpiresIn
-      ) {
-        useUserStore
-          .getState()
-          .setTokenExpiration(
-            refreshResponse.accessTokenExpiresIn,
-            refreshResponse.refreshTokenExpiresIn
-          );
-      }
-
-      // Update token status after refresh
-      await checkTokenStatus();
-      // Show success feedback
-      setNotification({
-        message: "Token refreshed successfully!",
-        type: "success",
-        show: true,
-      });
-    } catch (error) {
-      console.error("Manual token refresh failed:", error);
-      setNotification({
-        message: "Token refresh failed. Please log in again.",
-        type: "error",
-        show: true,
-      });
-      handleSignOut();
-    } finally {
-      setIsRefreshing(false);
-    }
+    navigate("/login");
   };
 
   // Dropdown toggles
   const togglePractices = () => setPracticesOpen((open) => !open);
   const toggleMeets = () => setMeetsOpen((open) => !open);
+  const toggleCoach = () => setCoachOpen((open) => !open);
 
   // Function to check token status (only for manual refresh)
   const checkTokenStatus = async () => {
@@ -156,14 +108,7 @@ const Sidebar = () => {
   };
 
   return (
-    <SidebarContainer>
-      {/* Notification */}
-      {notification.show && (
-        <NotificationContainer type={notification.type}>
-          {notification.message}
-        </NotificationContainer>
-      )}
-
+    <SidebarContainer data-sidebar>
       {/* User Profile Section */}
       <ProfileTrigger ref={profileRef} onClick={handleProfileClick}>
         <ProfilePicture
@@ -190,16 +135,6 @@ const Sidebar = () => {
         </TokenStatusContainer>
       )}
 
-      {/* Refresh Token Button */}
-      <RefreshButtonContainer>
-        <SidebarRefreshButton
-          onClick={handleManualRefresh}
-          disabled={isRefreshing}
-        >
-          {isRefreshing ? "🔄 Refreshing..." : "🔄 Refresh Token"}
-        </SidebarRefreshButton>
-      </RefreshButtonContainer>
-
       <NavSection>
         <NavItem>
           <StyledNavLink to="/home">
@@ -208,93 +143,160 @@ const Sidebar = () => {
           </StyledNavLink>
         </NavItem>
         <NavItem>
-          <DropdownButton onClick={togglePractices} $open={practicesOpen}>
-            <ArrowIcon $open={practicesOpen}>▼</ArrowIcon>
-            <NavIcon>🏃</NavIcon>
-            Practices
-          </DropdownButton>
-          {practicesOpen && (
-            <DropdownMenu>
-              <DropdownItem>
-                <StyledNavLink to="/measurables">
-                  <SubNavIcon>📊</SubNavIcon>
-                  Measurables
-                </StyledNavLink>
-              </DropdownItem>
-              <DropdownItem>
-                <StyledNavLink to="/training-periods">
-                  <SubNavIcon>📅</SubNavIcon>
-                  Training Periods
-                </StyledNavLink>
-              </DropdownItem>
-              <DropdownItem>
-                <StyledNavLink to="/practices">
-                  <SubNavIcon>📋</SubNavIcon>
-                  Practice List
-                </StyledNavLink>
-              </DropdownItem>
-              <DropdownItem>
-                <StyledNavLink to="/practice-charts">
-                  <SubNavIcon>📈</SubNavIcon>
-                  Chart
-                </StyledNavLink>
-              </DropdownItem>
-            </DropdownMenu>
-          )}
+          <DropdownContainer>
+            <DropdownButton onClick={togglePractices} $open={practicesOpen}>
+              <ArrowIcon $open={practicesOpen}>▼</ArrowIcon>
+              <NavIcon>🏃</NavIcon>
+              Practices
+            </DropdownButton>
+            {practicesOpen && (
+              <DropdownMenu>
+                <DropdownItem>
+                  <StyledNavLink to="/practices">
+                    <SubNavIcon>📊</SubNavIcon>
+                    Dashboard
+                  </StyledNavLink>
+                </DropdownItem>
+                <DropdownItem>
+                  <StyledNavLink to="/practice-charts">
+                    <SubNavIcon>📈</SubNavIcon>
+                    Chart
+                  </StyledNavLink>
+                </DropdownItem>
+                <DropdownItem>
+                  <StyledNavLink to="/measurables">
+                    <SubNavIcon>📊</SubNavIcon>
+                    Measurables
+                  </StyledNavLink>
+                </DropdownItem>
+                <DropdownItem>
+                  <StyledNavLink to="/training-periods">
+                    <SubNavIcon>📅</SubNavIcon>
+                    Training Periods
+                  </StyledNavLink>
+                </DropdownItem>
+                <DropdownItem>
+                  <StyledNavLink to="/practice-list">
+                    <SubNavIcon>📋</SubNavIcon>
+                    Practice List
+                  </StyledNavLink>
+                </DropdownItem>
+              </DropdownMenu>
+            )}
+          </DropdownContainer>
         </NavItem>
         <NavItem>
-          <DropdownButton onClick={toggleMeets} $open={meetsOpen}>
-            <ArrowIcon $open={meetsOpen}>▼</ArrowIcon>
-            <NavIcon>🏆</NavIcon>
-            Meets
-          </DropdownButton>
-          {meetsOpen && (
-            <DropdownMenu>
-              <DropdownItem>
-                <StyledNavLink to="/meet-charts">
-                  <SubNavIcon>📈</SubNavIcon>
-                  Chart
-                </StyledNavLink>
-              </DropdownItem>
-              <DropdownItem>
-                <StyledNavLink to="/meets">
-                  <SubNavIcon>🏅</SubNavIcon>
-                  All Meets
-                </StyledNavLink>
-              </DropdownItem>
-              <DropdownItem>
-                <StyledNavLink to="/meet-calendar">
-                  <SubNavIcon>📅</SubNavIcon>
-                  Calendar
-                </StyledNavLink>
-              </DropdownItem>
-            </DropdownMenu>
-          )}
+          <DropdownContainer>
+            <DropdownButton onClick={toggleMeets} $open={meetsOpen}>
+              <ArrowIcon $open={meetsOpen}>▼</ArrowIcon>
+              <NavIcon>🏆</NavIcon>
+              Meets
+            </DropdownButton>
+            {meetsOpen && (
+              <DropdownMenu>
+                <DropdownItem>
+                  <StyledNavLink to="/meets">
+                    <SubNavIcon>📊</SubNavIcon>
+                    Dashboard
+                  </StyledNavLink>
+                </DropdownItem>
+                <DropdownItem>
+                  <StyledNavLink to="/meet-charts">
+                    <SubNavIcon>📈</SubNavIcon>
+                    Chart
+                  </StyledNavLink>
+                </DropdownItem>
+                <DropdownItem>
+                  <StyledNavLink to="/meets-list">
+                    <SubNavIcon>🏅</SubNavIcon>
+                    All Meets
+                  </StyledNavLink>
+                </DropdownItem>
+                <DropdownItem>
+                  <StyledNavLink to="/meet-calendar">
+                    <SubNavIcon>📅</SubNavIcon>
+                    Calendar
+                  </StyledNavLink>
+                </DropdownItem>
+              </DropdownMenu>
+            )}
+          </DropdownContainer>
         </NavItem>
         {isCoach && (
           <NavItem>
-            <StyledNavLink to="/coach">
-              <NavIcon>👨‍💼</NavIcon>
-              Coach
-            </StyledNavLink>
+            <DropdownContainer>
+              <DropdownButton onClick={toggleCoach} $open={coachOpen}>
+                <ArrowIcon $open={coachOpen}>▼</ArrowIcon>
+                <NavIcon>👨‍💼</NavIcon>
+                Coach
+              </DropdownButton>
+              {coachOpen && (
+                <DropdownMenu>
+                  <DropdownItem>
+                    <StyledNavLink to="/coach">
+                      <SubNavIcon>👨‍💼</SubNavIcon>
+                      Dashboard
+                    </StyledNavLink>
+                  </DropdownItem>
+                  <DropdownItem>
+                    <StyledNavLink to="/athletes">
+                      <SubNavIcon>👥</SubNavIcon>
+                      Athletes
+                    </StyledNavLink>
+                  </DropdownItem>
+                  <DropdownItem>
+                    <StyledNavLink to="/programs">
+                      <SubNavIcon>📋</SubNavIcon>
+                      Programs
+                    </StyledNavLink>
+                  </DropdownItem>
+                  <DropdownItem>
+                    <StyledNavLink to="/measurables">
+                      <SubNavIcon>📊</SubNavIcon>
+                      Measurables
+                    </StyledNavLink>
+                  </DropdownItem>
+                </DropdownMenu>
+              )}
+            </DropdownContainer>
           </NavItem>
         )}
       </NavSection>
-
+      {isCoach && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: 20,
+            width: "100%",
+            padding: "0 15px",
+            zIndex: 5,
+          }}
+        >
+          <div
+            style={{ fontSize: "10px", color: "#1976d2", marginBottom: "5px" }}
+          >
+            Coach Tools:
+          </div>
+          <AthleteSelect org_name={user?.org_name} updateUser={true} />
+        </div>
+      )}
       {isModalOpen && (
-        <Modal top={modalPosition.top} left={modalPosition.left}>
-          <List>
-            <UserName>
-              {user ? `${user.first_nm} ${user.last_nm}` : "User"}
-            </UserName>
-            <UserDetails>{user?.role}</UserDetails>
-            <UserDetails>{user?.org_name}</UserDetails>
-          </List>
-          <RefreshButton onClick={handleManualRefresh} disabled={isRefreshing}>
-            {isRefreshing ? "Refreshing..." : "🔄 Refresh Token"}
-          </RefreshButton>
-          <SignOut onClick={handleSignOut}>Sign Out</SignOut>
-        </Modal>
+        <ModalWrapper>
+          <Modal top={modalPosition.top} left={modalPosition.left} data-modal>
+            <List>
+              <UserName>
+                {user ? `${user.first_nm} ${user.last_nm}` : "User"}
+              </UserName>
+              <UserDetails>{user?.role}</UserDetails>
+              <UserDetails>{user?.org_name}</UserDetails>
+            </List>
+
+            <ProfileButton onClick={() => navigate("/profile")}>
+              Profile
+            </ProfileButton>
+            <SignOut onClick={handleSignOut}>Sign Out</SignOut>
+          </Modal>
+        </ModalWrapper>
       )}
     </SidebarContainer>
   );
@@ -317,7 +319,7 @@ const SidebarContainer = styled.div`
   position: fixed; /* Keep sidebar fixed */
   left: 0;
   top: 0;
-  z-index: 1;
+  z-index: 2;
 `;
 
 const NavSection = styled.div`
@@ -335,7 +337,7 @@ const StyledNavLink = styled(NavLink)`
   text-decoration: none;
   font-size: 16px;
   color: #1976d2;
-  padding: 12px 15px;
+  padding: 10px 15px;
   display: flex;
   align-items: center;
   border-radius: 8px;
@@ -366,7 +368,7 @@ const DropdownButton = styled.button`
   border-radius: 8px;
   font-size: 16px;
   color: #1976d2;
-  padding: 12px 15px;
+  padding: 10px 15px;
   text-align: left;
   cursor: pointer;
   margin-bottom: 2px;
@@ -378,15 +380,26 @@ const DropdownButton = styled.button`
 
   &:hover {
     background: rgba(25, 118, 210, 0.1);
-    transform: translateX(3px);
   }
 `;
 
+const DropdownContainer = styled.div`
+  width: 100%;
+`;
+
 const ArrowIcon = styled.span`
-  font-size: 12px;
+  font-size: 16px;
   margin-right: 8px;
+  margin-left: 8px;
   transition: transform 0.3s ease;
   transform: ${(props) => (props.$open ? "rotate(180deg)" : "rotate(0deg)")};
+  cursor: pointer;
+  padding: 2px;
+
+  &:hover {
+    background: rgba(25, 118, 210, 0.1);
+    border-radius: 4px;
+  }
 `;
 
 const NavIcon = styled.span`
@@ -488,6 +501,16 @@ const UserDetails = styled.div`
   margin-bottom: 2px;
 `;
 
+const ModalWrapper = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  pointer-events: none;
+`;
+
 const Modal = styled.div`
   background: linear-gradient(135deg, #fafbfc 0%, #f5f7fa 100%);
   border: 1px solid rgba(25, 118, 210, 0.2);
@@ -501,6 +524,7 @@ const Modal = styled.div`
   border-radius: 12px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
   animation: fadeIn 0.3s ease;
+  pointer-events: auto;
 
   @keyframes fadeIn {
     from {
@@ -522,7 +546,7 @@ const List = styled.li`
   margin: 0;
 `;
 
-const RefreshButton = styled.button`
+const ProfileButton = styled.button`
   background: linear-gradient(45deg, #4caf50 0%, #45a049 100%);
   border: none;
   border-radius: 8px;
@@ -534,22 +558,15 @@ const RefreshButton = styled.button`
   transition: all 0.3s ease;
   width: 100%;
   margin-top: 10px;
-  margin-bottom: 10px;
 
-  &:hover:not(:disabled) {
+  &:hover {
     box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
     transform: translateY(-2px);
   }
 
-  &:active:not(:disabled) {
+  &:active {
     box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
     transform: translateY(0);
-  }
-
-  &:disabled {
-    background: linear-gradient(45deg, #cccccc 0%, #bbbbbb 100%);
-    cursor: not-allowed;
-    opacity: 0.7;
   }
 `;
 
@@ -565,6 +582,7 @@ const SignOut = styled.button`
   transition: all 0.3s ease;
   width: 100%;
   margin-top: 10px;
+  z-index: 1000;
 
   &:hover {
     box-shadow: 0 6px 16px rgba(255, 71, 87, 0.4);
@@ -575,51 +593,6 @@ const SignOut = styled.button`
     box-shadow: 0 2px 8px rgba(255, 71, 87, 0.3);
     transform: translateY(0);
   }
-`;
-
-const RefreshButtonContainer = styled.div`
-  margin-top: 10px;
-  margin-bottom: 10px;
-`;
-
-const SidebarRefreshButton = styled.button`
-  background: linear-gradient(45deg, #4caf50 0%, #45a049 100%);
-  border: none;
-  border-radius: 8px;
-  color: white;
-  padding: 8px 16px;
-  font-size: 14px;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-  transition: all 0.3s ease;
-  width: 100%;
-
-  &:hover:not(:disabled) {
-    box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
-    transform: translateY(-2px);
-  }
-
-  &:active:not(:disabled) {
-    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
-    transform: translateY(0);
-  }
-
-  &:disabled {
-    background: linear-gradient(45deg, #cccccc 0%, #bbbbbb 100%);
-    cursor: not-allowed;
-    opacity: 0.7;
-  }
-`;
-
-const NotificationContainer = styled.div`
-  background-color: ${(props) =>
-    props.type === "success" ? "#dff2bf" : "#ffd2d2"};
-  border: 1px solid
-    ${(props) => (props.type === "success" ? "#4f8a10" : "#a94442")};
-  color: ${(props) => (props.type === "success" ? "#4f8a10" : "#a94442")};
-  padding: 10px;
-  border-radius: 4px;
-  margin-bottom: 10px;
 `;
 
 const TokenStatusContainer = styled.div`

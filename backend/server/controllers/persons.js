@@ -90,9 +90,10 @@ exports.deletePerson = async (req, res) => {
 
 exports.getMe = async (req, res) => {
   try {
-    const user = await pool.query("SELECT * FROM person WHERE prsn_rk = $1", [
-      req.user.id,
-    ]);
+    const user = await pool.query(
+      "SELECT p.prsn_rk, p.prsn_first_nm, p.prsn_last_nm, p.prsn_email, p.prsn_role, o.org_name FROM person p inner join organization o on o.org_rk = p.org_rk WHERE p.prsn_rk = $1;",
+      [req.user.id]
+    );
 
     if (user.rows.length === 0) {
       return res.status(404).json({ message: "User not found" });
@@ -100,6 +101,9 @@ exports.getMe = async (req, res) => {
 
     res.json({
       id: user.rows[0].prsn_rk,
+      first_nm: user.rows[0].prsn_first_nm,
+      last_nm: user.rows[0].prsn_last_nm,
+      org_name: user.rows[0].org_name,
       email: user.rows[0].prsn_email,
       role: user.rows[0].prsn_role,
     });
@@ -114,6 +118,7 @@ exports.getMe = async (req, res) => {
 exports.athletesForCoach = async (req, res) => {
   try {
     const coach_prsn_rk = req.user.id;
+    console.log(coach_prsn_rk);
     const result = await pool.query(
       "SELECT p.prsn_rk, p.prsn_first_nm, p.prsn_last_nm, p.prsn_email, p.prsn_role, o.org_name FROM person p inner join organization o on o.org_rk = p.org_rk WHERE p.coach_prsn_rk = $1;",
       [coach_prsn_rk]
