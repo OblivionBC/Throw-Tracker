@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Navbar from "./componenents/overlay/Navbar";
 import { AppRHS, AppLayout } from "./styles/styles";
 import {
@@ -17,6 +17,7 @@ import Coach from "./pages/Coach";
 import Sidebar from "./componenents/overlay/SideBar";
 import ProtectedRoute from "./componenents/ProtectedRoute";
 import { DataChangeProvider } from "./componenents/contexts/DataChangeContext";
+import CacheManager from "./componenents/CacheManager";
 // New pages for sidebar navigation
 import MeasurablesPage from "./pages/MeasurablesPage";
 import TrainingPeriodsPage from "./pages/TrainingPeriodsPage";
@@ -42,6 +43,7 @@ const AppContent = () => {
   const location = useLocation();
   const isLoginPage =
     location.pathname === "/login" || location.pathname === "/";
+  const [showCacheManager, setShowCacheManager] = useState(false);
 
   return (
     <>
@@ -170,6 +172,37 @@ const AppContent = () => {
           {/* Catch all route - redirect to login */}
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
+
+        {/* Cache Manager for debugging (only show in development) */}
+        {!isLoginPage && process.env.NODE_ENV === "development" && (
+          <div
+            style={{
+              position: "fixed",
+              bottom: 20,
+              right: 20,
+              zIndex: 1000,
+            }}
+          >
+            <button
+              onClick={() => setShowCacheManager(!showCacheManager)}
+              style={{
+                backgroundColor: "#007bff",
+                color: "white",
+                border: "none",
+                borderRadius: "50%",
+                width: 50,
+                height: 50,
+                fontSize: 20,
+                cursor: "pointer",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+              }}
+            >
+              🗄️
+            </button>
+          </div>
+        )}
+
+        <CacheManager show={showCacheManager} />
       </AppRHS>
     </>
   );

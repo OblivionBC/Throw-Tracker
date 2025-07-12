@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import PracticeList from "../componenents/tables/PracticeList";
 import TrainingPeriodList from "../componenents/tables/TrainingPeriodList";
-import CurrentExcersiseList from "../componenents/tables/CurrentExerciseList";
+import CurrentMeasurableList from "../componenents/tables/CurrentExerciseList";
 import Measurables from "../componenents/tables/MeasurableList";
 import "typeface-rubik";
 
 import ErrorBoundary from "../componenents/ErrorBoundary";
 import AthleteList from "../componenents/tables/AthleteList";
+import CoachPrograms from "../componenents/CoachPrograms";
 
 const Coach = () => {
   const [activeTRPE, setActiveTRPE] = useState([]);
@@ -19,7 +20,7 @@ const Coach = () => {
     <Page>
       <LeftColumn>
         <ErrorBoundary>
-          <CurrentExcersiseList paginationNum={5} />
+          <CoachPrograms />
         </ErrorBoundary>
 
         <ErrorBoundary>

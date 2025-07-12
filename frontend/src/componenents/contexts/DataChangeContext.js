@@ -17,6 +17,7 @@ export const DataChangeProvider = ({ children }) => {
     measurables: { data: null, timestamp: null, loading: false },
     trainingPeriods: { data: null, timestamp: null, loading: false },
     measurements: { data: null, timestamp: null, loading: false },
+    programs: { data: null, timestamp: null, loading: false },
   });
 
   const [refreshFlags, setRefreshFlags] = useState({
@@ -24,6 +25,7 @@ export const DataChangeProvider = ({ children }) => {
     measurables: false,
     trainingPeriods: false,
     measurements: false,
+    programs: false,
   });
 
   // Cache duration in milliseconds (5 minutes)

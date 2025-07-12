@@ -15,5 +15,13 @@ router.use("/measurables", require("./measurables"));
 router.use("/measurements", require("./measurements"));
 router.use("/exercise-assignments", require("./exerciseAssignments"));
 router.use("/programs", require("./programs"));
+router.use(
+  "/program-athlete-assignments",
+  require("./programAthleteAssignments")
+);
+router.use(
+  "/program-measurable-assignments",
+  require("./programMeasurableAssignments")
+);
 
 module.exports = router;

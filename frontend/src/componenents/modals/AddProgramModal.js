@@ -1,23 +1,18 @@
-import React from "react";
-import { useState } from "react";
-import AddExerciseAssignmentForm from "../forms/AddExerciseAssignment";
-import "typeface-nunito";
+import React, { useState, useEffect } from "react";
 import {
   Overlay,
   ModalContainer,
   CloseButton,
   Content,
 } from "../../styles/styles";
-const AddExerciseAssignment = ({
-  open,
-  onClose,
-  refresh,
-  prog_rk,
-  prsn_rk,
-}) => {
+import AddProgramForm from "../forms/AddProgram";
+import { trainingPeriodsApi } from "../../api";
+
+const AddProgramModal = ({ open, onClose, refresh }) => {
   const [loading, setLoading] = useState(false);
 
   if (!open || loading) return null;
+
   return (
     <Overlay>
       <ModalContainer>
@@ -29,13 +24,12 @@ const AddExerciseAssignment = ({
           Close
         </CloseButton>
         <Content>
-          <AddExerciseAssignmentForm
+          <h2>Add New Program</h2>
+          <AddProgramForm
             close={() => {
               onClose();
             }}
             refresh={() => refresh()}
-            prog_rk={prog_rk}
-            athlete_prsn_rk={prsn_rk}
           />
         </Content>
       </ModalContainer>
@@ -43,4 +37,4 @@ const AddExerciseAssignment = ({
   );
 };
 
-export default AddExerciseAssignment;
+export default AddProgramModal;

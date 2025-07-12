@@ -7,9 +7,10 @@ import {
   AddButton,
 } from "../../styles/styles.js";
 import { useState, useEffect } from "react";
-import AddExerciseAssignment from "../modals/AddExerciseAssignmentModal";
-import ExerciseAssignmentDetails from "../modals/ExerciseAssignmentDetails";
+import AddMeasurableToProgramModal from "../modals/AddMeasurableToProgramModal";
+import MeasurableAssignmentDetails from "../modals/MeasurableAssignmentDetails";
 import useUserStore, { useUser } from "../../stores/userStore";
+
 const TableStyles = {
   pagination: {
     style: {
@@ -26,7 +27,7 @@ const TableStyles = {
   },
 };
 
-const ProgramContent = ({
+const ProgramMeasurableContent = ({
   paginationNum,
   data,
   prog_rk,
@@ -35,70 +36,85 @@ const ProgramContent = ({
   bEdit,
   bDelete,
 }) => {
-  //Make modal/form for adding exercise_assignment and deleteing one
-  const [assignExercise, setAssignExercise] = useState(false);
-  const [selectedExcr, setSelectedExcr] = useState({});
-  const [editExcr, setEditExcr] = useState(false);
+  const [addMeasurable, setAddMeasurable] = useState(false);
+  const [selectedMeasurable, setSelectedMeasurable] = useState({});
+  const [editMeasurable, setEditMeasurable] = useState(false);
   let pagination = 3;
   const user = useUser();
   paginationNum === undefined ? (pagination = 3) : (pagination = paginationNum);
+
   let columns = [];
-  if (data.length === 1 && !data[0].excr_nm) {
+  if (data.length === 1 && !data[0].meas_id) {
     columns = [
       {
-        name: "Exercise",
-        selector: (row) => row.excr_nm,
-        cell: (row) => <p>No Exercises</p>,
+        name: "Measurable",
+        selector: (row) => row.meas_id,
+        cell: (row) => <p>No Measurables</p>,
       },
     ];
   } else {
     columns = [
       {
-        name: "Exercise",
-        selector: (row) => row.excr_nm,
+        name: "Measurable",
+        selector: (row) => row.meas_id,
         sortable: true,
       },
       {
-        name: "Reps",
-        selector: (row) => row.exas_reps,
+        name: "Type",
+        selector: (row) => row.meas_typ,
         sortable: true,
       },
       {
-        name: "Sets",
-        selector: (row) => row.exas_sets,
+        name: "Target Value",
+        selector: (row) => row.target_val,
         sortable: true,
       },
       {
-        name: "Weight",
-        selector: (row) => row.exas_weight,
+        name: "Target Reps",
+        selector: (row) => row.target_reps,
         sortable: true,
       },
       {
-        name: "Notes",
-        selector: (row) => row.excr_notes + " - " + row.exas_notes,
+        name: "Target Sets",
+        selector: (row) => row.target_sets,
         sortable: true,
       },
       {
-        name: "Measurable?",
-        selector: (row) => row.is_measurable,
+        name: "Target Weight",
+        selector: (row) => row.target_weight,
+        sortable: true,
+      },
+      {
+        name: "Unit",
+        selector: (row) => row.target_unit || row.meas_unit,
+        sortable: true,
+      },
+      {
+        name: "Measured?",
+        selector: (row) => row.is_measured,
         cell: (row) => {
-          return row.excr_nm ? (
+          return row.meas_id ? (
             <input
               type="checkbox"
-              id="measurable_checkbox"
-              checked={row.is_measurable === "Y"}
+              id="measured_checkbox"
+              checked={row.is_measured === true}
               disabled
             />
           ) : null;
         },
       },
       {
+        name: "Notes",
+        selector: (row) => row.notes,
+        sortable: true,
+      },
+      {
         cell: (row) => {
-          return row.excr_nm ? (
+          return row.meas_id ? (
             <AddButton
               onClick={() => {
-                setSelectedExcr(row);
-                setEditExcr(true);
+                setSelectedMeasurable(row);
+                setEditMeasurable(true);
               }}
             >
               Details
@@ -111,25 +127,25 @@ const ProgramContent = ({
 
   return (
     <CompWrap>
-      <AddExerciseAssignment
-        open={assignExercise}
-        onClose={() => setAssignExercise(false)}
+      <AddMeasurableToProgramModal
+        open={addMeasurable}
+        onClose={() => setAddMeasurable(false)}
         refresh={() => refresh()}
         prog_rk={prog_rk}
       />
-      <ExerciseAssignmentDetails
-        open={editExcr}
-        onClose={() => setEditExcr(!editExcr)}
+      <MeasurableAssignmentDetails
+        open={editMeasurable}
+        onClose={() => setEditMeasurable(!editMeasurable)}
         refresh={() => refresh()}
-        excrObj={selectedExcr}
+        measurableObj={selectedMeasurable}
         bEdit={user?.role === "COACH" && bEdit}
         bDelete={user?.role === "COACH" && bDelete}
       />
       <RowDiv>
         <Title>Program : {data[0]?.prog_nm} </Title>
         {user?.role === "COACH" && bAdd && (
-          <AddButton onClick={() => setAssignExercise(true)}>
-            Add Exercise
+          <AddButton onClick={() => setAddMeasurable(true)}>
+            Add Measurable
           </AddButton>
         )}
 
@@ -155,4 +171,4 @@ const ProgramContent = ({
   );
 };
 
-export default ProgramContent;
+export default ProgramMeasurableContent;

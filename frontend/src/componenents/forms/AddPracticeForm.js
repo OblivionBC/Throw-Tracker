@@ -15,7 +15,7 @@ import { MeasurableFieldArray } from "../formHelpers/MeasurableFieldArray.js";
 import TrainingPeriodOptions from "../formHelpers/TrainingPeriodOptions";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import ProgramSelectWithExercise from "../formHelpers/ProgramSelectWithExercise";
+import ProgramSelectWithMeasurables from "../formHelpers/ProgramSelectWithExercise";
 import { practicesApi, measurementsApi } from "../../api";
 
 //Grab the initial values
@@ -119,7 +119,7 @@ const AddPracticeForm = ({ close, refresh }) => {
             </Field>
             <ErrorMessage name="trpe" component={SubmitError} />
 
-            <ProgramSelectWithExercise
+            <ProgramSelectWithMeasurables
               trpe_rk={values.trpe}
               disabled={values.trpe === ""}
               setData={setProgramData}

@@ -23,19 +23,128 @@ exports.addProgram = async (req, res) => {
   }
 };
 
-exports.getProgramAndExercises = async (req, res) => {
+exports.getAllProgramsForCoach = async (req, res) => {
+  try {
+    const coach_prsn_rk = req.user.id;
+    const programs = await pool.query(
+      `SELECT 
+        p.prog_rk, 
+        p.prog_nm, 
+        p.coach_prsn_rk, 
+        p.trpe_rk,
+        tp.trpe_start_dt,
+        tp.trpe_end_dt,
+        COUNT(DISTINCT prma.meas_rk) as measurable_count,
+        COUNT(DISTINCT paa.athlete_prsn_rk) as athlete_count
+      FROM program p
+      LEFT JOIN training_period tp ON p.trpe_rk = tp.trpe_rk
+      LEFT JOIN program_measurable_assignment prma ON p.prog_rk = prma.prog_rk
+      LEFT JOIN program_athlete_assignment paa ON p.prog_rk = paa.prog_rk
+      WHERE p.coach_prsn_rk = $1
+      GROUP BY p.prog_rk, p.prog_nm, p.coach_prsn_rk, p.trpe_rk, tp.trpe_start_dt, tp.trpe_end_dt
+      ORDER BY p.prog_rk DESC`,
+      [coach_prsn_rk]
+    );
+
+    res.json(programs.rows);
+  } catch (err) {
+    console.error("Async Error:", err.message);
+    res
+      .status(500)
+      .json({ message: "Error occurred Getting Programs for Coach." });
+  }
+};
+
+exports.getProgramDetails = async (req, res) => {
   try {
     const { prog_rk } = req.params;
-    const Program = await pool.query(
-      "select prog.prog_rk, prog.prog_nm, prog.coach_prsn_rk, exas.athlete_prsn_rk, exas.assigner_prsn_rk, exas.exas_notes, excr.excr_nm, excr.excr_reps, excr.excr_sets, excr.excr_weight, excr.excr_notes, exas.meas_rk from program prog inner join exercise_assignment exas on prog.prog_rk = exas.prog_rk inner join exercise excr on excr.excr_rk = exas.excr_rk where prog.prog_rk = $1",
+    const coach_prsn_rk = req.user.id;
+
+    // Get program details
+    const programDetails = await pool.query(
+      `SELECT 
+        p.prog_rk, 
+        p.prog_nm, 
+        p.coach_prsn_rk, 
+        p.trpe_rk,
+        tp.trpe_start_dt,
+        tp.trpe_end_dt
+      FROM program p
+      LEFT JOIN training_period tp ON p.trpe_rk = tp.trpe_rk
+      WHERE p.prog_rk = $1 AND p.coach_prsn_rk = $2`,
+      [prog_rk, coach_prsn_rk]
+    );
+
+    if (programDetails.rows.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "Program not found or access denied." });
+    }
+
+    // Get measurables assigned to this program via program_measurable_assignment
+    const measurables = await pool.query(
+      `SELECT 
+        prma.prma_rk,
+        prma.meas_rk,
+        prma.sort_order,
+        prma.target_val,
+        prma.target_reps,
+        prma.target_sets,
+        prma.target_weight,
+        prma.target_unit,
+        prma.notes,
+        prma.is_measured,
+        m.meas_id,
+        m.meas_typ,
+        m.meas_unit
+      FROM program_measurable_assignment prma
+      LEFT JOIN measurable m ON prma.meas_rk = m.meas_rk
+      WHERE prma.prog_rk = $1
+      ORDER BY prma.sort_order, m.meas_id`,
       [prog_rk]
     );
 
-    res.json(Program.rows);
-    console.log(req.params);
+    const result = {
+      program: programDetails.rows[0],
+      measurables: measurables.rows,
+    };
+
+    res.json(result);
   } catch (err) {
     console.error("Async Error:", err.message);
-    res.status(500).json({ message: "Error occurred Getting Exercise." });
+    res
+      .status(500)
+      .json({ message: "Error occurred Getting Program Details." });
+  }
+};
+
+exports.getProgramsForTrainingPeriod = async (req, res) => {
+  try {
+    const { trpe_rk } = req.params;
+    const coach_prsn_rk = req.user.id;
+
+    // Get programs assigned to this training period via program_athlete_assignment
+    const programs = await pool.query(
+      `SELECT 
+        p.prog_rk, 
+        p.prog_nm, 
+        p.coach_prsn_rk,
+        paa.paa_rk,
+        paa.assigned_dt,
+        paa.notes
+      FROM program p
+      JOIN program_athlete_assignment paa ON p.prog_rk = paa.prog_rk
+      WHERE paa.trpe_rk = $1 AND p.coach_prsn_rk = $2
+      ORDER BY p.prog_nm`,
+      [trpe_rk, coach_prsn_rk]
+    );
+
+    res.json(programs.rows);
+  } catch (err) {
+    console.error("Async Error:", err.message);
+    res.status(500).json({
+      message: "Error occurred Getting Programs for Training Period.",
+    });
   }
 };
 

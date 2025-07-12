@@ -32,10 +32,41 @@ exports.addTrainingPeriod = async (req, res) => {
 exports.getAllTrainingPeriods = async (req, res) => {
   try {
     const prsn_rk = req.user.id;
-    const allTrainingPeriods = await pool.query(
-      "SELECT * FROM training_period WHERE prsn_rk = $1",
+
+    // Check if user is a coach
+    const userCheck = await pool.query(
+      "SELECT coach_prsn_rk FROM person WHERE prsn_rk = $1",
       [prsn_rk]
     );
+
+    if (userCheck.rows.length === 0) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    let allTrainingPeriods;
+
+    if (userCheck.rows[0].coach_prsn_rk) {
+      // User is an athlete, get their own training periods
+      allTrainingPeriods = await pool.query(
+        "SELECT * FROM training_period WHERE prsn_rk = $1",
+        [prsn_rk]
+      );
+    } else {
+      // User is a coach, get training periods for all their athletes
+      allTrainingPeriods = await pool.query(
+        `SELECT 
+          tp.*,
+          p.prsn_first_nm,
+          p.prsn_last_nm,
+          p.prsn_rk as athlete_prsn_rk
+        FROM training_period tp
+        JOIN person p ON tp.prsn_rk = p.prsn_rk
+        WHERE p.coach_prsn_rk = $1
+        ORDER BY p.prsn_last_nm, p.prsn_first_nm, tp.trpe_start_dt DESC`,
+        [prsn_rk]
+      );
+    }
+
     res.json(allTrainingPeriods.rows);
   } catch (err) {
     console.error("Async Error:", err.message);

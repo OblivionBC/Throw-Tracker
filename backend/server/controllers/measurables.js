@@ -152,3 +152,59 @@ exports.getMeasurable = async (req, res) => {
     res.status(500).json({ message: "Error occurred Getting Measurable." });
   }
 };
+
+exports.getMeasurablesForAthletes = async (req, res) => {
+  try {
+    const coach_prsn_rk = req.user.id;
+
+    // Get all athletes for this coach and their measurables
+    const measurables = await pool.query(
+      `SELECT 
+        m.meas_rk,
+        m.meas_id,
+        m.meas_typ,
+        m.meas_unit,
+        p.prsn_rk as athlete_prsn_rk,
+        p.prsn_first_nm,
+        p.prsn_last_nm
+      FROM measurable m
+      INNER JOIN person p ON m.prsn_rk = p.prsn_rk
+      WHERE p.coach_prsn_rk = $1
+      ORDER BY p.prsn_first_nm, p.prsn_last_nm, m.meas_id`,
+      [coach_prsn_rk]
+    );
+
+    res.json(measurables.rows);
+  } catch (err) {
+    console.error("Async Error:", err.message);
+    res
+      .status(500)
+      .json({ message: "Error occurred Getting Measurables for Athletes." });
+  }
+};
+
+exports.getMeasurablesForCoach = async (req, res) => {
+  try {
+    const coach_prsn_rk = req.user.id;
+
+    // Get all measurables created by this coach
+    const measurables = await pool.query(
+      `SELECT 
+        m.meas_rk,
+        m.meas_id,
+        m.meas_typ,
+        m.meas_unit
+      FROM measurable m
+      WHERE m.prsn_rk = $1
+      ORDER BY m.meas_id`,
+      [coach_prsn_rk]
+    );
+
+    res.json(measurables.rows);
+  } catch (err) {
+    console.error("Async Error:", err.message);
+    res
+      .status(500)
+      .json({ message: "Error occurred Getting Measurables for Coach." });
+  }
+};

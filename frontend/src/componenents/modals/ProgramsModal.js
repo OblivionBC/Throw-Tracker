@@ -1,9 +1,7 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
 import "typeface-nunito";
-import ProgramContent from "../tables/ProgramContentList";
-import DynamicModal from "../dynamicModals/DynamicModal";
-import AddProgramForm from "../forms/AddProgram";
+import ProgramMeasurableContent from "../tables/ProgramContentList";
 import {
   Overlay,
   ModalContainer,
@@ -12,11 +10,13 @@ import {
   AddButton,
   RowDiv,
 } from "../../styles/styles";
-import { exerciseAssignmentsApi } from "../../api";
+import {
+  programAthleteAssignmentsApi,
+  programMeasurableAssignmentsApi,
+} from "../../api";
 const ProgramsModal = ({ open, onClose, refresh, trpe_rk }) => {
   const [loading, setLoading] = useState(false);
   const [programData, setProgramData] = useState(new Map());
-  const [addProgram, setAddProgram] = useState(false);
   const getProgramData = async () => {
     // Don't make API call if trpe_rk is not available
     if (!trpe_rk) {
@@ -25,45 +25,47 @@ const ProgramsModal = ({ open, onClose, refresh, trpe_rk }) => {
     }
 
     try {
-      const response =
-        await exerciseAssignmentsApi.getProgramsAndExercisesForTRPE({
-          trpe_rk: trpe_rk,
-        });
+      // Get programs assigned to this training period
+      const programsResponse =
+        await programAthleteAssignmentsApi.getTrainingPeriodPrograms(trpe_rk);
 
       let newDataMap = new Map();
-      response.forEach((element) => {
-        if (!newDataMap.has(element.prog_rk)) {
-          newDataMap.set(element.prog_rk, [
-            {
-              excr_nm: element.excr_nm,
-              exas_rk: element.exas_rk,
-              excr_rk: element.excr_rk,
-              exas_reps: element.exas_reps,
-              exas_sets: element.exas_sets,
-              exas_weight: element.exas_weight,
-              exas_notes: element.exas_notes,
-              excr_notes: element.excr_notes,
-              is_measurable: element.is_measurable,
-              prog_nm: element.prog_nm,
-            },
-          ]);
-          //There is already an array, so we just need to push to it
-        } else {
-          newDataMap.get(element.prog_rk).push({
-            excr_nm: element.excr_nm,
-            exas_rk: element.exas_rk,
 
-            exas_reps: element.exas_reps,
-            excr_rk: element.excr_rk,
-            exas_sets: element.exas_sets,
-            exas_weight: element.exas_weight,
-            exas_notes: element.exas_notes,
-            excr_notes: element.excr_notes,
-            is_measurable: element.is_measurable,
-            prog_nm: element.prog_nm,
-          });
+      // For each program, get its measurables
+      for (const program of programsResponse) {
+        try {
+          const measurablesResponse =
+            await programMeasurableAssignmentsApi.getProgramMeasurables(
+              program.prog_rk
+            );
+
+          // Transform measurable data to match expected format
+          const measurableData = measurablesResponse.map((measurable) => ({
+            meas_id: measurable.meas_id,
+            prma_rk: measurable.prma_rk,
+            meas_rk: measurable.meas_rk,
+            target_reps: measurable.target_reps,
+            target_sets: measurable.target_sets,
+            target_weight: measurable.target_weight,
+            target_val: measurable.target_val,
+            target_unit: measurable.target_unit,
+            notes: measurable.notes,
+            is_measured: measurable.is_measured,
+            meas_typ: measurable.meas_typ,
+            meas_unit: measurable.meas_unit,
+            prog_nm: program.prog_nm,
+          }));
+
+          newDataMap.set(program.prog_rk, measurableData);
+        } catch (error) {
+          console.error(
+            `Error fetching measurables for program ${program.prog_rk}:`,
+            error
+          );
+          newDataMap.set(program.prog_rk, []);
         }
-      });
+      }
+
       setProgramData(newDataMap);
     } catch (error) {
       console.error(error.message);
@@ -78,13 +80,6 @@ const ProgramsModal = ({ open, onClose, refresh, trpe_rk }) => {
   if (!open || loading) return null;
   return (
     <Overlay>
-      <DynamicModal
-        open={addProgram}
-        onClose={() => setAddProgram(false)}
-        refresh={() => getProgramData()}
-        Component={AddProgramForm}
-        props={{ trpe_rk }}
-      />
       <ModalContainer>
         <CloseButton
           onClick={() => {
@@ -94,17 +89,16 @@ const ProgramsModal = ({ open, onClose, refresh, trpe_rk }) => {
           Close
         </CloseButton>
 
-        <AddButton onClick={() => setAddProgram(true)}>Add Program</AddButton>
         <Content>
           <RowDiv>
-            <h1>Training Period {trpe_rk}</h1>
+            <h1>Programs Assigned to Training Period {trpe_rk}</h1>
             <AddButton onClick={() => getProgramData()}>Refresh</AddButton>
           </RowDiv>
           {programData.size <= 0 ? (
             <div>No Programs</div>
           ) : (
             [...programData.entries()].map(([key, row]) => (
-              <ProgramContent
+              <ProgramMeasurableContent
                 data={row}
                 prog_rk={key}
                 bAdd

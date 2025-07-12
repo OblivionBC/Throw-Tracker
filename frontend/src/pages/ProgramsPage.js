@@ -1,26 +1,23 @@
 import React from "react";
 import styled from "styled-components";
-import ProgramContentList from "../componenents/tables/ProgramContentList";
+import ProgramsList from "../componenents/tables/ProgramsList";
 import "typeface-rubik";
 import ErrorBoundary from "../componenents/ErrorBoundary";
+
+const Page = styled.div`
+  padding: 20px;
+  height: 100vh;
+  overflow: hidden;
+`;
 
 const ProgramsPage = () => {
   return (
     <Page>
       <ErrorBoundary>
-        <ProgramContentList data={[]} />
+        <ProgramsList />
       </ErrorBoundary>
     </Page>
   );
 };
-
-const Page = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  height: 90vh;
-  font-family: "Rubik", sans-serif;
-  padding: 20px;
-`;
 
 export default ProgramsPage;

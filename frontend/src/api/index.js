@@ -10,3 +10,5 @@ export { meetsApi } from "./meets";
 export { eventsApi } from "./events";
 export { exerciseAssignmentsApi } from "./exerciseAssignments";
 export { programsApi } from "./programs";
+export { programAthleteAssignmentsApi } from "./programAthleteAssignments";
+export { programMeasurableAssignmentsApi } from "./programMeasurableAssignments";

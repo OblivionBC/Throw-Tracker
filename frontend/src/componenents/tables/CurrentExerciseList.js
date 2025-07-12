@@ -9,10 +9,10 @@ import {
   EditButton,
 } from "../../styles/styles.js";
 import DynamicModal from "../dynamicModals/DynamicModal";
-import EditExerciseForm from "../forms/EditExercise";
-import AddExerciseForm from "../forms/AddExercise";
-import ConfirmExerciseDelete from "../modals/ConfirmExceriseDelete";
-import { exercisesApi, personsApi } from "../../api";
+import EditMeasurableForm from "../forms/EditMeasurableForm";
+import AddMeasurableForm from "../forms/AddMeasurableForm";
+import ConfirmMeasurableDeleteModal from "../modals/ConfirmMeasurableDeleteModal";
+import { measurablesApi, personsApi } from "../../api";
 import useUserStore, { useUser, useIsCoach } from "../../stores/userStore";
 
 const TableStyles = {
@@ -31,8 +31,8 @@ const TableStyles = {
   },
 };
 
-const CurrentExerciseList = ({ paginationNum }) => {
-  const [excrData, setExcrData] = useState([]);
+const CurrentMeasurableList = ({ paginationNum }) => {
+  const [measData, setMeasData] = useState([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -48,10 +48,10 @@ const CurrentExerciseList = ({ paginationNum }) => {
   let pagination = 3;
   paginationNum === undefined ? (pagination = 3) : (pagination = paginationNum);
 
-  const getExerciseData = async () => {
+  const getMeasurableData = async () => {
     try {
-      const data = await exercisesApi.getForCoach();
-      setExcrData(data);
+      const data = await measurablesApi.getForCoach();
+      setMeasData(data);
     } catch (error) {
       console.error(error.message);
     }
@@ -59,7 +59,7 @@ const CurrentExerciseList = ({ paginationNum }) => {
 
   useEffect(() => {
     try {
-      getExerciseData();
+      getMeasurableData();
     } catch (error) {
       console.error(error.message);
     }
@@ -67,21 +67,20 @@ const CurrentExerciseList = ({ paginationNum }) => {
 
   const columns = [
     {
-      name: "Exercise",
-      selector: (row) => row.excr_nm,
+      name: "Measurable",
+      selector: (row) => row.meas_id,
       sortable: true,
     },
     {
-      name: "Notes",
-      selector: (row) => row.excr_notes,
+      name: "Type",
+      selector: (row) => row.meas_typ,
       sortable: true,
     },
     {
-      name: "Units",
-      selector: (row) => row.excr_units,
+      name: "Unit",
+      selector: (row) => row.meas_unit,
       sortable: true,
     },
-
     {
       cell: (row) => (
         <AddButton
@@ -113,25 +112,25 @@ const CurrentExerciseList = ({ paginationNum }) => {
       <DynamicModal
         open={addModalOpen}
         onClose={() => setAddModalOpen(false)}
-        refresh={() => getExerciseData()}
-        Component={AddExerciseForm}
+        refresh={() => getMeasurableData()}
+        Component={AddMeasurableForm}
         props={{ coach_prsn_rk: user.id }}
       />
       <DynamicModal
         open={editModalOpen}
         onClose={() => setEditModalOpen(false)}
-        refresh={() => getExerciseData()}
-        Component={EditExerciseForm}
+        refresh={() => getMeasurableData()}
+        Component={EditMeasurableForm}
         props={selectedRow}
       />
-      <ConfirmExerciseDelete
+      <ConfirmMeasurableDeleteModal
         open={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
-        refresh={() => getExerciseData()}
-        excr={selectedRow}
+        refresh={() => getMeasurableData()}
+        measurable={selectedRow}
       />
       <RowDiv>
-        <Title>Current Exercises</Title>
+        <Title>Current Measurables</Title>
         <AddButton
           onClick={() => {
             setAddModalOpen(true);
@@ -143,7 +142,7 @@ const CurrentExerciseList = ({ paginationNum }) => {
       <TableWrap>
         <Table
           columns={columns}
-          data={excrData}
+          data={measData}
           fixedHeader
           pagination
           paginationPerPage={pagination}
@@ -159,4 +158,4 @@ const CurrentExerciseList = ({ paginationNum }) => {
   );
 };
 
-export default CurrentExerciseList;
+export default CurrentMeasurableList;
