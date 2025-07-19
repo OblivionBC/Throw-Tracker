@@ -1,16 +1,10 @@
 import React, { useState, useEffect } from "react";
-import {
-  CompWrap,
-  Title,
-  RowDiv,
-  AddButton,
-  FieldOutputContainer,
-  FieldLabel,
-} from "../../styles/styles.js";
-import { programsApi, programAthleteAssignmentsApi } from "../../api";
-import useUserStore, { useUser } from "../../stores/userStore";
+import { CompWrap, Title, RowDiv, AddButton } from "../styles/styles.js";
+import { programsApi, programAthleteAssignmentsApi } from "../api";
+import useUserStore, { useUser } from "../stores/userStore";
 import AssignProgramModal from "./modals/AssignProgramModal";
 import ProgramDetailsModal from "./modals/ProgramDetailsModal";
+import AddProgramModal from "./modals/AddProgramModal";
 
 const CoachPrograms = () => {
   const [programs, setPrograms] = useState([]);
@@ -18,6 +12,7 @@ const CoachPrograms = () => {
   const [selectedProgram, setSelectedProgram] = useState(null);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [showProgramDetails, setShowProgramDetails] = useState(false);
+  const [showAddProgramModal, setShowAddProgramModal] = useState(false);
   const user = useUser();
 
   useEffect(() => {
@@ -51,7 +46,7 @@ const CoachPrograms = () => {
   }
 
   return (
-    <CompWrap>
+    <CompWrap style={{ minHeight: 0, overflow: "hidden", marginTop: "15px" }}>
       <AssignProgramModal
         open={showAssignModal}
         onClose={() => setShowAssignModal(false)}
@@ -66,9 +61,18 @@ const CoachPrograms = () => {
         refresh={fetchPrograms}
       />
 
+      <AddProgramModal
+        open={showAddProgramModal}
+        onClose={() => setShowAddProgramModal(false)}
+        refresh={fetchPrograms}
+      />
+
       <RowDiv>
         <Title>My Programs</Title>
-        <AddButton onClick={() => (window.location.href = "/programs")}>
+        <AddButton
+          onClick={() => setShowAddProgramModal(true)}
+          style={{ padding: "3px 8px", fontSize: "14px" }}
+        >
           Create New Program
         </AddButton>
       </RowDiv>
@@ -78,7 +82,17 @@ const CoachPrograms = () => {
           No programs created yet. Create your first program to get started.
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+            flex: 1,
+            minHeight: 0,
+            overflowY: "auto",
+            paddingRight: "10px",
+          }}
+        >
           {programs.map((program) => (
             <div
               key={program.prog_rk}

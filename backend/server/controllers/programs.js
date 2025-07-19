@@ -6,14 +6,14 @@ const { pool } = require(".././db");
 
 exports.addProgram = async (req, res) => {
   try {
-    const { prog_nm, trpe_rk } = req.body;
+    const { prog_nm } = req.body;
     const coach_prsn_rk = req.user.id;
     //$1 is the variable to add in the db, runs sql query in quotes which is same as in the CLI
     //Returning * returns back the data
-    console.log("Creating Program for Training Period : " + trpe_rk);
+    console.log("Creating Program for Coach : " + coach_prsn_rk);
     const newProgram = await pool.query(
-      "INSERT INTO program (prog_nm, coach_prsn_rk, trpe_rk) VALUES($1, $2, $3) RETURNING *",
-      [prog_nm, coach_prsn_rk, trpe_rk]
+      "INSERT INTO program (prog_nm, coach_prsn_rk) VALUES($1, $2) RETURNING *",
+      [prog_nm, coach_prsn_rk]
     );
 
     res.json(newProgram.rows[0]);
@@ -30,18 +30,15 @@ exports.getAllProgramsForCoach = async (req, res) => {
       `SELECT 
         p.prog_rk, 
         p.prog_nm, 
-        p.coach_prsn_rk, 
-        p.trpe_rk,
-        tp.trpe_start_dt,
-        tp.trpe_end_dt,
+        p.coach_prsn_rk,
         COUNT(DISTINCT prma.meas_rk) as measurable_count,
-        COUNT(DISTINCT paa.athlete_prsn_rk) as athlete_count
+        COUNT(DISTINCT tp2.prsn_rk) as athlete_count
       FROM program p
-      LEFT JOIN training_period tp ON p.trpe_rk = tp.trpe_rk
       LEFT JOIN program_measurable_assignment prma ON p.prog_rk = prma.prog_rk
       LEFT JOIN program_athlete_assignment paa ON p.prog_rk = paa.prog_rk
+      LEFT JOIN training_period tp2 ON paa.trpe_rk = tp2.trpe_rk
       WHERE p.coach_prsn_rk = $1
-      GROUP BY p.prog_rk, p.prog_nm, p.coach_prsn_rk, p.trpe_rk, tp.trpe_start_dt, tp.trpe_end_dt
+      GROUP BY p.prog_rk, p.prog_nm, p.coach_prsn_rk
       ORDER BY p.prog_rk DESC`,
       [coach_prsn_rk]
     );
@@ -65,12 +62,8 @@ exports.getProgramDetails = async (req, res) => {
       `SELECT 
         p.prog_rk, 
         p.prog_nm, 
-        p.coach_prsn_rk, 
-        p.trpe_rk,
-        tp.trpe_start_dt,
-        tp.trpe_end_dt
+        p.coach_prsn_rk
       FROM program p
-      LEFT JOIN training_period tp ON p.trpe_rk = tp.trpe_rk
       WHERE p.prog_rk = $1 AND p.coach_prsn_rk = $2`,
       [prog_rk, coach_prsn_rk]
     );
@@ -104,9 +97,23 @@ exports.getProgramDetails = async (req, res) => {
       [prog_rk]
     );
 
+    // Get assigned training periods for this program
+    const assignments = await pool.query(
+      `SELECT 
+        paa.trpe_rk,
+        tp.trpe_start_dt,
+        tp.trpe_end_dt,
+        tp.prsn_rk as athlete_prsn_rk
+      FROM program_athlete_assignment paa
+      LEFT JOIN training_period tp ON paa.trpe_rk = tp.trpe_rk
+      WHERE paa.prog_rk = $1`,
+      [prog_rk]
+    );
+
     const result = {
       program: programDetails.rows[0],
       measurables: measurables.rows,
+      assignments: assignments.rows,
     };
 
     res.json(result);
@@ -150,11 +157,11 @@ exports.getProgramsForTrainingPeriod = async (req, res) => {
 
 exports.updateProgram = async (req, res) => {
   try {
-    const { prog_rk, prog_nm, trpe_rk } = req.body;
+    const { prog_rk, prog_nm } = req.body;
     const coach_prsn_rk = req.user.id;
     const updateTodo = await pool.query(
-      "UPDATE program SET prog_nm = $2, coach_prsn_rk = $3, trpe_rk = $4 WHERE prog_rk = $1",
-      [prog_rk, prog_nm, coach_prsn_rk, trpe_rk]
+      "UPDATE program SET prog_nm = $2, coach_prsn_rk = $3 WHERE prog_rk = $1",
+      [prog_rk, prog_nm, coach_prsn_rk]
     );
     res.json("program was Updated");
   } catch (err) {
@@ -166,10 +173,22 @@ exports.updateProgram = async (req, res) => {
 exports.deleteProgram = async (req, res) => {
   try {
     const { prog_rk } = req.params;
-    const deleteExercise = await pool.query(
-      "DELETE FROM program WHERE prog_rk = $1",
-      [prog_rk]
+    const coach_prsn_rk = req.user.id;
+
+    // Validate that the program belongs to the coach
+    const programCheck = await pool.query(
+      "SELECT prog_rk FROM program WHERE prog_rk = $1 AND coach_prsn_rk = $2",
+      [prog_rk, coach_prsn_rk]
     );
+
+    if (programCheck.rows.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "Program not found or access denied." });
+    }
+
+    // Delete the program - database will handle cascade deletes automatically
+    await pool.query("DELETE FROM program WHERE prog_rk = $1", [prog_rk]);
 
     res.json("Program has been Deleted");
   } catch (err) {

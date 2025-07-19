@@ -22,7 +22,7 @@ const DynamicModal = ({ open, onClose, refresh, Component, props }) => {
             <Component
               refresh={() => refresh()}
               close={() => onClose()}
-              props={props}
+              {...props}
             />
           ) : (
             <p>The form did not load correctly</p>

@@ -10,21 +10,15 @@ const ChartPage = () => {
 
   return (
     <Page>
-      <LeftColumn>
-        <ErrorBoundary>
-          <MeasurementChart activeTRPE={activeTRPE} />
-        </ErrorBoundary>
-      </LeftColumn>
-      <RightColumn>
-        <ErrorBoundary>
-          <TrainingPeriodList
-            sharedState={activeTRPE}
-            setSharedState={setActiveTRPE}
-            paginationNum={8}
-            selectable={true}
-          />
-        </ErrorBoundary>
-      </RightColumn>
+      <Column>
+        <MeasurementChart activeTRPE={activeTRPE} />
+        <TrainingPeriodList
+          sharedState={activeTRPE}
+          setSharedState={setActiveTRPE}
+          paginationNum={8}
+          selectable={true}
+        />
+      </Column>
     </Page>
   );
 };
@@ -38,15 +32,15 @@ const Page = styled.div`
   padding: 20px;
 `;
 
-const LeftColumn = styled.div`
+const Column = styled.div`
   display: flex;
   flex: 1;
   margin: 0;
   padding: 0;
-  align-self: flex-start;
+  align-self: center;
   flex-direction: column;
   height: 100%;
-  max-width: 60%;
+  max-width: 100%;
 `;
 
 const RightColumn = styled.div`

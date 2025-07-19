@@ -4,9 +4,6 @@ import {
   ModalContainer,
   CloseButton,
   Content,
-  EditButton,
-  RowContainer,
-  FieldName,
   StyledButton,
 } from "../../styles/styles";
 import { programsApi, programAthleteAssignmentsApi } from "../../api";
@@ -15,6 +12,7 @@ import AssignProgramToAthletesModal from "./AssignProgramToAthletesModal";
 
 const ProgramDetailsModal = ({ open, onClose, refresh, program }) => {
   const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [programDetails, setProgramDetails] = useState(null);
   const [assignments, setAssignments] = useState([]);
   const [editOpen, setEditOpen] = useState(false);
@@ -37,11 +35,62 @@ const ProgramDetailsModal = ({ open, onClose, refresh, program }) => {
     }
   }, [program?.prog_rk]);
 
+  const handleUnassign = async (paa_rk, athleteName) => {
+    if (
+      !window.confirm(
+        `Are you sure you want to unassign ${athleteName} from this program?`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await programAthleteAssignmentsApi.removeFromAthlete(paa_rk);
+      // Refresh the assignments list
+      const updatedAssignments = assignments.filter(
+        (assignment) => assignment.paa_rk !== paa_rk
+      );
+      setAssignments(updatedAssignments);
+      if (refresh) {
+        refresh();
+      }
+    } catch (error) {
+      console.error("Error unassigning athlete:", error);
+      alert("Failed to unassign athlete. Please try again.");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (
+      !window.confirm(
+        `Are you sure you want to delete the program "${program.prog_nm}"? This action cannot be undone.`
+      )
+    ) {
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      await programsApi.delete(program.prog_rk);
+      onClose();
+      if (refresh) {
+        refresh();
+      }
+    } catch (error) {
+      console.error("Error deleting program:", error);
+      const errorMessage =
+        error.message || "Failed to delete program. Please try again.";
+      alert(`Error: ${errorMessage}`);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   useEffect(() => {
     if (open && program?.prog_rk) {
       getProgramDetails();
     }
-  }, [open, getProgramDetails]);
+  }, [open, program?.prog_rk, getProgramDetails]);
 
   if (!open) return null;
 
@@ -54,14 +103,30 @@ const ProgramDetailsModal = ({ open, onClose, refresh, program }) => {
             <div>Loading program details...</div>
           ) : (
             <div>
-              <h2>Program Details: {program.prog_nm}</h2>
-              <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
-                <StyledButton onClick={() => setEditOpen(true)}>
-                  Edit
-                </StyledButton>
-                <StyledButton onClick={() => setAssignOpen(true)}>
-                  Assign
-                </StyledButton>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: 20,
+                }}
+              >
+                <h2>Program Details: {program.prog_nm}</h2>
+                <div style={{ display: "flex", gap: 10 }}>
+                  <StyledButton onClick={() => setEditOpen(true)}>
+                    Edit
+                  </StyledButton>
+                  <StyledButton onClick={() => setAssignOpen(true)}>
+                    Assign
+                  </StyledButton>
+                  <StyledButton
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    style={{ backgroundColor: "#dc3545" }}
+                  >
+                    {deleting ? "Deleting..." : "Delete Program"}
+                  </StyledButton>
+                </div>
               </div>
               {programDetails && (
                 <div>
@@ -129,12 +194,40 @@ const ProgramDetailsModal = ({ open, onClose, refresh, program }) => {
                               padding: "10px",
                               margin: "5px 0",
                               borderRadius: "5px",
+                              position: "relative",
                             }}
                           >
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "flex-start",
+                                marginBottom: "10px",
+                              }}
+                            >
+                              <h4 style={{ margin: 0 }}>
+                                {assignment.athlete_first_nm}{" "}
+                                {assignment.athlete_last_nm}
+                              </h4>
+                              <StyledButton
+                                onClick={() =>
+                                  handleUnassign(
+                                    assignment.paa_rk,
+                                    `${assignment.athlete_first_nm} ${assignment.athlete_last_nm}`
+                                  )
+                                }
+                                style={{
+                                  backgroundColor: "#dc3545",
+                                  padding: "4px 8px",
+                                  fontSize: "12px",
+                                }}
+                              >
+                                Unassign
+                              </StyledButton>
+                            </div>
                             <p>
-                              <strong>Athlete:</strong>{" "}
-                              {assignment.athlete_first_nm}{" "}
-                              {assignment.athlete_last_nm}
+                              <strong>Training Period:</strong>{" "}
+                              {assignment.trpe_rk}
                             </p>
                             <p>
                               <strong>Assigned by:</strong>{" "}

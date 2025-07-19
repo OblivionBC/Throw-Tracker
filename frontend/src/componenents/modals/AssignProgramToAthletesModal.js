@@ -18,7 +18,7 @@ import {
 // Stepper Progress Bar Component
 const StepperProgress = ({ currentStep, totalSteps }) => {
   return (
-    <div style={{ marginBottom: 20 }}>
+    <div style={{ marginBottom: 20, width: "100%" }}>
       <div
         style={{
           display: "flex",
@@ -86,11 +86,48 @@ const StepperProgress = ({ currentStep, totalSteps }) => {
   );
 };
 
+// Placeholder for measurable assignments (can be replaced with real data)
+const ProgramMeasurablesBox = ({ program }) => (
+  <div style={{ marginTop: 18 }}>
+    <h4 style={{ margin: 0, marginBottom: 6 }}>Measurables</h4>
+    <div style={{ fontSize: 14, color: "#444" }}>
+      {/* TODO: Render real measurable assignments here */}
+      (Measurables for this program will appear here)
+    </div>
+  </div>
+);
+
+const ProgramInfoBox = ({ program }) => (
+  <div
+    style={{
+      background: "#f7f9fa",
+      border: "1px solid #e0e0e0",
+      borderRadius: 8,
+      padding: 20,
+      minWidth: 260,
+      maxWidth: 320,
+      marginLeft: 24,
+      boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+      wordBreak: "break-word",
+      alignSelf: "flex-start",
+    }}
+  >
+    <h3 style={{ marginTop: 0, marginBottom: 10 }}>Program Info</h3>
+    <div>
+      <b>Name:</b> {program?.prog_nm || "N/A"}
+    </div>
+    <div>
+      <b>ID:</b> {program?.prog_rk || "N/A"}
+    </div>
+    <ProgramMeasurablesBox program={program} />
+  </div>
+);
+
 const AssignProgramToAthletesModal = ({ open, onClose, program, refresh }) => {
   const [step, setStep] = useState(1);
   const [athletes, setAthletes] = useState([]);
   const [selectedAthletes, setSelectedAthletes] = useState([]);
-  const [trainingPeriods, setTrainingPeriods] = useState([]);
+  const [trainingPeriods, setTrainingPeriods] = useState({});
   const [athletePeriods, setAthletePeriods] = useState({});
   const [assignmentInfo, setAssignmentInfo] = useState({});
   const [loading, setLoading] = useState(false);
@@ -123,8 +160,13 @@ const AssignProgramToAthletesModal = ({ open, onClose, program, refresh }) => {
   const fetchTrainingPeriods = async () => {
     setLoading(true);
     try {
-      const data = await trainingPeriodsApi.getAll();
-      setTrainingPeriods(data);
+      // Fetch training periods for each selected athlete
+      const periodsMap = {};
+      for (const athleteId of selectedAthletes) {
+        const periods = await trainingPeriodsApi.getAllForPerson(athleteId);
+        periodsMap[athleteId] = periods;
+      }
+      setTrainingPeriods(periodsMap);
     } catch (e) {
       setError("Failed to load training periods");
     } finally {
@@ -137,10 +179,18 @@ const AssignProgramToAthletesModal = ({ open, onClose, program, refresh }) => {
     <>
       <h2>Select Athletes</h2>
       <FieldOutputContainer>
-        <FieldLabel>
+        <FieldLabel style={{ width: "30%" }}>
           Select one or more athletes to assign this program to:
         </FieldLabel>
-        <div style={{ maxHeight: 300, overflowY: "auto", margin: "10px 0" }}>
+        <div
+          style={{
+            maxHeight: 300,
+            overflowY: "auto",
+            margin: "10px 0",
+            width: "70%",
+          }}
+        >
+          {athletes.length === 0 && <div>No athletes found</div>}
           {athletes.map((athlete) => (
             <label
               key={athlete.prsn_rk}
@@ -165,21 +215,6 @@ const AssignProgramToAthletesModal = ({ open, onClose, program, refresh }) => {
         </div>
       </FieldOutputContainer>
       {error && <SubmitError>{error}</SubmitError>}
-      <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-        <StyledButton onClick={onClose}>Cancel</StyledButton>
-        <StyledButton
-          onClick={async () => {
-            if (selectedAthletes.length === 0) {
-              setError("Select at least one athlete");
-              return;
-            }
-            await fetchTrainingPeriods();
-            setStep(2);
-          }}
-        >
-          Next
-        </StyledButton>
-      </div>
     </>
   );
 
@@ -188,15 +223,20 @@ const AssignProgramToAthletesModal = ({ open, onClose, program, refresh }) => {
     <>
       <h2>Select Training Periods</h2>
       <FieldOutputContainer>
-        <FieldLabel>
+        <FieldLabel style={{ width: "30%" }}>
           For each athlete, select a training period to assign this program to:
         </FieldLabel>
-        <div style={{ maxHeight: 300, overflowY: "auto", margin: "10px 0" }}>
+        <div
+          style={{
+            maxHeight: 300,
+            overflowY: "auto",
+            margin: "10px 0",
+            width: "70%",
+          }}
+        >
           {selectedAthletes.map((athleteId) => {
             const athlete = athletes.find((a) => a.prsn_rk === athleteId);
-            const periods = trainingPeriods.filter(
-              (tp) => tp.prsn_rk === athleteId
-            );
+            const periods = trainingPeriods[athleteId] || [];
             return (
               <div key={athleteId} style={{ marginBottom: 16 }}>
                 <div style={{ fontWeight: "bold" }}>
@@ -233,23 +273,6 @@ const AssignProgramToAthletesModal = ({ open, onClose, program, refresh }) => {
         </div>
       </FieldOutputContainer>
       {error && <SubmitError>{error}</SubmitError>}
-      <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-        <StyledButton onClick={() => setStep(1)}>Back</StyledButton>
-        <StyledButton
-          onClick={() => {
-            // Validate all selected
-            for (const athleteId of selectedAthletes) {
-              if (!athletePeriods[athleteId]) {
-                setError("Select a training period for each athlete");
-                return;
-              }
-            }
-            setStep(3);
-          }}
-        >
-          Next
-        </StyledButton>
-      </div>
     </>
   );
 
@@ -258,10 +281,17 @@ const AssignProgramToAthletesModal = ({ open, onClose, program, refresh }) => {
     <>
       <h2>Assignment Info</h2>
       <FieldOutputContainer>
-        <FieldLabel>
+        <FieldLabel style={{ width: "30%" }}>
           For each athlete/training period, fill out assignment information:
         </FieldLabel>
-        <div style={{ maxHeight: 300, overflowY: "auto", margin: "10px 0" }}>
+        <div
+          style={{
+            maxHeight: 300,
+            overflowY: "auto",
+            margin: "10px 0",
+            width: "70%",
+          }}
+        >
           {selectedAthletes.map((athleteId) => {
             const athlete = athletes.find((a) => a.prsn_rk === athleteId);
             const trpe_rk = athletePeriods[athleteId];
@@ -308,8 +338,62 @@ const AssignProgramToAthletesModal = ({ open, onClose, program, refresh }) => {
         </div>
       </FieldOutputContainer>
       {error && <SubmitError>{error}</SubmitError>}
-      <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+    </>
+  );
+
+  if (!open) return null;
+
+  // Step content for the left side
+  const stepContent = (
+    <div style={{ fontSize: 15, lineHeight: 1.5, marginBottom: 8 }}>
+      {step === 1 && renderStep1()}
+      {step === 2 && renderStep2()}
+      {step === 3 && renderStep3()}
+    </div>
+  );
+
+  // Action buttons for below the horizontal div
+  const actionButtons = (
+    <div
+      style={{
+        display: "flex",
+        gap: 10,
+        justifyContent: "center",
+        marginTop: 18,
+      }}
+    >
+      {step === 1 && <StyledButton onClick={onClose}>Cancel</StyledButton>}
+      {step === 2 && (
+        <StyledButton onClick={() => setStep(1)}>Back</StyledButton>
+      )}
+      {step === 3 && (
         <StyledButton onClick={() => setStep(2)}>Back</StyledButton>
+      )}
+      {step < 3 && (
+        <StyledButton
+          onClick={async () => {
+            if (step === 1) {
+              if (selectedAthletes.length === 0) {
+                setError("Select at least one athlete");
+                return;
+              }
+              await fetchTrainingPeriods();
+              setStep(2);
+            } else if (step === 2) {
+              for (const athleteId of selectedAthletes) {
+                if (!athletePeriods[athleteId]) {
+                  setError("Select a training period for each athlete");
+                  return;
+                }
+              }
+              setStep(3);
+            }
+          }}
+        >
+          Next
+        </StyledButton>
+      )}
+      {step === 3 && (
         <StyledButton
           onClick={async () => {
             setLoading(true);
@@ -336,22 +420,98 @@ const AssignProgramToAthletesModal = ({ open, onClose, program, refresh }) => {
         >
           Save Assignments
         </StyledButton>
-      </div>
-    </>
+      )}
+    </div>
   );
-
-  if (!open) return null;
 
   return (
     <Overlay>
-      <ModalContainer>
-        <CloseButton onClick={onClose}>Close</CloseButton>
-        <Content>
+      <ModalContainer
+        style={{
+          minWidth: 1000,
+          maxWidth: 1400,
+          minHeight: 700,
+          maxHeight: 900,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 32,
+            boxSizing: "border-box",
+            gap: 24,
+          }}
+        >
+          <div style={{ alignSelf: "flex-center", marginBottom: 16 }}>
+            <CloseButton onClick={onClose}>Close</CloseButton>
+          </div>
           <StepperProgress currentStep={step} totalSteps={3} />
-          {step === 1 && renderStep1()}
-          {step === 2 && renderStep2()}
-          {step === 3 && renderStep3()}
-        </Content>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              alignSelf: "center",
+              width: "100%",
+              gap: 48,
+              margin: "32px 0 24px 0",
+            }}
+          >
+            {/* Left: Step Content */}
+            <div
+              style={{
+                flex: 1,
+                maxWidth: 500,
+                minWidth: 0,
+                padding: 32,
+                background: "#fff",
+                borderRadius: 12,
+                boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+                wordBreak: "break-word",
+                overflow: "visible",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 24,
+              }}
+            >
+              {stepContent}
+            </div>
+            {/* Right: Program Info */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                flex: 1,
+                alignSelf: "center",
+              }}
+            >
+              <ProgramInfoBox program={program} />
+            </div>
+          </div>
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+              marginTop: 24,
+            }}
+          >
+            {actionButtons}
+          </div>
+        </div>
       </ModalContainer>
     </Overlay>
   );

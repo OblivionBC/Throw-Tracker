@@ -31,42 +31,50 @@ exports.addTrainingPeriod = async (req, res) => {
 
 exports.getAllTrainingPeriods = async (req, res) => {
   try {
-    const prsn_rk = req.user.id;
+    console.log(req.query);
+    // Always use prsn_rk as input
+    const user_prsn_rk = req.user.id;
+    const prsn_rk = req.query.prsn_rk
+      ? parseInt(req.query.prsn_rk, 10)
+      : user_prsn_rk;
 
-    // Check if user is a coach
+    // Get user info
     const userCheck = await pool.query(
       "SELECT coach_prsn_rk FROM person WHERE prsn_rk = $1",
-      [prsn_rk]
+      [user_prsn_rk]
     );
-
     if (userCheck.rows.length === 0) {
       return res.status(404).json({ message: "User not found." });
     }
 
-    let allTrainingPeriods;
-
+    let allowed = false;
     if (userCheck.rows[0].coach_prsn_rk) {
-      // User is an athlete, get their own training periods
-      allTrainingPeriods = await pool.query(
-        "SELECT * FROM training_period WHERE prsn_rk = $1",
-        [prsn_rk]
-      );
+      // User is an athlete, can only fetch their own periods
+      allowed = prsn_rk === user_prsn_rk;
     } else {
-      // User is a coach, get training periods for all their athletes
-      allTrainingPeriods = await pool.query(
-        `SELECT 
-          tp.*,
-          p.prsn_first_nm,
-          p.prsn_last_nm,
-          p.prsn_rk as athlete_prsn_rk
-        FROM training_period tp
-        JOIN person p ON tp.prsn_rk = p.prsn_rk
-        WHERE p.coach_prsn_rk = $1
-        ORDER BY p.prsn_last_nm, p.prsn_first_nm, tp.trpe_start_dt DESC`,
-        [prsn_rk]
-      );
+      // User is a coach, can fetch their athletes' periods
+      if (prsn_rk === user_prsn_rk) {
+        allowed = true;
+      } else {
+        // Check if prsn_rk is an athlete of this coach
+        const athleteCheck = await pool.query(
+          "SELECT prsn_rk FROM person WHERE prsn_rk = $1 AND coach_prsn_rk = $2",
+          [prsn_rk, user_prsn_rk]
+        );
+        allowed = athleteCheck.rows.length > 0;
+      }
     }
-
+    console.log(allowed);
+    if (!allowed) {
+      return res.status(403).json({ message: "Access denied." });
+    }
+    console.log(prsn_rk);
+    // Always return only the periods for the specified prsn_rk
+    const allTrainingPeriods = await pool.query(
+      "SELECT * FROM training_period WHERE prsn_rk = $1 ORDER BY trpe_start_dt DESC",
+      [prsn_rk]
+    );
+    console.log(allTrainingPeriods.rows);
     res.json(allTrainingPeriods.rows);
   } catch (err) {
     console.error("Async Error:", err.message);

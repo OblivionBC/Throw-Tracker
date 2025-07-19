@@ -13,12 +13,9 @@ import AddProgramModal from "../modals/AddProgramModal";
 import AssignProgramModal from "../modals/AssignProgramModal";
 import ProgramDetailsModal from "../modals/ProgramDetailsModal";
 import AssignProgramToAthletesModal from "../modals/AssignProgramToAthletesModal";
-import { useProgramsData } from "../../hooks/useCachedData";
-import {
-  getPaginationNumber,
-  getContainerHeight,
-} from "../../utils/tableUtils";
+import { getPaginationNumber } from "../../utils/tableUtils";
 import useUserStore, { useUser } from "../../stores/userStore";
+import { programsApi } from "../../api";
 
 const TableStyles = {
   pagination: {
@@ -44,15 +41,27 @@ const ProgramsList = ({ paginationNum }) => {
   const [detailsProgramOpen, setDetailsProgramOpen] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState({});
   const [assignToAthletesOpen, setAssignToAthletesOpen] = useState(false);
+  const [programsData, setProgramsData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const user = useUser();
 
-  // Use the cached data hook
-  const {
-    data: programsData = [],
-    loading,
-    error,
-    refetch,
-  } = useProgramsData();
+  const fetchPrograms = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await programsApi.getAll();
+      setProgramsData(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPrograms();
+  }, []);
 
   // Update container height on mount and resize
   useEffect(() => {
@@ -71,30 +80,17 @@ const ProgramsList = ({ paginationNum }) => {
   const optimalPagination = getPaginationNumber(paginationNum, containerHeight);
 
   const handleRefresh = () => {
-    refetch();
+    fetchPrograms();
   };
 
   const handleDataChange = () => {
-    refetch();
+    fetchPrograms();
   };
 
   const columns = [
     {
       name: "Program Name",
       selector: (row) => row.prog_nm,
-      sortable: true,
-    },
-    {
-      name: "Training Period",
-      selector: (row) => row.trpe_rk,
-      cell: (row) => (
-        <div>
-          {dayjs(row.trpe_start_dt).format("MMM D YYYY")} -
-          {row.trpe_end_dt
-            ? dayjs(row.trpe_end_dt).format("MMM D YYYY")
-            : "Active"}
-        </div>
-      ),
       sortable: true,
     },
     {
@@ -163,20 +159,26 @@ const ProgramsList = ({ paginationNum }) => {
         <AddButton onClick={handleRefresh}>Refresh</AddButton>
       </RowDiv>
       <TableWrap>
-        <Table
-          columns={columns}
-          data={programsData}
-          pagination
-          paginationPerPage={optimalPagination}
-          paginationComponentOptions={{
-            rowsPerPageText: "Rows per page:",
-            rangeSeparatorText: "of",
-            selectAllRowsItem: false,
-          }}
-          customStyles={TableStyles}
-          defaultSortFieldId="Program Name"
-          defaultSortAsc={true}
-        />
+        {loading ? (
+          <div>Loading programs...</div>
+        ) : error ? (
+          <div style={{ color: "red" }}>Error: {error}</div>
+        ) : (
+          <Table
+            columns={columns}
+            data={programsData}
+            pagination
+            paginationPerPage={optimalPagination}
+            paginationComponentOptions={{
+              rowsPerPageText: "Rows per page:",
+              rangeSeparatorText: "of",
+              selectAllRowsItem: false,
+            }}
+            customStyles={TableStyles}
+            defaultSortFieldId="Program Name"
+            defaultSortAsc={true}
+          />
+        )}
       </TableWrap>
     </CompWrap>
   );

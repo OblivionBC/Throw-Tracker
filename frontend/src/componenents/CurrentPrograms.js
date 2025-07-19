@@ -6,9 +6,9 @@ import {
   AddButton,
   FieldOutputContainer,
   FieldLabel,
-} from "../../styles/styles.js";
-import { programAthleteAssignmentsApi, trainingPeriodsApi } from "../../api";
-import useUserStore, { useUser } from "../../stores/userStore";
+} from "../styles/styles.js";
+import { programAthleteAssignmentsApi, trainingPeriodsApi } from "../api";
+import useUserStore, { useUser } from "../stores/userStore";
 import ProgramDetailsModal from "./modals/ProgramDetailsModal";
 
 const CurrentPrograms = () => {

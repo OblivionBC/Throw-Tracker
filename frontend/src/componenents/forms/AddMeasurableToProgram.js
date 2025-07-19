@@ -65,8 +65,8 @@ const AddMeasurableToProgramForm = ({ close, refresh, prog_rk }) => {
       refresh();
       close();
     } catch (error) {
+      console.error("Failed to add measurable to program:", error);
       setErrors({ submit: error.message });
-      console.error(error.message);
     } finally {
       setSubmitting(false);
     }

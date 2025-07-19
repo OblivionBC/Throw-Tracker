@@ -5,8 +5,10 @@ import {
   Title,
   CompWrap,
   AddButton,
+  RowDiv,
 } from "../../styles/styles.js";
 import AthleteDetails from "../modals/AthleteDetails";
+import AssignEventToAthleteModal from "../modals/AssignEventToAthleteModal";
 import { personsApi } from "../../api";
 import useUserStore, { useUser } from "../../stores/userStore";
 import {
@@ -35,6 +37,7 @@ const AthleteList = ({ paginationNum }) => {
   const [containerHeight, setContainerHeight] = useState(600);
   const [excrData, setExcrData] = useState([]);
   const [programOpen, setProgramOpen] = useState(false);
+  const [assignEventOpen, setAssignEventOpen] = useState(false);
   const [selectedPrsn, setSelectedPrsn] = useState();
   const user = useUser();
 
@@ -86,14 +89,25 @@ const AthleteList = ({ paginationNum }) => {
     },
     {
       cell: (row) => (
-        <AddButton
-          onClick={() => {
-            setSelectedPrsn(row);
-            setProgramOpen(true);
-          }}
-        >
-          Details
-        </AddButton>
+        <div style={{ display: "flex", gap: "5px" }}>
+          <AddButton
+            onClick={() => {
+              setSelectedPrsn(row);
+              setProgramOpen(true);
+            }}
+          >
+            Details
+          </AddButton>
+          <AddButton
+            onClick={() => {
+              setSelectedPrsn(row);
+              setAssignEventOpen(true);
+            }}
+            style={{ backgroundColor: "#28a745" }}
+          >
+            Assign Events
+          </AddButton>
+        </div>
       ),
     },
   ];
@@ -108,7 +122,15 @@ const AthleteList = ({ paginationNum }) => {
         open={programOpen}
         onClose={() => setProgramOpen(false)}
       />
-      <Title>Athletes</Title>
+      <AssignEventToAthleteModal
+        open={assignEventOpen}
+        onClose={() => setAssignEventOpen(false)}
+        onSuccess={getAthleteData}
+      />
+      <RowDiv>
+        <Title>Athletes</Title>
+      </RowDiv>
+
       <TableWrap>
         <Table
           columns={columns}

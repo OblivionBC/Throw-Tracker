@@ -1,9 +1,8 @@
 import { apiCall } from "./config";
-import useCacheStore from "../stores/cacheStore";
 
-// Program Athlete Assignments API functions with caching
+// Program Athlete Assignments API functions (no caching)
 export const programAthleteAssignmentsApi = {
-  // Assign program to training periods
+  // Assign program to training periods (no caching)
   assignToTrainingPeriods: async (prog_rk, assignments) => {
     try {
       const response = await apiCall(
@@ -13,16 +12,6 @@ export const programAthleteAssignmentsApi = {
           body: JSON.stringify({ assignments }),
         }
       );
-
-      // Invalidate related caches
-      useCacheStore
-        .getState()
-        .invalidateMultiple([
-          "programAssignments",
-          `programDetails_${prog_rk}`,
-          "programs",
-        ]);
-
       return response;
     } catch (error) {
       throw new Error(
@@ -32,32 +21,15 @@ export const programAthleteAssignmentsApi = {
     }
   },
 
-  // Get program assignments (with caching)
-  getProgramAssignments: async (prog_rk, forceRefresh = false) => {
-    const cacheStore = useCacheStore.getState();
-    const cacheKey = `programAssignments_${prog_rk}`;
-
-    // Check cache first (unless force refresh)
-    if (!forceRefresh && cacheStore.isCacheValid(cacheKey)) {
-      const cachedData = cacheStore.getCachedData(cacheKey);
-      if (cachedData) {
-        console.log("Using cached program assignments data");
-        return cachedData;
-      }
-    }
-
+  // Get program assignments (no caching)
+  getProgramAssignments: async (prog_rk) => {
     try {
-      console.log("Fetching program assignments from API");
       const response = await apiCall(
         `/program-athlete-assignments/programs/${prog_rk}/assignments`,
         {
           method: "GET",
         }
       );
-
-      // Cache the response
-      cacheStore.setCachedData(cacheKey, response);
-
       return response;
     } catch (error) {
       throw new Error(
@@ -66,7 +38,7 @@ export const programAthleteAssignmentsApi = {
     }
   },
 
-  // Remove program from athlete
+  // Remove program from athlete (no caching)
   removeFromAthlete: async (paa_rk) => {
     try {
       const response = await apiCall(
@@ -75,10 +47,6 @@ export const programAthleteAssignmentsApi = {
           method: "DELETE",
         }
       );
-
-      // Invalidate program assignments cache
-      useCacheStore.getState().invalidateCache("programAssignments");
-
       return response;
     } catch (error) {
       throw new Error(
@@ -87,7 +55,7 @@ export const programAthleteAssignmentsApi = {
     }
   },
 
-  // Get athlete programs
+  // Get athlete programs (no caching)
   getAthletePrograms: async (athlete_prsn_rk) => {
     try {
       const response = await apiCall(
@@ -104,7 +72,7 @@ export const programAthleteAssignmentsApi = {
     }
   },
 
-  // Get training period programs
+  // Get training period programs (no caching)
   getTrainingPeriodPrograms: async (trpe_rk) => {
     try {
       const response = await apiCall(
@@ -122,12 +90,6 @@ export const programAthleteAssignmentsApi = {
     }
   },
 
-  // Invalidate program assignments cache (useful for manual cache management)
-  invalidateProgramAssignmentsCache: (prog_rk) => {
-    if (prog_rk) {
-      useCacheStore.getState().invalidateCache(`programAssignments_${prog_rk}`);
-    } else {
-      useCacheStore.getState().invalidateCache("programAssignments");
-    }
-  },
+  // Invalidate program assignments cache (no-op)
+  invalidateProgramAssignmentsCache: (prog_rk) => {},
 };

@@ -228,9 +228,12 @@ exports.getTrainingPeriodPrograms = async (req, res) => {
     const { trpe_rk } = req.params;
     const user_prsn_rk = req.user.id;
 
-    // Validate that the training period belongs to the user
+    // Validate that the training period belongs to the user (athlete) or their coach
     const trainingPeriodCheck = await pool.query(
-      "SELECT trpe_rk FROM training_period WHERE trpe_rk = $1 AND prsn_rk = $2",
+      `SELECT tp.trpe_rk
+       FROM training_period tp
+       JOIN person athlete ON tp.prsn_rk = athlete.prsn_rk
+       WHERE tp.trpe_rk = $1 AND (tp.prsn_rk = $2 OR athlete.coach_prsn_rk = $2)`,
       [trpe_rk, user_prsn_rk]
     );
 

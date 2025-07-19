@@ -55,7 +55,6 @@ const TrainingPeriodList = ({
   const [programs, setPrograms] = useState(false);
   const [editTRPEOpen, setEditTRPEOpen] = useState(false);
   const [selectedTRPE, setSelectedTRPE] = useState({});
-
   const {
     isCacheValid,
     setCacheData,
@@ -83,43 +82,30 @@ const TrainingPeriodList = ({
   selectable === undefined ? (selectable = false) : (selectable = true);
 
   const getTRPEData = async (forceRefresh = false) => {
-    const cacheKey = "trainingPeriods";
-
-    // Check if we have valid cached data and don't need to force refresh
-    if (!forceRefresh && isCacheValid(cacheKey)) {
-      const cachedData = getCachedData(cacheKey);
-      if (cachedData && cachedData.data) {
-        setTrpeData(cachedData.data);
-        return;
-      }
-    }
-
-    // Set loading state
-    setCacheLoading(cacheKey, true);
+    setCacheLoading(prsn_rk, true);
 
     try {
-      const response = await trainingPeriodsApi.getAllForPerson();
+      const response = await trainingPeriodsApi.getAllForPerson(prsn_rk);
       setTrpeData(response);
-      setCacheData(cacheKey, response);
+      setCacheData(prsn_rk, response);
     } catch (error) {
       console.error(error.message);
     } finally {
-      setCacheLoading(cacheKey, false);
+      setCacheLoading(prsn_rk, false);
     }
   };
 
   useEffect(() => {
     getTRPEData();
-  }, [refreshFlags.trainingPeriods]);
+  }, [prsn_rk, refreshFlags[prsn_rk]]);
 
   const handleRefresh = () => {
     getTRPEData(true);
   };
 
   const handleDataChange = () => {
-    invalidateCache("trainingPeriods");
+    invalidateCache(prsn_rk);
   };
-
   const handleChange = ({ selectedRows }) => {
     if (selectedRows) {
       const ids = selectedRows?.map((row) => {
@@ -131,7 +117,7 @@ const TrainingPeriodList = ({
   const columns = [
     /* {
       name: "ID",
-      selector: (row) => row.trpe_rk,
+      selector: (row) => row.trpe_rk, 
       sortable: true,
     },*/
     {

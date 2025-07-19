@@ -8,12 +8,12 @@ exports.addMeet = async (req, res) => {
   try {
     console.log(req.body);
     const { meet_nm, meet_dt, meet_location } = req.body;
-    const prsn_rk = req.user.id;
+    const assigned_by_prsn_rk = req.user.id;
     //$1 is the variable to add in the db, runs sql query in quotes which is same as in the CLI
     //Returning * returns back the data
     const newMeet = await pool.query(
-      "INSERT INTO Meet (meet_nm, meet_dt, meet_location, prsn_rk) VALUES($1, $2, $3, $4) RETURNING *",
-      [meet_nm, meet_dt, meet_location, prsn_rk]
+      "INSERT INTO Meet (meet_nm, meet_dt, meet_location, assigned_by_prsn_rk) VALUES($1, $2, $3, $4) RETURNING *",
+      [meet_nm, meet_dt, meet_location, assigned_by_prsn_rk]
     );
 
     res.json(newMeet.rows[0]);
@@ -52,10 +52,10 @@ exports.updateMeet = async (req, res) => {
   try {
     const { meet_rk } = req.params;
     const { meet_nm, meet_dt, meet_location } = req.body;
-    const prsn_rk = req.user.id;
+    const assigned_by_prsn_rk = req.user.id;
     const updateTodo = await pool.query(
-      "UPDATE Meet SET meet_nm = $1, meet_dt = $2, meet_location = $3, prsn_rk = $4 WHERE meet_rk = $5",
-      [meet_nm, meet_dt, meet_location, prsn_rk, meet_rk]
+      "UPDATE Meet SET meet_nm = $1, meet_dt = $2, meet_location = $3, assigned_by_prsn_rk = $4 WHERE meet_rk = $5",
+      [meet_nm, meet_dt, meet_location, assigned_by_prsn_rk, meet_rk]
     );
     res.json("Meet was Updated");
   } catch (err) {

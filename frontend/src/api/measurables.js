@@ -1,39 +1,21 @@
 import { apiCall } from "./config";
-import useCacheStore from "../stores/cacheStore";
 
-// Measurables API functions with caching
+// Measurables API functions (no caching)
 export const measurablesApi = {
-  // Get all measurables
+  // Get all measurables (no caching)
   getAll: async () => {
     return await apiCall("/measurables");
   },
 
-  // Get measurable by ID
+  // Get measurable by ID (no caching)
   getById: async (meas_rk) => {
     return await apiCall(`/measurables/${meas_rk}`);
   },
 
-  // Get measurables for coach (with caching)
-  getForCoach: async (forceRefresh = false) => {
-    const cacheStore = useCacheStore.getState();
-    const cacheKey = "measurables";
-
-    // Check cache first (unless force refresh)
-    if (!forceRefresh && cacheStore.isCacheValid(cacheKey)) {
-      const cachedData = cacheStore.getCachedData(cacheKey);
-      if (cachedData) {
-        console.log("Using cached measurables data");
-        return cachedData;
-      }
-    }
-
+  // Get measurables for coach (no caching)
+  getForCoach: async () => {
     try {
-      console.log("Fetching measurables from API");
       const response = await apiCall("/measurables/coach");
-
-      // Cache the response
-      cacheStore.setCachedData(cacheKey, response);
-
       return response;
     } catch (error) {
       throw new Error(
@@ -42,50 +24,50 @@ export const measurablesApi = {
     }
   },
 
-  // Get measurables for athletes
+  // Get measurables for athletes (no caching)
   getForAthletes: async () => {
     return await apiCall("/measurables/athletes");
   },
 
-  // Create new measurable
+  // Get measurables for the current user (no caching)
+  getAllForPerson: async () => {
+    try {
+      const response = await apiCall("/measurables/person");
+      return response;
+    } catch (error) {
+      throw new Error(
+        error.response?.data?.message || "Failed to get measurables for user"
+      );
+    }
+  },
+
+  // Create new measurable (no caching)
   create: async (measurableData) => {
     const response = await apiCall("/measurables", {
       method: "POST",
       body: JSON.stringify(measurableData),
     });
-
-    // Invalidate measurables cache when new measurable is created
-    useCacheStore.getState().invalidateCache("measurables");
-
     return response;
   },
 
-  // Update measurable
+  // Update measurable (no caching)
   update: async (meas_rk, measurableData) => {
     const response = await apiCall(`/measurables/${meas_rk}`, {
       method: "PUT",
       body: JSON.stringify(measurableData),
     });
-
-    // Invalidate measurables cache when measurable is updated
-    useCacheStore.getState().invalidateCache("measurables");
-
     return response;
   },
 
-  // Delete measurable
+  // Delete measurable (no caching)
   delete: async (meas_rk) => {
     const response = await apiCall(`/measurables/${meas_rk}`, {
       method: "DELETE",
     });
-
-    // Invalidate measurables cache when measurable is deleted
-    useCacheStore.getState().invalidateCache("measurables");
-
     return response;
   },
 
-  // Add measurable to program
+  // Add measurable to program (no caching)
   addToProgram: async (prog_rk, measurableData) => {
     const response = await apiCall(
       `/program-measurable-assignments/programs/${prog_rk}/measurables`,
@@ -94,16 +76,10 @@ export const measurablesApi = {
         body: JSON.stringify(measurableData),
       }
     );
-
-    // Invalidate program-related caches
-    useCacheStore
-      .getState()
-      .invalidateMultiple(["programDetails", "programAssignments", "programs"]);
-
     return response;
   },
 
-  // Add multiple measurables to program (batch operation)
+  // Add multiple measurables to program (batch operation, no caching)
   addMultipleToProgram: async (prog_rk, measurables) => {
     const response = await apiCall(
       `/program-measurable-assignments/programs/${prog_rk}/measurables/batch`,
@@ -112,17 +88,9 @@ export const measurablesApi = {
         body: JSON.stringify({ measurables }),
       }
     );
-
-    // Invalidate program-related caches
-    useCacheStore
-      .getState()
-      .invalidateMultiple(["programDetails", "programAssignments", "programs"]);
-
     return response;
   },
 
-  // Invalidate measurables cache (useful for manual cache management)
-  invalidateMeasurablesCache: () => {
-    useCacheStore.getState().invalidateCache("measurables");
-  },
+  // Invalidate measurables cache (no-op)
+  invalidateMeasurablesCache: () => {},
 };
