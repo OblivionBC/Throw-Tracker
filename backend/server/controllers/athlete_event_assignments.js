@@ -65,9 +65,17 @@ exports.getEventsForAthlete = async (req, res) => {
   try {
     const { athlete_rk } = req.params;
     const result = await pool.query(
-      `SELECT aea.*, et.* FROM athlete_event_assignment aea
+      `SELECT 
+        aea.aevas_rk,
+        aea.athlete_rk,
+        aea.etyp_rk,
+        et.etyp_type_name,
+        et.event_group_name,
+        et.description
+       FROM athlete_event_assignment aea
        JOIN event_type et ON aea.etyp_rk = et.etyp_rk
-       WHERE aea.athlete_rk = $1`,
+       WHERE aea.athlete_rk = $1
+       ORDER BY et.etyp_type_name`,
       [athlete_rk]
     );
     res.json(result.rows);

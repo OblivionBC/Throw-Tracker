@@ -157,3 +157,89 @@ exports.updatePassword = async (req, res) => {
     });
   }
 };
+
+// Get unassigned athletes in the coach's org (no coach assigned)
+exports.unassignedAthletesInOrg = async (req, res) => {
+  try {
+    const coach = await pool.query(
+      "SELECT org_rk FROM person WHERE prsn_rk = $1",
+      [req.user.id]
+    );
+    if (coach.rows.length === 0)
+      return res.status(404).json({ message: "Coach not found" });
+    const org_rk = coach.rows[0].org_rk;
+    console.log("Coach org_rk:", org_rk);
+
+    // Let's see what roles exist in the org
+    const rolesInOrg = await pool.query(
+      "SELECT DISTINCT p.prsn_role FROM person p WHERE p.org_rk = $1",
+      [org_rk]
+    );
+    console.log("Roles in org:", rolesInOrg.rows);
+
+    // First, let's see all people in the org without coach
+    const allPeopleWithoutCoach = await pool.query(
+      "SELECT p.prsn_rk, p.prsn_first_nm, p.prsn_last_nm, p.prsn_email, p.prsn_role, p.coach_prsn_rk, o.org_name FROM person p INNER JOIN organization o ON o.org_rk = p.org_rk WHERE p.org_rk = $1 AND p.coach_prsn_rk IS NULL",
+      [org_rk]
+    );
+    console.log("All people without coach:", allPeopleWithoutCoach.rows);
+
+    // Now try with ATHLETE role
+    const result = await pool.query(
+      "SELECT p.prsn_rk, p.prsn_first_nm, p.prsn_last_nm, p.prsn_email, p.prsn_role, o.org_name FROM person p INNER JOIN organization o ON o.org_rk = p.org_rk WHERE p.org_rk = $1 AND p.coach_prsn_rk IS NULL AND p.prsn_role = 'ATHLETE'",
+      [org_rk]
+    );
+    console.log("Unassigned athletes result:", result.rows);
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error getting unassigned athletes:", err.message);
+    res
+      .status(500)
+      .json({ message: "Error occurred getting unassigned athletes." });
+  }
+};
+
+// Assign self as coach to an athlete
+exports.assignCoachToAthlete = async (req, res) => {
+  try {
+    const { athlete_rk } = req.body;
+    const coach_prsn_rk = req.user.id;
+    await pool.query(
+      "UPDATE person SET coach_prsn_rk = $1 WHERE prsn_rk = $2 AND prsn_role = 'athlete'",
+      [coach_prsn_rk, athlete_rk]
+    );
+    res.json({ message: "Coach assigned to athlete" });
+  } catch (err) {
+    console.error("Error assigning coach:", err.message);
+    res.status(500).json({ message: "Error occurred assigning coach." });
+  }
+};
+
+// Unassign coach from an athlete
+exports.unassignCoachFromAthlete = async (req, res) => {
+  try {
+    const { athlete_rk } = req.body;
+    const coach_prsn_rk = req.user.id;
+
+    // Verify the athlete is currently assigned to this coach
+    const athlete = await pool.query(
+      "SELECT prsn_rk FROM person WHERE prsn_rk = $1 AND coach_prsn_rk = $2 AND prsn_role = 'ATHLETE'",
+      [athlete_rk, coach_prsn_rk]
+    );
+
+    if (athlete.rows.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "Athlete not found or not assigned to you" });
+    }
+
+    await pool.query(
+      "UPDATE person SET coach_prsn_rk = NULL WHERE prsn_rk = $1",
+      [athlete_rk]
+    );
+    res.json({ message: "Coach unassigned from athlete" });
+  } catch (err) {
+    console.error("Error unassigning coach:", err.message);
+    res.status(500).json({ message: "Error occurred unassigning coach." });
+  }
+};

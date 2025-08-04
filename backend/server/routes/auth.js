@@ -10,11 +10,15 @@ const {
   refreshToken,
   checkTokenStatus,
   revokeAllSessions,
+  signup,
+  forgotPassword,
 } = require("../controllers/auth");
 
 // Auth routes (no authentication required)
 router
   .post("/login", login) // POST /auth/login
+  .post("/signup", signup) // POST /auth/signup
+  .post("/forgot-password", forgotPassword) // POST /auth/forgot-password
   .post("/logout", logout) // POST /auth/logout
   .post("/refresh", refreshToken) // POST /auth/refresh
   .get("/token-status", checkTokenStatus); // GET /auth/token-status

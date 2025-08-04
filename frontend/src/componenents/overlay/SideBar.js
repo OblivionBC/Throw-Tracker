@@ -277,7 +277,6 @@ const Sidebar = () => {
           >
             Coach Tools:
           </div>
-          <AthleteSelect org_name={user?.org_name} updateUser={true} />
         </div>
       )}
       {isModalOpen && (

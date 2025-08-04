@@ -348,3 +348,72 @@ exports.revokeAllSessions = async (req, res) => {
     res.status(500).json({ message: "Error revoking sessions" });
   }
 };
+
+// Signup function (no authentication required)
+exports.signup = async (req, res) => {
+  try {
+    const { fname, lname, username, password, org, role } = req.body;
+
+    // Check if user already exists
+    const alreadyExists = await pool.query(
+      "SELECT * FROM person WHERE prsn_email = $1",
+      [username]
+    );
+
+    if (alreadyExists.rowCount > 0) {
+      return res.status(400).json({
+        message: "Email is already in use, please select another",
+      });
+    }
+
+    // Create new person
+    const newPerson = await pool.query(
+      "INSERT INTO person (prsn_first_nm, prsn_last_nm, prsn_email, prsn_pwrd, org_rk, prsn_role) VALUES($1, $2, $3, crypt($4, gen_salt('bf')), $5, $6) RETURNING *",
+      [fname, lname, username, password, org, role]
+    );
+
+    res.json({
+      message: "User created successfully",
+      user: newPerson.rows[0],
+    });
+  } catch (err) {
+    console.error("Error occurred during signup:", err.message);
+    res.status(500).json({ message: "Error occurred during signup." });
+  }
+};
+
+// Forgot password function (no authentication required)
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Check if user exists
+    const user = await pool.query(
+      "SELECT prsn_rk, prsn_first_nm, prsn_last_nm FROM person WHERE prsn_email = $1",
+      [email]
+    );
+
+    if (user.rowCount === 0) {
+      // Don't reveal if email exists or not for security
+      return res.json({
+        message: "If the email exists, a password reset link has been sent.",
+      });
+    }
+
+    // For now, just return a success message
+    // In a real implementation, you would:
+    // 1. Generate a password reset token
+    // 2. Store it in the database with expiration
+    // 3. Send an email with the reset link
+    // 4. The reset link would contain the token to verify and allow password change
+
+    res.json({
+      message: "If the email exists, a password reset link has been sent.",
+    });
+  } catch (err) {
+    console.error("Error occurred during forgot password:", err.message);
+    res
+      .status(500)
+      .json({ message: "Error occurred during forgot password request." });
+  }
+};

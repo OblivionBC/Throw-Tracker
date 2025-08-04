@@ -11,7 +11,7 @@ import {
   StyledSelect,
 } from "../../styles/styles.js";
 import "typeface-nunito";
-import { personsApi } from "../../api";
+import { authApi } from "../../api";
 const SignUpForm = ({ on, off }) => {
   const initialValues = {
     fname: "",
@@ -42,7 +42,7 @@ const SignUpForm = ({ on, off }) => {
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     setSubmitting(true);
     try {
-      await personsApi.create(values);
+      await authApi.signup(values);
       alert("User Created Successfully");
       setSubmitting(false);
       off();

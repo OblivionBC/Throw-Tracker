@@ -10,7 +10,7 @@ import {
   StyledInput,
 } from "../../styles/styles.js";
 import "typeface-nunito";
-import { personsApi } from "../../api";
+import { authApi } from "../../api";
 const ForgotPasswordForm = ({ off }) => {
   const initialValues = {
     prsn_first_nm: "",
@@ -38,13 +38,13 @@ const ForgotPasswordForm = ({ off }) => {
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     setSubmitting(true);
     try {
-      await personsApi.updatePassword(values);
-      alert("Password Updated Successfully");
+      await authApi.forgotPassword(values.email);
+      alert("If the email exists, a password reset link has been sent.");
       setSubmitting(false);
       off();
     } catch (error) {
       setErrors({ submit: error.message });
-      return false;
+      console.error(error.message);
     }
   };
 

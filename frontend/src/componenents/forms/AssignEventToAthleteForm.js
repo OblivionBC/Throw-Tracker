@@ -2,11 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import styled from "styled-components";
-import {
-  athleteEventAssignmentsApi,
-  personsApi,
-  eventTypesApi,
-} from "../../api";
+import { athleteEventAssignmentsApi, eventTypesApi } from "../../api";
 
 const FormContainer = styled.div`
   padding: 20px;
@@ -73,23 +69,22 @@ const CancelButton = styled.button`
 `;
 
 const validationSchema = Yup.object({
-  athlete_rk: Yup.number().required("Athlete is required"),
-  etyp_rk: Yup.number().required("Event type is required"),
+  etyp_rk: Yup.string().required("Event type is required"),
 });
 
-const AssignEventToAthleteForm = ({ onSuccess, onCancel, coachPrsnRk }) => {
-  const [athletes, setAthletes] = useState([]);
+const AssignEventToAthleteForm = ({
+  onSuccess,
+  onCancel,
+  coachPrsnRk,
+  selectedAthlete,
+}) => {
   const [eventTypes, setEventTypes] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [athletesData, eventTypesData] = await Promise.all([
-          personsApi.getAllAthletes(),
-          eventTypesApi.getAll(),
-        ]);
-        setAthletes(athletesData);
+        const eventTypesData = await eventTypesApi.getAll();
         setEventTypes(eventTypesData);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -104,8 +99,8 @@ const AssignEventToAthleteForm = ({ onSuccess, onCancel, coachPrsnRk }) => {
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     try {
       await athleteEventAssignmentsApi.assign(
-        values.athlete_rk,
-        values.etyp_rk
+        selectedAthlete.prsn_rk,
+        parseInt(values.etyp_rk)
       );
       onSuccess();
     } catch (error) {
@@ -127,37 +122,48 @@ const AssignEventToAthleteForm = ({ onSuccess, onCancel, coachPrsnRk }) => {
       <h2>Assign Event to Athlete</h2>
       <Formik
         initialValues={{
-          athlete_rk: "",
           etyp_rk: "",
         }}
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
       >
-        {({ isSubmitting, errors }) => (
+        {({ isSubmitting, errors, values }) => (
           <Form>
             <FormGroup>
-              <Label htmlFor="athlete_rk">Athlete *</Label>
-              <Select as="select" name="athlete_rk" id="athlete_rk">
-                <option value="">Select an athlete</option>
-                {athletes.map((athlete) => (
-                  <option key={athlete.prsn_rk} value={athlete.prsn_rk}>
-                    {athlete.prsn_first_nm} {athlete.prsn_last_nm}
-                  </option>
-                ))}
-              </Select>
-              <ErrorMessage name="athlete_rk" component={ErrorText} />
+              <Label>Athlete</Label>
+              <div
+                style={{
+                  padding: "8px",
+                  border: "1px solid #ddd",
+                  borderRadius: "4px",
+                  backgroundColor: "#f8f9fa",
+                }}
+              >
+                {selectedAthlete?.prsn_first_nm} {selectedAthlete?.prsn_last_nm}
+              </div>
             </FormGroup>
 
             <FormGroup>
               <Label htmlFor="etyp_rk">Event Type *</Label>
-              <Select as="select" name="etyp_rk" id="etyp_rk">
+              <Field
+                as="select"
+                name="etyp_rk"
+                id="etyp_rk"
+                style={{
+                  width: "100%",
+                  padding: "8px",
+                  border: "1px solid #ddd",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                }}
+              >
                 <option value="">Select an event type</option>
                 {eventTypes.map((eventType) => (
                   <option key={eventType.etyp_rk} value={eventType.etyp_rk}>
                     {eventType.etyp_type_name} - {eventType.event_group_name}
                   </option>
                 ))}
-              </Select>
+              </Field>
               <ErrorMessage name="etyp_rk" component={ErrorText} />
             </FormGroup>
 

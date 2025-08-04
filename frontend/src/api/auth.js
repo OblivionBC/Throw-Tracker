@@ -37,4 +37,20 @@ export const authApi = {
       method: "POST",
     });
   },
+
+  signup: async (userData) => {
+    const response = await apiCall("/auth/signup", {
+      method: "POST",
+      body: JSON.stringify(userData),
+    });
+    return response;
+  },
+
+  forgotPassword: async (email) => {
+    const response = await apiCall("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+    return response;
+  },
 };

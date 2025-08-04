@@ -64,4 +64,20 @@ export const personsApi = {
       );
     }
   },
+
+  getUnassignedAthletesInOrg: async () => {
+    return await apiCall("/persons/athletes/unassigned");
+  },
+  assignCoachToAthlete: async (athlete_rk) => {
+    return await apiCall("/persons/athletes/assign-coach", {
+      method: "POST",
+      body: JSON.stringify({ athlete_rk }),
+    });
+  },
+  unassignCoachFromAthlete: async (athlete_rk) => {
+    return await apiCall("/persons/athletes/unassign-coach", {
+      method: "POST",
+      body: JSON.stringify({ athlete_rk }),
+    });
+  },
 };

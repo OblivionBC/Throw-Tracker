@@ -12,12 +12,18 @@ const {
   updatePassword,
   athletesForCoach,
   getMe,
+  unassignedAthletesInOrg,
+  assignCoachToAthlete,
+  unassignCoachFromAthlete,
 } = require("../controllers/persons");
 
 // Protected routes (authentication required)
 router
   .get("/me", requireAuth, getMe) // GET /persons/me
-  .get("/athletes", requireAuth, athletesForCoach); // GET /persons/athletes (uses req.user.id)
+  .get("/athletes", requireAuth, athletesForCoach) // GET /persons/athletes (uses req.user.id)
+  .get("/athletes/unassigned", requireAuth, unassignedAthletesInOrg) // GET /persons/athletes/unassigned
+  .post("/athletes/assign-coach", requireAuth, assignCoachToAthlete) // POST /persons/athletes/assign-coach
+  .post("/athletes/unassign-coach", requireAuth, unassignCoachFromAthlete); // POST /persons/athletes/unassign-coach
 
 // Admin routes (authentication required)
 router

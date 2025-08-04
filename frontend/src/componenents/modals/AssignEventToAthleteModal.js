@@ -45,7 +45,12 @@ const Content = styled.div`
   padding: 20px;
 `;
 
-const AssignEventToAthleteModal = ({ open, onClose, onSuccess }) => {
+const AssignEventToAthleteModal = ({
+  open,
+  onClose,
+  onSuccess,
+  selectedAthlete,
+}) => {
   if (!open) return null;
 
   const handleSuccess = () => {
@@ -61,6 +66,7 @@ const AssignEventToAthleteModal = ({ open, onClose, onSuccess }) => {
           <AssignEventToAthleteForm
             onSuccess={handleSuccess}
             onCancel={onClose}
+            selectedAthlete={selectedAthlete}
           />
         </Content>
       </ModalContainer>
