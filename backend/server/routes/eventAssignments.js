@@ -7,6 +7,7 @@ const { requireAuth } = require("../middleware/auth");
 const {
   addEventAssignment,
   getEventAssignmentsByMeet,
+  getAllEventAssignmentsByMeet,
   getEventAssignmentsByAthlete,
   updateEventAssignment,
   deleteEventAssignment,
@@ -17,6 +18,7 @@ const {
 router
   .post("/", requireAuth, addEventAssignment) // POST /event-assignments
   .get("/meet/:meet_rk", requireAuth, getEventAssignmentsByMeet) // GET /event-assignments/meet/:meet_rk
+  .get("/meet/:meet_rk/all", requireAuth, getAllEventAssignmentsByMeet) // GET /event-assignments/meet/:meet_rk/all
   .get("/athlete/:prsn_rk", requireAuth, getEventAssignmentsByAthlete) // GET /event-assignments/athlete/:prsn_rk
   .get("/:meet_rk/:prsn_rk/:etyp_rk", requireAuth, getEventAssignment) // GET /event-assignments/:meet_rk/:prsn_rk/:etyp_rk
   .put("/:meet_rk/:prsn_rk/:etyp_rk", requireAuth, updateEventAssignment) // PUT /event-assignments/:meet_rk/:prsn_rk/:etyp_rk

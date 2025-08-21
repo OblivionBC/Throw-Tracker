@@ -10,7 +10,7 @@ const { pool } = require("./db.js");
 require("dotenv").config(); // Loading environment variables from a .env file
 const PORT = process.env.PORT;
 
-// CORS configuration - must come before other middleware
+// CORS configuration -          come before other middleware
 app.use(
   cors({
     origin: process.env.FRONTEND_URL || "http://localhost:5001",

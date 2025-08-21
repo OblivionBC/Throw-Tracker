@@ -110,12 +110,13 @@ const parseRefreshExpiration = (expirationString) => {
 exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
-
+    console.log(username, password)
     const result = await pool.query(
       "SELECT p.prsn_rk, p.prsn_first_nm, p.prsn_last_nm, p.prsn_email, p.prsn_role, o.org_name FROM person p inner join organization o on o.org_rk = p.org_rk WHERE p.prsn_email = $1 AND p.prsn_pwrd = crypt($2, p.prsn_pwrd);",
       [username, password]
     );
     if (result.rows.length == 0) {
+      console.log("NOT EXIST")
       res.status(404).json("Record does not exist");
       return;
     }
@@ -385,20 +386,20 @@ exports.signup = async (req, res) => {
 // Forgot password function (no authentication required)
 exports.forgotPassword = async (req, res) => {
   try {
-    const { email } = req.body;
-
-    // Check if user exists
-    const user = await pool.query(
-      "SELECT prsn_rk, prsn_first_nm, prsn_last_nm FROM person WHERE prsn_email = $1",
-      [email]
+    const { email, new_password } = req.body;
+    console.log(email)
+    console.log(new_password)
+    const newPassword = await pool.query(
+        "UPDATE person SET prsn_pwrd = crypt($2, gen_salt('bf')) where prsn_email = $1;",
+        [email, new_password]
     );
-
-    if (user.rowCount === 0) {
+    if (newPassword.rowCount === 0) {
       // Don't reveal if email exists or not for security
       return res.json({
         message: "If the email exists, a password reset link has been sent.",
       });
     }
+
 
     // For now, just return a success message
     // In a real implementation, you would:

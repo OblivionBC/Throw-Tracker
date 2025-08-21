@@ -34,4 +34,9 @@ export const meetsApi = {
       method: "DELETE",
     });
   },
+
+  // Get meets for coach's organization
+  getForCoachOrg: async () => {
+    return await apiCall("/meets/coach-org");
+  },
 };

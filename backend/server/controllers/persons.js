@@ -204,8 +204,21 @@ exports.assignCoachToAthlete = async (req, res) => {
   try {
     const { athlete_rk } = req.body;
     const coach_prsn_rk = req.user.id;
+
+    // Verify the athlete exists and is unassigned
+    const athlete = await pool.query(
+      "SELECT prsn_rk FROM person WHERE prsn_rk = $1 AND prsn_role = 'ATHLETE' AND coach_prsn_rk IS NULL",
+      [athlete_rk]
+    );
+
+    if (athlete.rows.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "Athlete not found or already assigned to a coach" });
+    }
+
     await pool.query(
-      "UPDATE person SET coach_prsn_rk = $1 WHERE prsn_rk = $2 AND prsn_role = 'athlete'",
+      "UPDATE person SET coach_prsn_rk = $1 WHERE prsn_rk = $2",
       [coach_prsn_rk, athlete_rk]
     );
     res.json({ message: "Coach assigned to athlete" });

@@ -8,6 +8,7 @@ import {
   RowDiv,
 } from "../../styles/styles.js";
 import AthleteDetails from "../modals/AthleteDetails";
+import ConfirmAssignAthleteModal from "../modals/ConfirmAssignAthleteModal";
 import { personsApi, athleteEventAssignmentsApi } from "../../api";
 import useUserStore, { useUser } from "../../stores/userStore";
 import {
@@ -39,6 +40,8 @@ const AthleteList = ({ paginationNum }) => {
   const [programOpen, setProgramOpen] = useState(false);
   const [selectedPrsn, setSelectedPrsn] = useState();
   const [filter, setFilter] = useState("assigned");
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [athleteToAssign, setAthleteToAssign] = useState(null);
   const user = useUser();
 
   const getAthleteData = async () => {
@@ -132,13 +135,13 @@ const AthleteList = ({ paginationNum }) => {
       cell: (row) =>
         filter === "unassigned" ? (
           <AddButton
-            onClick={async () => {
-              await personsApi.assignCoachToAthlete(row.prsn_rk);
-              getAthleteData();
+            onClick={() => {
+              setAthleteToAssign(row);
+              setAssignModalOpen(true);
             }}
             style={{ backgroundColor: "#28a745" }}
           >
-            Assign Me
+            Assign To Me
           </AddButton>
         ) : (
           <AddButton
@@ -162,6 +165,15 @@ const AthleteList = ({ paginationNum }) => {
         athlete={selectedPrsn}
         open={programOpen}
         onClose={() => setProgramOpen(false)}
+        refresh={getAthleteData}
+      />
+      <ConfirmAssignAthleteModal
+        athlete={athleteToAssign}
+        open={assignModalOpen}
+        onClose={() => {
+          setAssignModalOpen(false);
+          setAthleteToAssign(null);
+        }}
         refresh={getAthleteData}
       />
       <RowDiv>

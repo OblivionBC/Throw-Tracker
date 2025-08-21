@@ -52,7 +52,7 @@ export const Col = styled.div`
 //Modals
 export const Overlay = styled.div`
   display: flex;
-  z-index: 3;
+  z-index: 9999;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -66,7 +66,6 @@ export const Overlay = styled.div`
 export const ModalContainer = styled.div`
   display: flex;
   flex: 1;
-
   align-items: center;
   flex-direction: column;
   max-width: 1400px;
@@ -78,6 +77,7 @@ export const ModalContainer = styled.div`
   border-radius: 15px;
   padding-bottom: 10px;
   padding-top: 10px;
+  z-index: 10000;
 `;
 export const Content = styled.div`
   width: 90%;

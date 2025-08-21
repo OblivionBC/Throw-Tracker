@@ -7,6 +7,7 @@ const USER = process.env.DB_USER;
 const HOST = process.env.DB_HOST;
 const DB = process.env.DB_NAME;
 
+//console.log(PORT + " " + PASS + " " + USER + " " + HOST + " " + DB);
 //new pool creates a DB connection using the params
 const pool = new Pool({
   user: USER,

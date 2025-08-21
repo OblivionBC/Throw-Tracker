@@ -77,3 +77,39 @@ exports.deleteMeet = async (req, res) => {
     res.status(500).json({ message: "Error occurred Deleting Meet." });
   }
 };
+
+// Get meets for coach's organization
+exports.getMeetsForCoachOrg = async (req, res) => {
+  try {
+    const coach_prsn_rk = req.user.id;
+
+    // Get coach's organization
+    const coach = await pool.query(
+      "SELECT org_rk FROM person WHERE prsn_rk = $1",
+      [coach_prsn_rk]
+    );
+
+    if (coach.rows.length === 0) {
+      return res.status(404).json({ message: "Coach not found" });
+    }
+
+    const org_rk = coach.rows[0].org_rk;
+
+    // Get all meets for the organization (including meets without org_rk for backward compatibility)
+    const meets = await pool.query(
+      `SELECT m.*, p.prsn_first_nm, p.prsn_last_nm 
+       FROM Meet m 
+       LEFT JOIN person p ON m.assigned_by_prsn_rk = p.prsn_rk 
+       WHERE (m.org_rk = $1 OR m.org_rk IS NULL) 
+       ORDER BY m.meet_dt`,
+      [org_rk]
+    );
+
+    res.json(meets.rows);
+  } catch (err) {
+    console.error("Error getting meets for coach org:", err.message);
+    res
+      .status(500)
+      .json({ message: "Error occurred getting meets for organization." });
+  }
+};

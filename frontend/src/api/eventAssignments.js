@@ -15,6 +15,11 @@ export const eventAssignmentsApi = {
     return await apiCall(`/event-assignments/meet/${meet_rk}`);
   },
 
+  // Get all event assignments by meet (for meet details)
+  getAllByMeet: async (meet_rk) => {
+    return await apiCall(`/event-assignments/meet/${meet_rk}/all`);
+  },
+
   // Get event assignments by athlete
   getByAthlete: async (prsn_rk) => {
     return await apiCall(`/event-assignments/athlete/${prsn_rk}`);

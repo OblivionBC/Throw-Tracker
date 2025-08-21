@@ -85,7 +85,7 @@ const AthleteDetails = ({ open, onClose, refresh, athlete }) => {
                 onClick={handleUnassignMe}
                 style={{ backgroundColor: "#dc3545" }}
               >
-                Unassign Me
+                Unassign To Me
               </StyledButton>
             </div>
           </div>

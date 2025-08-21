@@ -134,6 +134,56 @@ exports.getEventAssignmentsByMeet = async (req, res) => {
   }
 };
 
+// Get all event assignments for a meet (for meet details modal)
+exports.getAllEventAssignmentsByMeet = async (req, res) => {
+  try {
+    const { meet_rk } = req.params;
+
+    // Validate that the meet exists
+    const meetCheck = await pool.query(
+      "SELECT meet_rk FROM meet WHERE meet_rk = $1",
+      [meet_rk]
+    );
+    if (meetCheck.rows.length === 0) {
+      return res.status(404).json({ message: "Meet not found." });
+    }
+
+    const assignments = await pool.query(
+      `SELECT 
+        ea.meet_rk,
+        ea.prsn_rk,
+        ea.assigned_by_prsn_rk,
+        ea.etyp_rk,
+        ea.attempt_one,
+        ea.attempt_two,
+        ea.attempt_three,
+        ea.attempt_four,
+        ea.attempt_five,
+        ea.attempt_six,
+        ea.final_mark,
+        ea.notes,
+        et.etyp_type_name as event_name,
+        athlete.prsn_first_nm as athlete_first_nm,
+        athlete.prsn_last_nm as athlete_last_nm,
+        coach.prsn_first_nm as coach_first_nm,
+        coach.prsn_last_nm as coach_last_nm
+      FROM event_assignment ea
+      LEFT JOIN event_type et ON ea.etyp_rk = et.etyp_rk
+      LEFT JOIN person athlete ON ea.prsn_rk = athlete.prsn_rk
+      LEFT JOIN person coach ON ea.assigned_by_prsn_rk = coach.prsn_rk
+      WHERE ea.meet_rk = $1
+      ORDER BY athlete.prsn_last_nm, athlete.prsn_first_nm, et.etyp_type_name`,
+      [meet_rk]
+    );
+    res.json(assignments.rows);
+  } catch (err) {
+    console.error("Async Error:", err.message);
+    res
+      .status(500)
+      .json({ message: "Error occurred getting event assignments." });
+  }
+};
+
 exports.getEventAssignmentsByAthlete = async (req, res) => {
   try {
     const { prsn_rk } = req.params;
