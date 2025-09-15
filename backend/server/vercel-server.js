@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const serverless = require("serverless-http");
 const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
 const routes = require("./routes/transactions.js");
@@ -89,4 +90,4 @@ app.use("/api", routes);
 app.use(errorHandler);
 
 // Export for Vercel
-module.exports = app;
+module.exports = serverless(app);
