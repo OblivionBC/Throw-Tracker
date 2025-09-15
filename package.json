@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "cd backend/server && nodemon index.js",
     "start": "cd backend/server && node index.js",
-    "vercel-build": "echo 'Build completed'",
+    "build": "cd frontend && npm install && npm run build",
+    "vercel-build": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
