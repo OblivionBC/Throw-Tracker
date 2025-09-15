@@ -8,7 +8,7 @@ import {
   FieldLabel,
   SubmitError,
   StyledInput,
-} from "../../styles/styles.js";
+} from "../../styles/design-system";
 import "typeface-nunito";
 import { programsApi, trainingPeriodsApi } from "../../api";
 

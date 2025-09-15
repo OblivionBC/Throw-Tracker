@@ -6,9 +6,10 @@ import {
   AddButton,
   FieldOutputContainer,
   FieldLabel,
-} from "../styles/styles.js";
+} from "../styles/design-system";
 import { programAthleteAssignmentsApi, trainingPeriodsApi } from "../api";
 import useUserStore, { useUser } from "../stores/userStore";
+import { useApi } from "../hooks/useApi";
 import ProgramDetailsModal from "./modals/ProgramDetailsModal";
 
 const CurrentPrograms = () => {
@@ -20,11 +21,15 @@ const CurrentPrograms = () => {
   const [selectedProgram, setSelectedProgram] = useState(null);
   const [showProgramDetails, setShowProgramDetails] = useState(false);
   const user = useUser();
+  const { apiCall } = useApi();
 
   useEffect(() => {
     const fetchTrainingPeriods = async () => {
       try {
-        const periods = await trainingPeriodsApi.getAll();
+        const periods = await apiCall(
+          () => trainingPeriodsApi.getAll(),
+          "Fetching training periods"
+        );
         setTrainingPeriods(periods);
 
         // Find the active training period (the one without an end date)
@@ -44,17 +49,20 @@ const CurrentPrograms = () => {
     };
 
     fetchTrainingPeriods();
-  }, []);
+  }, [apiCall]);
 
   useEffect(() => {
     const fetchPrograms = async () => {
       if (!currentTrainingPeriod) return;
 
       try {
-        const programsData =
-          await programAthleteAssignmentsApi.getTrainingPeriodPrograms(
-            currentTrainingPeriod.trpe_rk
-          );
+        const programsData = await apiCall(
+          () =>
+            programAthleteAssignmentsApi.getTrainingPeriodPrograms(
+              currentTrainingPeriod.trpe_rk
+            ),
+          `Fetching programs for training period ${currentTrainingPeriod.trpe_rk}`
+        );
         setPrograms(programsData);
       } catch (error) {
         console.error("Error fetching programs:", error);
@@ -63,7 +71,7 @@ const CurrentPrograms = () => {
     };
 
     fetchPrograms();
-  }, [currentTrainingPeriod]);
+  }, [currentTrainingPeriod, apiCall]);
 
   const navigateToPreviousPeriod = () => {
     if (currentPeriodIndex > 0) {

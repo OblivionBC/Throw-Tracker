@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import styled from "styled-components";
 import PracticeList from "../componenents/tables/PracticeList";
 import TrainingPeriodList from "../componenents/tables/TrainingPeriodList";
@@ -7,24 +7,17 @@ import Measurables from "../componenents/tables/MeasurableList";
 import "typeface-rubik";
 import ErrorBoundary from "../componenents/ErrorBoundary";
 const ExpandedChart = ({ back }) => {
-  const [activeTRPE, setActiveTRPE] = useState([]);
-
   return (
     <Page>
       <button onClick={() => back()}>Back</button>
       <LeftColumn>
         <ErrorBoundary>
-          <MeasurementChart activeTRPE={activeTRPE} />
+          <MeasurementChart />
         </ErrorBoundary>
       </LeftColumn>
       <RightColumn>
         <ErrorBoundary>
-          <TrainingPeriodList
-            sharedState={activeTRPE}
-            setSharedState={setActiveTRPE}
-            paginationNum={8}
-            selectable={true}
-          />
+          <TrainingPeriodList paginationNum={8} selectable={true} />
         </ErrorBoundary>
       </RightColumn>
     </Page>

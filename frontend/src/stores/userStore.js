@@ -20,10 +20,10 @@ const useUserStore = create(
       tokenLastChecked: null,
       tokenCacheValid: false,
       tokenRefreshStarted: false,
+      isRedirecting: false,
 
       // Actions
       setUser: (user) => {
-        console.log("User data set:", user);
         set({ user });
       },
 
@@ -77,141 +77,14 @@ const useUserStore = create(
         });
       },
 
-      // Start automatic token refresh
+      // Start automatic token refresh - disabled for simple logout on expiration
       startTokenRefresh: () => {
-        const {
-          refreshInterval,
-          expirationAlertInterval,
-          tokenRefreshStarted,
-        } = get();
-
-        // Don't start if already started
-        if (tokenRefreshStarted) {
-          return;
-        }
-
-        // Clear existing intervals if any
-        if (refreshInterval) {
-          clearInterval(refreshInterval);
-        }
-        if (expirationAlertInterval) {
-          clearInterval(expirationAlertInterval);
-        }
-
-        // Don't start token refresh if user is not authenticated
-        const { user } = get();
-        if (!user) {
-          return;
-        }
-
-        // If token cache is not set, set a default expiration (1 hour)
-        const { tokenCacheValid } = get();
-        if (!tokenCacheValid) {
-          get().setTokenExpiration(3600, 3600); // 1 hour default
-        }
-
-        // Set up new interval to refresh token every 45 minutes (before 1-hour expiry)
-        const refreshIntervalId = setInterval(async () => {
-          try {
-            // Check if user is still authenticated before refreshing
-            const currentUser = get().user;
-            if (!currentUser) {
-              get().stopTokenRefresh();
-              return;
-            }
-
-            const refreshResponse = await authApi.refreshToken();
-
-            // Update token cache with new expiration
-            if (
-              refreshResponse &&
-              refreshResponse.accessTokenExpiresIn &&
-              refreshResponse.refreshTokenExpiresIn
-            ) {
-              get().setTokenExpiration(
-                refreshResponse.accessTokenExpiresIn,
-                refreshResponse.refreshTokenExpiresIn
-              );
-            }
-
-            set({ isTokenExpiring: false });
-          } catch (error) {
-            console.error("Automatic token refresh failed:", error);
-            // If refresh fails, logout user
-            get().logout();
-          }
-        }, 45 * 60 * 1000); // 45 minutes
-
-        // Set up interval to check for token expiration (every 10 minutes instead of 5)
-        const alertIntervalId = setInterval(async () => {
-          try {
-            // Check if user is still authenticated before checking token status
-            const currentUser = get().user;
-            if (!currentUser) {
-              get().stopTokenRefresh();
-              return;
-            }
-
-            // Check token status using the new endpoint
-            const tokenStatus = await authApi.checkTokenStatus();
-
-            // Update access token cache with current expiration (refresh token stays the same)
-            if (tokenStatus && tokenStatus.expiresIn) {
-              const { refreshTokenExpirationTime } = get();
-              const refreshTokenExpiresIn = refreshTokenExpirationTime
-                ? Math.floor((refreshTokenExpirationTime - Date.now()) / 1000)
-                : 604800; // 7 days default
-              get().setTokenExpiration(
-                tokenStatus.expiresIn,
-                refreshTokenExpiresIn
-              );
-            }
-
-            if (tokenStatus.isExpiringSoon && !get().isTokenExpiring) {
-              set({ isTokenExpiring: true });
-              // Show alert when token is about to expire
-              const minutesLeft = Math.floor(tokenStatus.expiresIn / 60);
-              alert(
-                `Your session will expire in ${minutesLeft} minutes. Please refresh your token or you will be logged out automatically.`
-              );
-            } else if (!tokenStatus.isExpiringSoon) {
-              set({ isTokenExpiring: false });
-            }
-          } catch (error) {
-            console.error("Token expiration check failed:", error);
-            // If we can't check token status, it might be expired
-            if (
-              error.message.includes("401") ||
-              error.message.includes("403") ||
-              error.message.includes("Authentication failed")
-            ) {
-              get().handleExpiredToken();
-            }
-          }
-        }, 30 * 60 * 1000); // 30 minutes instead of 10
-
-        set({
-          refreshInterval: refreshIntervalId,
-          expirationAlertInterval: alertIntervalId,
-          tokenRefreshStarted: true,
-        });
+        // No automatic refresh - just let token expire and logout
       },
 
       // Stop automatic token refresh
       stopTokenRefresh: () => {
-        const { refreshInterval, expirationAlertInterval } = get();
-        if (refreshInterval) {
-          clearInterval(refreshInterval);
-        }
-        if (expirationAlertInterval) {
-          clearInterval(expirationAlertInterval);
-        }
-        set({
-          refreshInterval: null,
-          expirationAlertInterval: null,
-          isTokenExpiring: false,
-          tokenRefreshStarted: false,
-        });
+        // No automatic refresh to stop
       },
 
       // Fetch user data from API
@@ -219,16 +92,12 @@ const useUserStore = create(
         set({ isLoading: true, error: null });
         try {
           const userData = await personsApi.fetchUser();
-          console.log("Fetched user data:", userData);
+
           if (userData) {
             set({ user: userData, isLoading: false });
             // Note: fetchUser doesn't provide expiration info, so we don't set token cache here
             // Token cache will be set by login, refresh, or token status check
-            // Start token refresh when user is authenticated (only if not already started)
-            const { tokenRefreshStarted } = get();
-            if (!tokenRefreshStarted) {
-              get().startTokenRefresh();
-            }
+            // No automatic token refresh - let token expire naturally
             return userData;
           } else {
             set({ user: null, isLoading: false });
@@ -237,7 +106,6 @@ const useUserStore = create(
             return null;
           }
         } catch (error) {
-          console.error("Failed to fetch user:", error);
           set({ error: error.message, isLoading: false, user: null });
           get().stopTokenRefresh();
           get().invalidateTokenCache();
@@ -262,18 +130,14 @@ const useUserStore = create(
               loginResponse.refreshTokenExpiresIn
             );
           } else {
-            get().setTokenExpiration(900, 604800); // 15 min access, 7 days refresh default
+            get().setTokenExpiration(120, 604800); // 2 min access, 7 days refresh default for testing
           }
 
           const userData = await get().fetchUser();
 
-          console.log("Login successful - User data:", userData);
-          console.log("Login response:", loginResponse);
-
           set({ isLoading: false });
           return userData;
         } catch (error) {
-          console.error("Login error:", error);
           set({ error: error.message, isLoading: false });
           throw error;
         }
@@ -285,7 +149,7 @@ const useUserStore = create(
         try {
           await authApi.logout();
         } catch (error) {
-          console.error("Logout error:", error);
+          // Ignore logout errors
         } finally {
           // Stop token refresh and clear state
           get().stopTokenRefresh();
@@ -296,9 +160,9 @@ const useUserStore = create(
             isLoading: false,
             error: null,
             refreshInterval: null,
-            expirationAlertInterval: null,
             isTokenExpiring: false,
             tokenRefreshStarted: false,
+            isRedirecting: false,
           });
         }
       },
@@ -353,28 +217,99 @@ const useUserStore = create(
           isLoading: false,
           error: null,
           refreshInterval: null,
-          expirationAlertInterval: null,
           isTokenExpiring: false,
           tokenRefreshStarted: false,
+          isRedirecting: false,
         });
       },
 
       // Handle expired token - utility function
       handleExpiredToken: () => {
+        console.log("🚨 Handling expired token - redirecting to login");
+        console.log("🚨 Current pathname:", window.location.pathname);
+
+        // Check if already on login page to prevent infinite loops
+        if (window.location.pathname === "/login") {
+          console.log("🚨 Already on login page, skipping redirect");
+          return;
+        }
+
+        // Check if we're already in the process of redirecting
+        if (get().isRedirecting) {
+          console.log("🚨 Already redirecting, skipping duplicate call");
+          return;
+        }
+
+        // Set redirecting flag
+        set({ isRedirecting: true });
+
+        // Stop any ongoing processes
         get().stopTokenRefresh();
         get().invalidateTokenCache();
+
+        // Clear all state
         set({
           user: null,
           selectedAthlete: null,
           isLoading: false,
           error: null,
           refreshInterval: null,
-          expirationAlertInterval: null,
           isTokenExpiring: false,
           tokenRefreshStarted: false,
+          isRedirecting: true, // Keep this true during redirect
         });
-        // Force redirect to login
-        window.location.href = "/login";
+
+        // Force redirect to login - always redirect to ensure clean state
+        console.log("🚨 About to redirect to /login");
+
+        // Immediate redirect attempt
+        try {
+          console.log(
+            "🚨 Attempting immediate redirect with window.location.href"
+          );
+          window.location.href = "/login";
+        } catch (error) {
+          console.error("🚨 Immediate redirect failed:", error);
+          // Fallback with setTimeout
+          setTimeout(() => {
+            try {
+              console.log(
+                "🚨 Attempting delayed redirect with window.location.href"
+              );
+              window.location.href = "/login";
+            } catch (delayedError) {
+              console.error("🚨 Delayed redirect failed:", delayedError);
+              try {
+                console.log(
+                  "🚨 Attempting redirect with window.location.replace"
+                );
+                window.location.replace("/login");
+              } catch (replaceError) {
+                console.error(
+                  "🚨 window.location.replace failed:",
+                  replaceError
+                );
+                // Last resort: force page reload
+                console.log(
+                  "🚨 Attempting redirect with window.location.reload"
+                );
+                window.location.reload();
+              }
+            }
+          }, 100);
+        }
+
+        // Additional fallback: try again after a short delay
+        setTimeout(() => {
+          if (window.location.pathname !== "/login") {
+            console.log("🚨 Fallback redirect check - still not on login page");
+            try {
+              window.location.href = "/login";
+            } catch (fallbackError) {
+              console.error("🚨 Fallback redirect failed:", fallbackError);
+            }
+          }
+        }, 500);
       },
     }),
     {

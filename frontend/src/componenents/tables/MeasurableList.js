@@ -7,7 +7,7 @@ import {
   CompWrap,
   AddButton,
   EditButton,
-} from "../../styles/styles.js";
+} from "../../styles/design-system";
 import AddMeasurableModal from "../modals/AddMeasurableModal";
 import ConfirmMeasurableDeleteModal from "../modals/ConfirmMeasurableDeleteModal";
 import MeasurableEditModal from "../modals/MeasurableEditModal";
@@ -129,27 +129,28 @@ const Measurables = ({ paginationNum }) => {
       sortable: true,
     },
     {
+      name: "Actions",
       cell: (row) => (
-        <EditButton // Swap to a edit modal for the measurables
-          onClick={() => {
-            setEditMeas(true);
-            setSelectedMeas(row);
-          }}
-        >
-          Edit
-        </EditButton>
-      ),
-    },
-    {
-      cell: (row) => (
-        <EditButton
-          onClick={() => {
-            setConfirmMeasDelete(true);
-            setSelectedMeas(row);
-          }}
-        >
-          Delete
-        </EditButton>
+        <div style={{ display: "flex", gap: "5px" }}>
+          <EditButton
+            $size="sm"
+            onClick={() => {
+              setEditMeas(true);
+              setSelectedMeas(row);
+            }}
+          >
+            Edit
+          </EditButton>
+          <EditButton
+            $size="sm"
+            onClick={() => {
+              setConfirmMeasDelete(true);
+              setSelectedMeas(row);
+            }}
+          >
+            Delete
+          </EditButton>
+        </div>
       ),
     },
   ];

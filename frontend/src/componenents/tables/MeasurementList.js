@@ -1,5 +1,5 @@
 import React from "react";
-import { Table, TableWrap, CompWrap } from "../../styles/styles.js";
+import { Table, TableWrap, CompWrap } from "../../styles/design-system";
 import { useEffect, useState } from "react";
 import { measurementsApi } from "../../api";
 const TableStyles = {

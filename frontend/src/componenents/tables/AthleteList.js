@@ -6,16 +6,18 @@ import {
   CompWrap,
   AddButton,
   RowDiv,
-} from "../../styles/styles.js";
+} from "../../styles/design-system";
 import AthleteDetails from "../modals/AthleteDetails";
 import ConfirmAssignAthleteModal from "../modals/ConfirmAssignAthleteModal";
 import { personsApi, athleteEventAssignmentsApi } from "../../api";
 import useUserStore, { useUser } from "../../stores/userStore";
+import { useApi } from "../../hooks/useApi";
 import {
   getPaginationNumber,
   getContainerHeight,
 } from "../../utils/tableUtils";
 import styled from "styled-components";
+import logo from "../../images/LogoIcon.png";
 
 const TableStyles = {
   pagination: {
@@ -42,7 +44,9 @@ const AthleteList = ({ paginationNum }) => {
   const [filter, setFilter] = useState("assigned");
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [athleteToAssign, setAthleteToAssign] = useState(null);
+  const [profileImageErrors, setProfileImageErrors] = useState({});
   const user = useUser();
+  const { apiCall } = useApi();
 
   const getAthleteData = async () => {
     try {
@@ -50,19 +54,26 @@ const AthleteList = ({ paginationNum }) => {
       let athletes;
       if (filter === "assigned") {
         console.log("Fetching assigned athletes...");
-        athletes = await personsApi.getAthletesForCoach();
+        athletes = await apiCall(
+          () => personsApi.getAthletesForCoach(),
+          "Fetching assigned athletes"
+        );
         console.log("Assigned athletes result:", athletes);
       } else {
         console.log("Fetching unassigned athletes...");
-        athletes = await personsApi.getUnassignedAthletesInOrg();
+        athletes = await apiCall(
+          () => personsApi.getUnassignedAthletesInOrg(),
+          "Fetching unassigned athletes"
+        );
         console.log("Unassigned athletes result:", athletes);
       }
       // Fetch event assignments for each athlete
       const athletesWithEvents = await Promise.all(
         athletes.map(async (athlete) => {
           try {
-            const events = await athleteEventAssignmentsApi.getByAthlete(
-              athlete.prsn_rk
+            const events = await apiCall(
+              () => athleteEventAssignmentsApi.getByAthlete(athlete.prsn_rk),
+              `Fetching events for athlete ${athlete.prsn_rk}`
             );
             return {
               ...athlete,
@@ -105,7 +116,26 @@ const AthleteList = ({ paginationNum }) => {
     // eslint-disable-next-line
   }, [filter]);
 
+  const handleProfileImageError = (athleteId) => {
+    setProfileImageErrors((prev) => ({ ...prev, [athleteId]: true }));
+  };
+
   const columns = [
+    {
+      name: "Profile",
+      cell: (row) => (
+        <AthleteProfileImage
+          src={
+            row.profile_url && !profileImageErrors[row.prsn_rk]
+              ? row.profile_url
+              : logo
+          }
+          alt={`${row.prsn_first_nm} ${row.prsn_last_nm}`}
+          onError={() => handleProfileImageError(row.prsn_rk)}
+        />
+      ),
+      width: "80px",
+    },
     {
       name: "Name",
       selector: (row) => row.prsn_first_nm + " " + row.prsn_last_nm,
@@ -132,27 +162,32 @@ const AthleteList = ({ paginationNum }) => {
       sortable: true,
     },
     {
-      cell: (row) =>
-        filter === "unassigned" ? (
-          <AddButton
-            onClick={() => {
-              setAthleteToAssign(row);
-              setAssignModalOpen(true);
-            }}
-            style={{ backgroundColor: "#28a745" }}
-          >
-            Assign To Me
-          </AddButton>
-        ) : (
-          <AddButton
-            onClick={() => {
-              setSelectedPrsn(row);
-              setProgramOpen(true);
-            }}
-          >
-            Details
-          </AddButton>
-        ),
+      name: "Actions",
+      cell: (row) => (
+        <div style={{ display: "flex", gap: "5px" }}>
+          {filter === "unassigned" ? (
+            <AddButton
+              $size="sm"
+              onClick={() => {
+                setAthleteToAssign(row);
+                setAssignModalOpen(true);
+              }}
+            >
+              Assign To Me
+            </AddButton>
+          ) : (
+            <AddButton
+              $size="sm"
+              onClick={() => {
+                setSelectedPrsn(row);
+                setProgramOpen(true);
+              }}
+            >
+              Details
+            </AddButton>
+          )}
+        </div>
+      ),
     },
   ];
 
@@ -207,5 +242,13 @@ const AthleteList = ({ paginationNum }) => {
     </CompWrap>
   );
 };
+
+const AthleteProfileImage = styled.img`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #1976d2;
+  object-fit: cover;
+`;
 
 export default AthleteList;

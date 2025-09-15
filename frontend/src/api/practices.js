@@ -46,4 +46,9 @@ export const practicesApi = {
       method: "DELETE",
     });
   },
+
+  // Get all practices for coach's athletes
+  getAllForCoach: async () => {
+    return await apiCall("/practices/coach/all");
+  },
 };

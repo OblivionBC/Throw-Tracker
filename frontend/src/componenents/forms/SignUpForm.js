@@ -4,14 +4,16 @@ import * as Yup from "yup";
 import {
   StyledForm,
   StyledButton,
+  CancelButton,
   FieldOutputContainer,
   FieldLabel,
   SubmitError,
   StyledInput,
   StyledSelect,
-} from "../../styles/styles.js";
+} from "../../styles/design-system";
 import "typeface-nunito";
 import { authApi } from "../../api";
+
 const SignUpForm = ({ on, off }) => {
   const initialValues = {
     fname: "",
@@ -28,6 +30,10 @@ const SignUpForm = ({ on, off }) => {
     username: Yup.string().email("Invalid Email").required("Email is required"),
     password: Yup.string()
       .min(8, "Password must be at least 8 characters")
+      .matches(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+        "Password must contain at least 8 characters with uppercase, lowercase, number, and special character (@$!%*?&)"
+      )
       .required("Password is required"),
     org: Yup.number("Must be a Valid Number").required("Org Key is required"),
     confirmPassword: Yup.string()
@@ -111,11 +117,11 @@ const SignUpForm = ({ on, off }) => {
             </Field>
             <ErrorMessage name="org" component={SubmitError} />
 
-            <Field as="select" name="role">
+            <Field name="role">
               {({ field }) => (
                 <FieldOutputContainer>
                   <FieldLabel>Role: </FieldLabel>
-                  <StyledSelect type="text" placeholder="role" {...field}>
+                  <StyledSelect {...field}>
                     <option value=""></option>
                     <option value="COACH">Coach</option>
                     <option value="ATHLETE">Athlete</option>
@@ -160,7 +166,9 @@ const SignUpForm = ({ on, off }) => {
           </StyledForm>
         )}
       </Formik>
-      <StyledButton onClick={off}>Back to Login</StyledButton>
+      <div style={{ marginTop: "20px" }}>
+        <CancelButton onClick={off}>Back to Login</CancelButton>
+      </div>
     </>
   );
 };

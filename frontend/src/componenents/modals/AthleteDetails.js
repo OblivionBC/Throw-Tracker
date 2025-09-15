@@ -10,7 +10,7 @@ import {
   CloseButton,
   Content,
   StyledButton,
-} from "../../styles/styles";
+} from "../../styles/design-system";
 const AthleteDetails = ({ open, onClose, refresh, athlete }) => {
   const [loading, setLoading] = useState(false);
   const [currentPrsnRk, setCurrentPrsnRk] = useState(athlete?.prsn_rk);

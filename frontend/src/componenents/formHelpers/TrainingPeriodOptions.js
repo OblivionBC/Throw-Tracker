@@ -3,16 +3,21 @@ import { Field, useFormikContext } from "formik";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { trainingPeriodsApi } from "../../api";
+import { useApi } from "../../hooks/useApi";
 
 const TrainingPeriodOptions = ({ name }) => {
   const [trainingPeriods, setTrainingPeriods] = useState([]);
   const [loading, setLoading] = useState(true);
   const { setFieldValue } = useFormikContext();
+  const { apiCall } = useApi();
   useEffect(() => {
     const fetchTrainingPeriods = async () => {
       setLoading(true);
       try {
-        const response = await trainingPeriodsApi.getAll();
+        const response = await apiCall(
+          () => trainingPeriodsApi.getAll(),
+          "Fetching training periods for options"
+        );
         setTrainingPeriods(response);
         if (response.length > 0) {
           setFieldValue(name, response[0].trpe_rk);
@@ -23,7 +28,7 @@ const TrainingPeriodOptions = ({ name }) => {
       setLoading(false);
     };
     fetchTrainingPeriods();
-  }, []);
+  }, [apiCall, setFieldValue, name]);
 
   if (loading) return <div>Loading...</div>;
   return (

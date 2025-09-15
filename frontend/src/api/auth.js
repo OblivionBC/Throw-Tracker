@@ -1,5 +1,44 @@
 import { apiCall } from "./config";
 
+// Helper function for direct API calls (no authentication)
+const directApiCall = async (endpoint, options = {}) => {
+  const baseURL = process.env.REACT_APP_API_URL || "http://localhost:3000/api";
+
+  const response = await fetch(`${baseURL}${endpoint}`, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+    credentials: "include", // Include cookies for CORS
+  });
+
+  if (!response.ok) {
+    try {
+      const errorData = await response.json();
+      console.log("🔍 Raw error response:", errorData);
+
+      // Extract the actual error message from the backend response
+      const errorMessage =
+        errorData.error?.message ||
+        errorData.message ||
+        `HTTP error! status: ${response.status}`;
+
+      console.log("🔍 Extracted error message:", errorMessage);
+      throw new Error(errorMessage);
+    } catch (parseError) {
+      console.log("🔍 Parse error:", parseError);
+      console.log("🔍 Response status:", response.status);
+      console.log("🔍 Response headers:", response.headers);
+
+      // If we can't parse the error response, use a generic message
+      throw new Error(parseError);
+    }
+  }
+
+  return response.json();
+};
+
 // Auth API functions
 export const authApi = {
   // Login
@@ -39,18 +78,38 @@ export const authApi = {
   },
 
   signup: async (userData) => {
-    const response = await apiCall("/auth/signup", {
+    return await directApiCall("/auth/signup", {
       method: "POST",
       body: JSON.stringify(userData),
     });
-    return response;
   },
 
   forgotPassword: async (email) => {
-    const response = await apiCall("/auth/forgot-password", {
+    return await directApiCall("/auth/forgot-password", {
       method: "POST",
       body: JSON.stringify({ email }),
     });
-    return response;
+  },
+
+  // OTP functions
+  requestOTP: async (userData) => {
+    return await directApiCall("/auth/request-otp", {
+      method: "POST",
+      body: JSON.stringify(userData),
+    });
+  },
+
+  verifyOTP: async (otpData) => {
+    return await directApiCall("/auth/verify-otp", {
+      method: "POST",
+      body: JSON.stringify(otpData),
+    });
+  },
+
+  resetPassword: async (resetData) => {
+    return await directApiCall("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify(resetData),
+    });
   },
 };

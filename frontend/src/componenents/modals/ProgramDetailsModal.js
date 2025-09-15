@@ -5,7 +5,7 @@ import {
   CloseButton,
   Content,
   StyledButton,
-} from "../../styles/styles";
+} from "../../styles/design-system";
 import { programsApi, programAthleteAssignmentsApi } from "../../api";
 import AddProgramModal from "./AddProgramModal";
 import AssignProgramToAthletesModal from "./AssignProgramToAthletesModal";

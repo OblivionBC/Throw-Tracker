@@ -11,7 +11,7 @@ import {
   CloseButton,
   Content,
   EditButton,
-} from "../../styles/styles";
+} from "../../styles/design-system";
 import { programsApi, programMeasurableAssignmentsApi } from "../../api";
 const TrainingPeriodEditModal = ({ open, onClose, trpeObj, refresh }) => {
   const [editing, setEditing] = useState(false);

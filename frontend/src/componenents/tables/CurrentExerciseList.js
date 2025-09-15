@@ -7,7 +7,7 @@ import {
   CompWrap,
   AddButton,
   EditButton,
-} from "../../styles/styles.js";
+} from "../../styles/design-system";
 import DynamicModal from "../dynamicModals/DynamicModal";
 import EditMeasurableForm from "../forms/EditMeasurableForm";
 import AddMeasurableForm from "../forms/AddMeasurableForm";
@@ -82,27 +82,28 @@ const CurrentMeasurableList = ({ paginationNum }) => {
       sortable: true,
     },
     {
+      name: "Actions",
       cell: (row) => (
-        <AddButton
-          onClick={() => {
-            setSelectedRow(row);
-            setEditModalOpen(true);
-          }}
-        >
-          Details
-        </AddButton>
-      ),
-    },
-    {
-      cell: (row) => (
-        <AddButton
-          onClick={() => {
-            setSelectedRow(row);
-            setDeleteModalOpen(true);
-          }}
-        >
-          Delete
-        </AddButton>
+        <div style={{ display: "flex", gap: "5px" }}>
+          <AddButton
+            $size="sm"
+            onClick={() => {
+              setSelectedRow(row);
+              setEditModalOpen(true);
+            }}
+          >
+            Details
+          </AddButton>
+          <AddButton
+            $size="sm"
+            onClick={() => {
+              setSelectedRow(row);
+              setDeleteModalOpen(true);
+            }}
+          >
+            Delete
+          </AddButton>
+        </div>
       ),
     },
   ];

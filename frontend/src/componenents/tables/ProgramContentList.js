@@ -5,7 +5,7 @@ import {
   Title,
   CompWrap,
   AddButton,
-} from "../../styles/styles.js";
+} from "../../styles/design-system";
 import { useState, useEffect } from "react";
 import AddMeasurableToProgramModal from "../modals/AddMeasurableToProgramModal";
 import MeasurableAssignmentDetails from "../modals/MeasurableAssignmentDetails";
@@ -109,16 +109,20 @@ const ProgramMeasurableContent = ({
         sortable: true,
       },
       {
+        name: "Actions",
         cell: (row) => {
           return row.meas_id ? (
-            <AddButton
-              onClick={() => {
-                setSelectedMeasurable(row);
-                setEditMeasurable(true);
-              }}
-            >
-              Details
-            </AddButton>
+            <div style={{ display: "flex", gap: "5px" }}>
+              <AddButton
+                $size="sm"
+                onClick={() => {
+                  setSelectedMeasurable(row);
+                  setEditMeasurable(true);
+                }}
+              >
+                Details
+              </AddButton>
+            </div>
           ) : null;
         },
       },

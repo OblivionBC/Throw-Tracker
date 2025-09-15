@@ -4,11 +4,12 @@ import * as Yup from "yup";
 import {
   StyledForm,
   StyledButton,
+  CancelButton,
   FieldOutputContainer,
   FieldLabel,
   SubmitError,
   StyledInput,
-} from "../../styles/styles.js";
+} from "../../styles/design-system";
 import { useNavigate, useLocation } from "react-router-dom";
 import "typeface-nunito";
 import ForgotPasswordForm from "./ForgotPasswordForm.js";
@@ -19,6 +20,7 @@ const LoginForm = ({ on, off }) => {
   const [forgot, setForgot] = useState(false);
   const error = useError();
   const { login, clearError } = useUserStore();
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -34,8 +36,9 @@ const LoginForm = ({ on, off }) => {
     password: Yup.string("Must be a string").required("Password is required"),
   });
 
-  const handleSubmit = async (values, { setSubmitting }) => {
+  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     setSubmitting(true);
+    setFailed(false);
     clearError();
 
     try {
@@ -46,9 +49,20 @@ const LoginForm = ({ on, off }) => {
         navigate(from, { replace: true });
       } else {
         setFailed(true);
+        setErrors({ submit: "Login failed. Please check your credentials." });
       }
     } catch (err) {
+      console.error("Login error - Full object:", err);
+      console.error("Login error - Message:", err.message);
+      console.error("Login error - Status:", err.status);
+      console.error("Login error - Code:", err.code);
+      console.error("Login error - Response:", err.response);
       setFailed(true);
+      setErrors({
+        submit:
+          err.message ||
+          "Either the password or email is incorrect, please try again",
+      });
     }
 
     setSubmitting(false);
@@ -68,7 +82,7 @@ const LoginForm = ({ on, off }) => {
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
       >
-        {({ handleSubmit, isSubmitting }) => (
+        {({ handleSubmit, isSubmitting, errors }) => (
           <StyledForm onSubmit={handleSubmit}>
             <Field name="username">
               {({ field }) => (
@@ -95,19 +109,29 @@ const LoginForm = ({ on, off }) => {
             <StyledButton type="submit" disabled={isSubmitting}>
               Login
             </StyledButton>
-            {failed || error ? (
+            {(failed || error || errors.submit) && (
               <SubmitError>
-                {error ||
+                {errors.submit ||
+                  error ||
                   "Either the password or email is incorrect, please try again"}
               </SubmitError>
-            ) : null}
+            )}
           </StyledForm>
         )}
       </Formik>
-      <StyledButton onClick={off}>Sign Up</StyledButton>
-      <StyledButton onClick={() => setForgot(true)}>
-        Forgot your password?
-      </StyledButton>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "10px",
+          marginTop: "20px",
+        }}
+      >
+        <CancelButton onClick={off}>Sign Up</CancelButton>
+        <CancelButton onClick={() => setForgot(true)}>
+          Forgot your password?
+        </CancelButton>
+      </div>
     </>
   );
 };

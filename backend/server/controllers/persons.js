@@ -3,60 +3,68 @@
       The table is selected through the SQL Queries
 */
 const { pool } = require(".././db");
+const {
+  NotFoundError,
+  ValidationError,
+  ConflictError,
+} = require("../utils/errors");
+const asyncHandler = require("../utils/asyncHandler");
 
-exports.addPerson = async (req, res) => {
-  try {
-    const {
-      prsn_first_nm,
-      prsn_last_nm,
-      prsn_email,
-      prsn_pwrd,
-      org_rk,
-      prsn_role,
-    } = req.body;
-    const alreadyExists = await pool.query(
-      "select * from person where prsn_email = $1",
-      [prsn_email]
-    );
-    if (alreadyExists.rowCount > 0)
-      return res
-        .status(400)
-        .json({ message: "Email is already in use, please select another" });
-    const newPerson = await pool.query(
-      "INSERT INTO person (prsn_first_nm, prsn_last_nm, prsn_email, prsn_pwrd, org_rk, prsn_role) VALUES($1, $2, $3, crypt($4, gen_salt('bf')), $5, $6) RETURNING *",
-      [prsn_first_nm, prsn_last_nm, prsn_email, prsn_pwrd, org_rk, prsn_role]
-    );
+exports.addPerson = asyncHandler(async (req, res) => {
+  const {
+    prsn_first_nm,
+    prsn_last_nm,
+    prsn_email,
+    prsn_pwrd,
+    org_rk,
+    prsn_role,
+  } = req.body;
 
-    res.json(newPerson.rows[0]);
-  } catch (err) {
-    console.error("Error occurred Adding Person:", err.message);
-    res.status(500).json({ message: "Error occurred Adding Person." });
+  if (
+    !prsn_first_nm ||
+    !prsn_last_nm ||
+    !prsn_email ||
+    !prsn_pwrd ||
+    !org_rk ||
+    !prsn_role
+  ) {
+    throw new ValidationError("All required fields must be provided");
   }
-};
 
-exports.getAllPersons = async (req, res) => {
-  try {
-    const allPersons = await pool.query("SELECT * FROM person");
-    res.json(allPersons.rows);
-  } catch (err) {
-    console.error("Error getting all persons:", err.message);
-    res.status(500).json({ message: "Error occurred Getting All Persons." });
+  const alreadyExists = await pool.query(
+    "select * from person where prsn_email = $1",
+    [prsn_email]
+  );
+
+  if (alreadyExists.rowCount > 0) {
+    throw new ConflictError("Email is already in use, please select another");
   }
-};
 
-exports.getPerson = async (req, res) => {
-  try {
-    const { prsn_rk } = req.params;
-    const person = await pool.query("SELECT * FROM person WHERE prsn_rk = $1", [
-      prsn_rk,
-    ]);
+  const newPerson = await pool.query(
+    "INSERT INTO person (prsn_first_nm, prsn_last_nm, prsn_email, prsn_pwrd, org_rk, prsn_role) VALUES($1, $2, $3, crypt($4, gen_salt('bf')), $5, $6) RETURNING *",
+    [prsn_first_nm, prsn_last_nm, prsn_email, prsn_pwrd, org_rk, prsn_role]
+  );
 
-    res.json(person.rows[0]);
-  } catch (err) {
-    console.error("Error occurred Getting Person:", err.message);
-    res.status(500).json({ message: "Error occurred Getting Person." });
+  res.json(newPerson.rows[0]);
+});
+
+exports.getAllPersons = asyncHandler(async (req, res) => {
+  const allPersons = await pool.query("SELECT * FROM person");
+  res.json(allPersons.rows);
+});
+
+exports.getPerson = asyncHandler(async (req, res) => {
+  const { prsn_rk } = req.params;
+  const person = await pool.query("SELECT * FROM person WHERE prsn_rk = $1", [
+    prsn_rk,
+  ]);
+
+  if (person.rows.length === 0) {
+    throw new NotFoundError("Person");
   }
-};
+
+  res.json(person.rows[0]);
+});
 
 exports.updatePerson = async (req, res) => {
   try {
@@ -88,171 +96,131 @@ exports.deletePerson = async (req, res) => {
   }
 };
 
-exports.getMe = async (req, res) => {
-  try {
-    const user = await pool.query(
-      "SELECT p.prsn_rk, p.prsn_first_nm, p.prsn_last_nm, p.prsn_email, p.prsn_role, o.org_name FROM person p inner join organization o on o.org_rk = p.org_rk WHERE p.prsn_rk = $1;",
-      [req.user.id]
-    );
+exports.getMe = asyncHandler(async (req, res) => {
+  const user = await pool.query(
+    "SELECT p.prsn_rk, p.prsn_first_nm, p.prsn_last_nm, p.prsn_email, p.prsn_role, p.profile_url, p.org_rk, o.org_name FROM person p INNER JOIN organization o ON o.org_rk = p.org_rk WHERE p.prsn_rk = $1",
+    [req.user.id]
+  );
 
-    if (user.rows.length === 0) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    res.json({
-      id: user.rows[0].prsn_rk,
-      first_nm: user.rows[0].prsn_first_nm,
-      last_nm: user.rows[0].prsn_last_nm,
-      org_name: user.rows[0].org_name,
-      email: user.rows[0].prsn_email,
-      role: user.rows[0].prsn_role,
-    });
-  } catch (err) {
-    console.error("Error occurred while getting user data:", err.message);
-    res
-      .status(500)
-      .json({ message: "Error occurred while getting user data." });
+  if (user.rows.length === 0) {
+    throw new NotFoundError("User");
   }
-};
 
-exports.athletesForCoach = async (req, res) => {
-  try {
-    const coach_prsn_rk = req.user.id;
-    console.log(coach_prsn_rk);
-    const result = await pool.query(
-      "SELECT p.prsn_rk, p.prsn_first_nm, p.prsn_last_nm, p.prsn_email, p.prsn_role, o.org_name FROM person p inner join organization o on o.org_rk = p.org_rk WHERE p.coach_prsn_rk = $1;",
-      [coach_prsn_rk]
+  res.json({
+    prsn_rk: user.rows[0].prsn_rk,
+    prsn_first_nm: user.rows[0].prsn_first_nm,
+    prsn_last_nm: user.rows[0].prsn_last_nm,
+    prsn_email: user.rows[0].prsn_email,
+    prsn_role: user.rows[0].prsn_role,
+    profile_url: user.rows[0].profile_url,
+    org_rk: user.rows[0].org_rk,
+    org_name: user.rows[0].org_name,
+  });
+});
+
+exports.athletesForCoach = asyncHandler(async (req, res) => {
+  const coach_prsn_rk = req.user.id;
+
+  const result = await pool.query(
+    "SELECT p.prsn_rk, p.prsn_first_nm, p.prsn_last_nm, p.prsn_email, p.prsn_role, p.profile_url, o.org_name FROM person p INNER JOIN organization o ON o.org_rk = p.org_rk WHERE p.coach_prsn_rk = $1",
+    [coach_prsn_rk]
+  );
+
+  res.json(result.rows);
+});
+
+exports.updatePassword = asyncHandler(async (req, res) => {
+  const { prsn_email, prsn_pwrd, prsn_first_nm, prsn_last_nm } = req.body;
+
+  if (!prsn_email || !prsn_pwrd || !prsn_first_nm || !prsn_last_nm) {
+    throw new ValidationError(
+      "Email, password, first name, and last name are required"
     );
-    if (result.rows.length == 0) {
-      res.status(404).json("Record does not exist");
-      return;
-    }
-    res.json(result.rows);
-  } catch (err) {
-    console.error("Error occurred while getting athletes:", err.message);
-    res.status(500).json({ message: "Error occurred while Athlete Grab." });
   }
-};
 
-exports.updatePassword = async (req, res) => {
-  try {
-    const { prsn_email, prsn_pwrd, prsn_first_nm, prsn_last_nm } = req.body;
+  const result = await pool.query(
+    "UPDATE person SET prsn_pwrd = crypt($1, gen_salt('bf')) WHERE prsn_email = $2 AND prsn_first_nm = $3 AND prsn_last_nm = $4 RETURNING *",
+    [prsn_pwrd, prsn_email, prsn_first_nm, prsn_last_nm]
+  );
 
-    const result = await pool.query(
-      "Update person set prsn_pwrd = crypt($1, gen_salt('bf')) where prsn_email = $2 and prsn_first_nm = $3 and prsn_last_nm = $4 returning *",
-      [prsn_pwrd, prsn_email, prsn_first_nm, prsn_last_nm]
-    );
-
-    if (result.rows.length == 0) {
-      res.status(500).json({
-        message: "Password Reset was Unsuccessful",
-      });
-      return;
-    }
-    res.json(result.rows[0]);
-  } catch (err) {
-    console.error("Error updating password:", err.message);
-    res.status(500).json({
-      message: "Error occurred while Updating Password for User ",
-    });
+  if (result.rows.length === 0) {
+    throw new NotFoundError("User not found or password reset unsuccessful");
   }
-};
+
+  res.json(result.rows[0]);
+});
 
 // Get unassigned athletes in the coach's org (no coach assigned)
-exports.unassignedAthletesInOrg = async (req, res) => {
-  try {
-    const coach = await pool.query(
-      "SELECT org_rk FROM person WHERE prsn_rk = $1",
-      [req.user.id]
-    );
-    if (coach.rows.length === 0)
-      return res.status(404).json({ message: "Coach not found" });
-    const org_rk = coach.rows[0].org_rk;
-    console.log("Coach org_rk:", org_rk);
+exports.unassignedAthletesInOrg = asyncHandler(async (req, res) => {
+  const coach = await pool.query(
+    "SELECT org_rk FROM person WHERE prsn_rk = $1",
+    [req.user.id]
+  );
 
-    // Let's see what roles exist in the org
-    const rolesInOrg = await pool.query(
-      "SELECT DISTINCT p.prsn_role FROM person p WHERE p.org_rk = $1",
-      [org_rk]
-    );
-    console.log("Roles in org:", rolesInOrg.rows);
-
-    // First, let's see all people in the org without coach
-    const allPeopleWithoutCoach = await pool.query(
-      "SELECT p.prsn_rk, p.prsn_first_nm, p.prsn_last_nm, p.prsn_email, p.prsn_role, p.coach_prsn_rk, o.org_name FROM person p INNER JOIN organization o ON o.org_rk = p.org_rk WHERE p.org_rk = $1 AND p.coach_prsn_rk IS NULL",
-      [org_rk]
-    );
-    console.log("All people without coach:", allPeopleWithoutCoach.rows);
-
-    // Now try with ATHLETE role
-    const result = await pool.query(
-      "SELECT p.prsn_rk, p.prsn_first_nm, p.prsn_last_nm, p.prsn_email, p.prsn_role, o.org_name FROM person p INNER JOIN organization o ON o.org_rk = p.org_rk WHERE p.org_rk = $1 AND p.coach_prsn_rk IS NULL AND p.prsn_role = 'ATHLETE'",
-      [org_rk]
-    );
-    console.log("Unassigned athletes result:", result.rows);
-    res.json(result.rows);
-  } catch (err) {
-    console.error("Error getting unassigned athletes:", err.message);
-    res
-      .status(500)
-      .json({ message: "Error occurred getting unassigned athletes." });
+  if (coach.rows.length === 0) {
+    throw new NotFoundError("Coach");
   }
-};
+
+  const org_rk = coach.rows[0].org_rk;
+
+  const result = await pool.query(
+    "SELECT p.prsn_rk, p.prsn_first_nm, p.prsn_last_nm, p.prsn_email, p.prsn_role, p.profile_url, o.org_name FROM person p INNER JOIN organization o ON o.org_rk = p.org_rk WHERE p.org_rk = $1 AND p.coach_prsn_rk IS NULL AND p.prsn_role = 'ATHLETE'",
+    [org_rk]
+  );
+
+  res.json(result.rows);
+});
 
 // Assign self as coach to an athlete
-exports.assignCoachToAthlete = async (req, res) => {
-  try {
-    const { athlete_rk } = req.body;
-    const coach_prsn_rk = req.user.id;
+exports.assignCoachToAthlete = asyncHandler(async (req, res) => {
+  const { athlete_rk } = req.body;
+  const coach_prsn_rk = req.user.id;
 
-    // Verify the athlete exists and is unassigned
-    const athlete = await pool.query(
-      "SELECT prsn_rk FROM person WHERE prsn_rk = $1 AND prsn_role = 'ATHLETE' AND coach_prsn_rk IS NULL",
-      [athlete_rk]
-    );
-
-    if (athlete.rows.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "Athlete not found or already assigned to a coach" });
-    }
-
-    await pool.query(
-      "UPDATE person SET coach_prsn_rk = $1 WHERE prsn_rk = $2",
-      [coach_prsn_rk, athlete_rk]
-    );
-    res.json({ message: "Coach assigned to athlete" });
-  } catch (err) {
-    console.error("Error assigning coach:", err.message);
-    res.status(500).json({ message: "Error occurred assigning coach." });
+  if (!athlete_rk) {
+    throw new ValidationError("Athlete key is required");
   }
-};
+
+  // Verify the athlete exists and is unassigned
+  const athlete = await pool.query(
+    "SELECT prsn_rk FROM person WHERE prsn_rk = $1 AND prsn_role = 'ATHLETE' AND coach_prsn_rk IS NULL",
+    [athlete_rk]
+  );
+
+  if (athlete.rows.length === 0) {
+    throw new NotFoundError("Athlete not found or already assigned to a coach");
+  }
+
+  await pool.query("UPDATE person SET coach_prsn_rk = $1 WHERE prsn_rk = $2", [
+    coach_prsn_rk,
+    athlete_rk,
+  ]);
+
+  res.json({ message: "Coach assigned to athlete successfully" });
+});
 
 // Unassign coach from an athlete
-exports.unassignCoachFromAthlete = async (req, res) => {
-  try {
-    const { athlete_rk } = req.body;
-    const coach_prsn_rk = req.user.id;
+exports.unassignCoachFromAthlete = asyncHandler(async (req, res) => {
+  const { athlete_rk } = req.body;
+  const coach_prsn_rk = req.user.id;
 
-    // Verify the athlete is currently assigned to this coach
-    const athlete = await pool.query(
-      "SELECT prsn_rk FROM person WHERE prsn_rk = $1 AND coach_prsn_rk = $2 AND prsn_role = 'ATHLETE'",
-      [athlete_rk, coach_prsn_rk]
-    );
-
-    if (athlete.rows.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "Athlete not found or not assigned to you" });
-    }
-
-    await pool.query(
-      "UPDATE person SET coach_prsn_rk = NULL WHERE prsn_rk = $1",
-      [athlete_rk]
-    );
-    res.json({ message: "Coach unassigned from athlete" });
-  } catch (err) {
-    console.error("Error unassigning coach:", err.message);
-    res.status(500).json({ message: "Error occurred unassigning coach." });
+  if (!athlete_rk) {
+    throw new ValidationError("Athlete key is required");
   }
-};
+
+  // Verify the athlete is currently assigned to this coach
+  const athlete = await pool.query(
+    "SELECT prsn_rk FROM person WHERE prsn_rk = $1 AND coach_prsn_rk = $2 AND prsn_role = 'ATHLETE'",
+    [athlete_rk, coach_prsn_rk]
+  );
+
+  if (athlete.rows.length === 0) {
+    throw new NotFoundError("Athlete not found or not assigned to you");
+  }
+
+  await pool.query(
+    "UPDATE person SET coach_prsn_rk = NULL WHERE prsn_rk = $1",
+    [athlete_rk]
+  );
+
+  res.json({ message: "Coach unassigned from athlete successfully" });
+});

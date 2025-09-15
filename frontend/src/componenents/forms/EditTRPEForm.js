@@ -8,7 +8,7 @@ import {
   FieldOutputContainer,
   FieldLabel,
   SubmitError,
-} from "../../styles/styles.js";
+} from "../../styles/design-system";
 import "typeface-nunito";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";

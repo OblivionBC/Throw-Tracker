@@ -8,7 +8,7 @@ import {
   FieldLabel,
   SubmitError,
   ParagraphInput,
-} from "../../styles/styles.js";
+} from "../../styles/design-system";
 import "typeface-nunito";
 import dayjs from "dayjs";
 import { MeasurableFieldArray } from "../formHelpers/MeasurableFieldArray.js";
@@ -16,15 +16,20 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import TrainingPeriodOptions from "../formHelpers/TrainingPeriodOptions";
 import { measurementsApi, practicesApi } from "../../api";
+import { useApi } from "../../hooks/useApi";
 
 const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
   const [measurementContainer, setMeasurementContainer] = useState([]);
+  const { apiCall } = useApi();
 
   //Grabbing measurements for autofill of the form
   useEffect(() => {
     const fetchMeasurements = async () => {
       try {
-        const measurements = await measurementsApi.getForPractice(prac.prac_rk);
+        const measurements = await apiCall(
+          () => measurementsApi.getForPractice(prac.prac_rk),
+          `Fetching measurements for practice ${prac.prac_rk}`
+        );
         const container = measurements.map((element) => ({
           meas_rk: element.meas_rk,
           msrm_value: element.msrm_value,
@@ -35,7 +40,7 @@ const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
       }
     };
     fetchMeasurements();
-  }, [prac.prac_rk]);
+  }, [prac.prac_rk, apiCall]);
 
   //Trim date to make it nice and purrrty for the date picker
   let pracDate = new Date(prac.prac_dt);
@@ -69,7 +74,10 @@ const PracticeEditForm = ({ prac, on, goToDetails, refresh }) => {
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     setSubmitting(true);
     try {
-      await practicesApi.updatePractice(prac.prac_rk, values);
+      await apiCall(
+        () => practicesApi.updatePractice(prac.prac_rk, values),
+        "Updating practice"
+      );
       refresh();
       setSubmitting(false);
       alert("Practice Updated Successfully");

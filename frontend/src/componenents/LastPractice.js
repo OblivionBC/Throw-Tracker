@@ -4,6 +4,7 @@ import "typeface-nunito";
 import dayjs from "dayjs";
 import * as FaIcons from "react-icons/fa";
 import { practicesApi } from "../api";
+import { useApi } from "../hooks/useApi";
 // This is your PracticeItem component
 //Test that this works and add it to the practices component
 
@@ -11,12 +12,16 @@ const LastPractice = () => {
   //Stuff
   const [datas, setDatas] = useState({});
   const [loading, setLoading] = useState(true);
+  const { apiCall } = useApi();
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const jsonData = await practicesApi.getLast();
+        const jsonData = await apiCall(
+          () => practicesApi.getLast(),
+          "Fetching last practice"
+        );
         setDatas({
           prac_rk: jsonData.prac_rk,
           meas_id: jsonData.meas_id,
@@ -31,7 +36,7 @@ const LastPractice = () => {
       setLoading(false);
     };
     fetchData();
-  }, []);
+  }, [apiCall]);
 
   if (loading) {
     return <div>Loading</div>;

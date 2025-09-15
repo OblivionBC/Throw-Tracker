@@ -23,15 +23,19 @@ const PersonMeasurableOptions = ({ state, name }) => {
 
   if (loading) return <div>Loading...</div>;
   return (
-    <Field as="select" name={name} placeholder="">
-      <option value="-1" label="Select option" />
-      {measurables?.map(({ meas_rk, meas_id, meas_unit }) => {
-        return (
-          <option key={meas_rk} value={meas_rk}>
-            {`${meas_id} ${meas_unit}`}
-          </option>
-        );
-      })}
+    <Field name={name}>
+      {({ field }) => (
+        <select {...field} placeholder="">
+          <option value="-1" label="Select option" />
+          {measurables?.map(({ meas_rk, meas_id, meas_unit }) => {
+            return (
+              <option key={meas_rk} value={meas_rk}>
+                {`${meas_id} ${meas_unit}`}
+              </option>
+            );
+          })}
+        </select>
+      )}
     </Field>
   );
 };

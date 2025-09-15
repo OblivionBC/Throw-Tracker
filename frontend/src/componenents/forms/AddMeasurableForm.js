@@ -8,18 +8,29 @@ import {
   FieldOutputContainer,
   FieldLabel,
   SubmitError,
-} from "../../styles/styles.js";
+} from "../../styles/design-system";
 import "typeface-nunito";
 import { measurablesApi } from "../../api";
+import { useApi } from "../../hooks/useApi";
 import useUserStore, { useUser } from "../../stores/userStore";
 
-const addMeasurable = async (meas_id, meas_typ, meas_unit, prsn_rk) => {
-  const response = await measurablesApi.create({
-    meas_id,
-    meas_typ,
-    meas_unit,
-    prsn_rk,
-  });
+const addMeasurable = async (
+  meas_id,
+  meas_typ,
+  meas_unit,
+  prsn_rk,
+  apiCall
+) => {
+  const response = await apiCall(
+    () =>
+      measurablesApi.create({
+        meas_id,
+        meas_typ,
+        meas_unit,
+        prsn_rk,
+      }),
+    "Creating measurable"
+  );
 
   return response;
 };
@@ -27,6 +38,7 @@ const addMeasurable = async (meas_id, meas_typ, meas_unit, prsn_rk) => {
 const AddMeasurableForm = ({ close, refresh }) => {
   const [failed, setFailed] = useState(false);
   const user = useUser();
+  const { apiCall } = useApi();
   const initialValues = {
     meas_id: "",
     meas_unit: "",
@@ -52,7 +64,8 @@ const AddMeasurableForm = ({ close, refresh }) => {
         values.meas_id,
         values.meas_typ,
         values.meas_unit,
-        user.id
+        user.id,
+        apiCall
       );
       alert("Measurable Added Successfully");
       close();

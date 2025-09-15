@@ -12,7 +12,7 @@ import {
   EditButton,
   RowContainer,
   FieldName,
-} from "../../styles/styles";
+} from "../../styles/design-system";
 
 const PracticeDetailsModal = ({ open, onClose, pracObj, refresh }) => {
   const [editing, setEditing] = useState(false);

@@ -4,14 +4,7 @@ import { apiCall } from "./config";
 export const personsApi = {
   // Get all athletes for coach (no caching)
   getAthletesForCoach: async () => {
-    try {
-      const response = await apiCall("/persons/athletes");
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.message || "Failed to get athletes for coach"
-      );
-    }
+    return await apiCall("/persons/athletes");
   },
 
   // Get all persons (no caching)
@@ -55,14 +48,7 @@ export const personsApi = {
 
   // Fetch current user (no caching)
   fetchUser: async () => {
-    try {
-      const response = await apiCall("/persons/me");
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.message || "Failed to fetch user data"
-      );
-    }
+    return await apiCall("/persons/me");
   },
 
   getUnassignedAthletesInOrg: async () => {

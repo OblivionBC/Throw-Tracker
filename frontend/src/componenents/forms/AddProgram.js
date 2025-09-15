@@ -8,20 +8,25 @@ import {
   FieldLabel,
   SubmitError,
   StyledInput,
-} from "../../styles/styles.js";
+} from "../../styles/design-system";
 import "typeface-nunito";
 import { programsApi, measurablesApi } from "../../api";
 import useUserStore, { useUser } from "../../stores/userStore";
+import { useApi } from "../../hooks/useApi";
 
 const AddProgramForm = ({ close, refresh, onProgramCreated }) => {
   const [measurables, setMeasurables] = useState([]);
   const [loading, setLoading] = useState(true);
   const user = useUser();
+  const { apiCall } = useApi();
 
   useEffect(() => {
     const fetchMeasurables = async () => {
       try {
-        const response = await measurablesApi.getForCoach();
+        const response = await apiCall(
+          () => measurablesApi.getForCoach(),
+          "Fetching measurables"
+        );
         setMeasurables(response);
       } catch (error) {
         console.error("Error fetching measurables:", error);
@@ -30,7 +35,7 @@ const AddProgramForm = ({ close, refresh, onProgramCreated }) => {
       }
     };
     fetchMeasurables();
-  }, []);
+  }, [apiCall]);
 
   const initialValues = {
     prog_nm: "",
@@ -79,18 +84,26 @@ const AddProgramForm = ({ close, refresh, onProgramCreated }) => {
     setSubmitting(true);
     try {
       // Create the program first
-      const programResponse = await programsApi.create({
-        prog_nm: values.prog_nm,
-      });
+      const programResponse = await apiCall(
+        () =>
+          programsApi.create({
+            prog_nm: values.prog_nm,
+          }),
+        "Creating program"
+      );
 
       // Add measurables to the program using batch API
       const validMeasurables = values.measurables.filter(
         (measurable) => measurable.meas_rk
       );
       if (validMeasurables.length > 0) {
-        await measurablesApi.addMultipleToProgram(
-          programResponse.prog_rk,
-          validMeasurables
+        await apiCall(
+          () =>
+            measurablesApi.addMultipleToProgram(
+              programResponse.prog_rk,
+              validMeasurables
+            ),
+          "Adding measurables to program"
         );
       }
 

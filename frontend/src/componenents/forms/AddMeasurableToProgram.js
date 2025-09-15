@@ -9,18 +9,23 @@ import {
   SubmitError,
   StyledInput,
   StyledSelect,
-} from "../../styles/styles.js";
+} from "../../styles/design-system";
 import "typeface-nunito";
 import { measurablesApi, programMeasurableAssignmentsApi } from "../../api";
+import { useApi } from "../../hooks/useApi";
 
 const AddMeasurableToProgramForm = ({ close, refresh, prog_rk }) => {
   const [measurables, setMeasurables] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { apiCall } = useApi();
 
   useEffect(() => {
     const fetchMeasurables = async () => {
       try {
-        const data = await measurablesApi.getForCoach();
+        const data = await apiCall(
+          () => measurablesApi.getForCoach(),
+          "Fetching measurables for program"
+        );
         setMeasurables(data);
       } catch (error) {
         console.error("Error fetching measurables:", error);
@@ -29,7 +34,7 @@ const AddMeasurableToProgramForm = ({ close, refresh, prog_rk }) => {
       }
     };
     fetchMeasurables();
-  }, []);
+  }, [apiCall]);
 
   const initialValues = {
     meas_rk: "",
@@ -60,7 +65,10 @@ const AddMeasurableToProgramForm = ({ close, refresh, prog_rk }) => {
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     setSubmitting(true);
     try {
-      await programMeasurableAssignmentsApi.addToProgram(prog_rk, values);
+      await apiCall(
+        () => programMeasurableAssignmentsApi.addToProgram(prog_rk, values),
+        "Adding measurable to program"
+      );
       alert("Measurable added to program successfully");
       refresh();
       close();

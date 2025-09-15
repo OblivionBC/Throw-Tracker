@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, TableWrap, Title, CompWrap } from "../../styles/styles.js";
+import { Table, TableWrap, Title, CompWrap } from "../../styles/design-system";
 import { eventAssignmentsApi } from "../../api";
 import dayjs from "dayjs";
 

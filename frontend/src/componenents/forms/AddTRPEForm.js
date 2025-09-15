@@ -8,23 +8,30 @@ import {
   FieldOutputContainer,
   FieldLabel,
   SubmitError,
-} from "../../styles/styles.js";
+} from "../../styles/design-system";
 import "typeface-nunito";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { trainingPeriodsApi } from "../../api";
+import { useApi } from "../../hooks/useApi";
+import useUserStore from "../../stores/userStore";
+import { useIsCoach } from "../../stores/userStore";
 
 //Name says it, but this is just a function to add the trpe when submitting
-const addTRPE = async (trpe_start_dt) => {
-  const response = await trainingPeriodsApi.create(trpe_start_dt);
-
-  const jsonData = await response.json();
-  if (!response.ok) {
-    throw new Error(jsonData.message || "Something went wrong");
-  }
-  return jsonData.trpe_rk;
+const addTRPE = async (trpe_start_dt, targetPrsnRk, apiCall) => {
+  const response = await apiCall(
+    () => trainingPeriodsApi.create({ trpe_start_dt, prsn_rk: targetPrsnRk }),
+    "Creating training period"
+  );
+  return response.trpe_rk;
 };
 const AddTRPEForm = ({ close, refresh }) => {
+  const { apiCall } = useApi();
+  const isCoach = useIsCoach();
+  const { selectedAthlete, getUserId } = useUserStore();
+
+  // Determine target person ID: if coach, use selected athlete; if athlete, use current user
+  const targetPrsnRk = isCoach ? selectedAthlete : getUserId();
   const initialValues = {
     trpe_start_dt: "",
     endDateRecent: false,
@@ -41,7 +48,11 @@ const AddTRPEForm = ({ close, refresh }) => {
 
     setSubmitting(true);
     try {
-      const trpe_rk = await addTRPE(values.trpe_start_dt);
+      const trpe_rk = await addTRPE(
+        values.trpe_start_dt,
+        targetPrsnRk,
+        apiCall
+      );
       if (trpe_rk) {
         alert("Training Period Added Successfully");
         close();

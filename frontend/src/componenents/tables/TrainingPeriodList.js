@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import dayjs from "dayjs";
 import {
   Table,
@@ -8,17 +8,16 @@ import {
   CompWrap,
   AddButton,
   EditButton,
-} from "../../styles/styles.js";
+} from "../../styles/design-system";
 import ConfirmTRPEDelete from "../modals/ConfirmTRPEDelete";
 import AddTRPEModal from "../modals/AddTRPEModal";
 import TrainingPeriodEditModal from "../modals/TrainingPeriodEditModal";
 import ProgramsModal from "../modals/ProgramsModal";
 import { trainingPeriodsApi } from "../../api";
 import { useDataChange } from "../contexts/DataChangeContext";
-import {
-  getPaginationNumber,
-  getContainerHeight,
-} from "../../utils/tableUtils";
+import { useApi } from "../../hooks/useApi";
+import { useIsCoach, useSelectedAthlete } from "../../stores/userStore";
+import { getPaginationNumber } from "../../utils/tableUtils";
 
 const TableStyles = {
   pagination: {
@@ -55,6 +54,9 @@ const TrainingPeriodList = ({
   const [programs, setPrograms] = useState(false);
   const [editTRPEOpen, setEditTRPEOpen] = useState(false);
   const [selectedTRPE, setSelectedTRPE] = useState({});
+  const { apiCall } = useApi();
+  const isCoach = useIsCoach();
+  const selectedAthlete = useSelectedAthlete();
   const {
     isCacheValid,
     setCacheData,
@@ -81,30 +83,74 @@ const TrainingPeriodList = ({
   const optimalPagination = getPaginationNumber(paginationNum, containerHeight);
   selectable === undefined ? (selectable = false) : (selectable = true);
 
-  const getTRPEData = async (forceRefresh = false) => {
-    setCacheLoading(prsn_rk, true);
-
-    try {
-      const response = await trainingPeriodsApi.getAllForPerson(prsn_rk);
-      setTrpeData(response);
-      setCacheData(prsn_rk, response);
-    } catch (error) {
-      console.error(error.message);
-    } finally {
-      setCacheLoading(prsn_rk, false);
+  // Determine which person to get training periods for
+  const getPersonForTrainingPeriods = useCallback(() => {
+    if (isCoach) {
+      // For coaches, use selected athlete if available, otherwise use provided prsn_rk
+      return selectedAthlete || prsn_rk;
+    } else {
+      // For athletes, use provided prsn_rk
+      return prsn_rk;
     }
-  };
+  }, [isCoach, selectedAthlete, prsn_rk]);
+
+  const getTRPEData = useCallback(
+    async (forceRefresh = false) => {
+      const personId = getPersonForTrainingPeriods();
+
+      // Create cache key that includes athlete selection for coaches
+      const cacheKey = isCoach
+        ? `trpe_coach_${selectedAthlete || "no_athlete"}`
+        : `trpe_${personId}`;
+
+      // Check if we have valid cached data and don't need to force refresh
+      if (!forceRefresh && isCacheValid(cacheKey)) {
+        const cachedData = getCachedData(cacheKey);
+        if (cachedData && cachedData.data) {
+          setTrpeData(cachedData.data);
+          return;
+        }
+      }
+
+      setCacheLoading(cacheKey, true);
+
+      try {
+        let response;
+
+        if (isCoach && !selectedAthlete) {
+          // No athlete selected for coach, show empty data
+          response = [];
+        } else {
+          // Get training periods for the determined person
+          response = await apiCall(
+            () => trainingPeriodsApi.getAllForPerson(personId),
+            `Fetching training periods for person ${personId}`
+          );
+        }
+
+        setTrpeData(response);
+        setCacheData(cacheKey, response);
+      } catch (error) {
+        console.error(error.message);
+      } finally {
+        setCacheLoading(cacheKey, false);
+      }
+    },
+    [getPersonForTrainingPeriods, isCoach, selectedAthlete]
+  );
 
   useEffect(() => {
     getTRPEData();
-  }, [prsn_rk, refreshFlags[prsn_rk]]);
+  }, [getTRPEData, refreshFlags[prsn_rk]]);
 
   const handleRefresh = () => {
     getTRPEData(true);
   };
 
   const handleDataChange = () => {
-    invalidateCache(prsn_rk);
+    const personId = getPersonForTrainingPeriods();
+    invalidateCache(personId);
+    getTRPEData(true); // Force refresh the data
   };
   const handleChange = ({ selectedRows }) => {
     if (selectedRows) {
@@ -138,45 +184,49 @@ const TrainingPeriodList = ({
       sortable: true,
     },
   ];
-  if (bEdit === true)
+  // Add Actions column if any action buttons are enabled
+  if (bEdit === true || bDelete === true || bPrograms === true) {
     columns.push({
+      name: "Actions",
       cell: (row) => (
-        <EditButton
-          onClick={() => {
-            setEditTRPEOpen(true);
-            setSelectedTRPE(row);
-          }}
-        >
-          Edit
-        </EditButton>
+        <div style={{ display: "flex", gap: "5px" }}>
+          {bEdit === true && (
+            <EditButton
+              $size="sm"
+              onClick={() => {
+                setEditTRPEOpen(true);
+                setSelectedTRPE(row);
+              }}
+            >
+              Edit
+            </EditButton>
+          )}
+          {bDelete === true && (
+            <EditButton
+              $size="sm"
+              onClick={() => {
+                setDeleteTRPEOpen(true);
+                setSelectedTRPE(row);
+              }}
+            >
+              Delete
+            </EditButton>
+          )}
+          {bPrograms === true && (
+            <EditButton
+              $size="sm"
+              onClick={() => {
+                setSelectedTRPE(row);
+                setPrograms(true);
+              }}
+            >
+              Programs
+            </EditButton>
+          )}
+        </div>
       ),
     });
-  if (bDelete === true)
-    columns.push({
-      cell: (row) => (
-        <EditButton
-          onClick={() => {
-            setDeleteTRPEOpen(true);
-            setSelectedTRPE(row);
-          }}
-        >
-          Delete
-        </EditButton>
-      ),
-    });
-  if (bPrograms === true)
-    columns.push({
-      cell: (row) => (
-        <EditButton
-          onClick={() => {
-            setSelectedTRPE(row);
-            setPrograms(true);
-          }}
-        >
-          Programs
-        </EditButton>
-      ),
-    });
+  }
   //Add the Detail/Edit modal now
   return (
     <CompWrap ref={containerRef}>

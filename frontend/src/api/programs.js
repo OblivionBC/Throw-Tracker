@@ -4,26 +4,12 @@ import { apiCall } from "./config";
 export const programsApi = {
   // Get all programs for coach (no caching)
   getAll: async () => {
-    try {
-      const response = await apiCall("/programs");
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.message || "Failed to get programs"
-      );
-    }
+    return await apiCall("/programs");
   },
 
   // Get program by ID (no caching)
   getById: async (prog_rk) => {
-    try {
-      const response = await apiCall(`/programs/${prog_rk}`);
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.message || "Failed to get program details"
-      );
-    }
+    return await apiCall(`/programs/${prog_rk}`);
   },
 
   // Create new program (no caching)
@@ -54,17 +40,9 @@ export const programsApi = {
 
   // Get programs for training period (no caching)
   getForTrainingPeriod: async (trpe_rk) => {
-    try {
-      const response = await apiCall(`/programs/training-period/${trpe_rk}`, {
-        method: "GET",
-      });
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.message ||
-          "Failed to get programs for training period"
-      );
-    }
+    return await apiCall(`/programs/training-period/${trpe_rk}`, {
+      method: "GET",
+    });
   },
 
   // Invalidate programs cache (no-op)

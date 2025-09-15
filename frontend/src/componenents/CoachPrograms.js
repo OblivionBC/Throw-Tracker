@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { CompWrap, Title, RowDiv, AddButton } from "../styles/styles.js";
+import { CompWrap, Title, RowDiv, AddButton } from "../styles/design-system";
 import { programsApi, programAthleteAssignmentsApi } from "../api";
 import useUserStore, { useUser } from "../stores/userStore";
+import { useApi } from "../hooks/useApi";
 import AssignProgramModal from "./modals/AssignProgramModal";
 import ProgramDetailsModal from "./modals/ProgramDetailsModal";
 import AddProgramModal from "./modals/AddProgramModal";
@@ -14,6 +15,7 @@ const CoachPrograms = () => {
   const [showProgramDetails, setShowProgramDetails] = useState(false);
   const [showAddProgramModal, setShowAddProgramModal] = useState(false);
   const user = useUser();
+  const { apiCall } = useApi();
 
   useEffect(() => {
     fetchPrograms();
@@ -21,7 +23,10 @@ const CoachPrograms = () => {
 
   const fetchPrograms = async () => {
     try {
-      const programsData = await programsApi.getAll();
+      const programsData = await apiCall(
+        () => programsApi.getAll(),
+        "Fetching programs"
+      );
       setPrograms(programsData);
     } catch (error) {
       console.error("Error fetching programs:", error);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import styled from "styled-components";
 import PracticeList from "../componenents/tables/PracticeList";
 import TrainingPeriodList from "../componenents/tables/TrainingPeriodList";
@@ -11,11 +11,6 @@ import AthleteList from "../componenents/tables/AthleteList";
 import CoachPrograms from "../componenents/CoachPrograms";
 
 const Coach = () => {
-  const [activeTRPE, setActiveTRPE] = useState([]);
-  useEffect(() => {
-    setActiveTRPE([]);
-  }, []);
-
   return (
     <Page>
       <LeftColumn>

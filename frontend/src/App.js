@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import Navbar from "./componenents/overlay/Navbar";
-import { AppRHS, AppLayout } from "./styles/styles";
+import { AppRHS, AppLayout } from "./styles/design-system";
 import {
   BrowserRouter as Router,
   Route,
@@ -10,13 +10,15 @@ import {
 } from "react-router-dom";
 import { createGlobalStyle } from "styled-components";
 import Home from "./pages/Home";
-import Practices from "./pages/Practices";
-import Meets from "./pages/Meets";
+
 import Login from "./pages/Login";
 import Coach from "./pages/Coach";
 import Sidebar from "./componenents/overlay/SideBar";
 import ProtectedRoute from "./componenents/ProtectedRoute";
 import { DataChangeProvider } from "./componenents/contexts/DataChangeContext";
+import { ErrorProvider } from "./contexts/ErrorContext";
+import ErrorNotifications from "./componenents/ErrorNotifications";
+
 // New pages for sidebar navigation
 import MeasurablesPage from "./pages/MeasurablesPage";
 import TrainingPeriodsPage from "./pages/TrainingPeriodsPage";
@@ -28,6 +30,7 @@ import MeetsCalendarPage from "./pages/MeetsCalendarPage";
 import AthletesPage from "./pages/AthletesPage";
 import ProgramsPage from "./pages/ProgramsPage";
 import Profile from "./pages/Profile";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -60,14 +63,6 @@ const AppContent = () => {
             }
           />
 
-          <Route
-            path="/meets"
-            element={
-              <ProtectedRoute>
-                <Meets />
-              </ProtectedRoute>
-            }
-          />
           <Route
             path="/meets-list"
             element={
@@ -105,7 +100,7 @@ const AppContent = () => {
             path="/practices"
             element={
               <ProtectedRoute>
-                <Practices />
+                <PracticeListPage />
               </ProtectedRoute>
             }
           />
@@ -167,6 +162,15 @@ const AppContent = () => {
               </ProtectedRoute>
             }
           />
+          {/* Admin Dashboard */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
           {/* Catch all route - redirect to login */}
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
@@ -177,14 +181,17 @@ const AppContent = () => {
 
 const App = () => {
   return (
-    <DataChangeProvider>
-      <AppLayout>
-        <GlobalStyle />
-        <Router>
-          <AppContent />
-        </Router>
-      </AppLayout>
-    </DataChangeProvider>
+    <ErrorProvider>
+      <DataChangeProvider>
+        <AppLayout>
+          <GlobalStyle />
+          <Router>
+            <AppContent />
+            <ErrorNotifications />
+          </Router>
+        </AppLayout>
+      </DataChangeProvider>
+    </ErrorProvider>
   );
 };
 

@@ -43,13 +43,15 @@ const ProtectedRoute = ({ children }) => {
         // Try to fetch user data to check if token is valid
         const userData = await fetchUser();
         if (!userData) {
-          // No valid token, handle expired token
-          useUserStore.getState().handleExpiredToken();
+          // No valid token, clear state but don't redirect (let the API error handling do it)
+          console.log("ProtectedRoute: No user data returned, clearing state");
+          reset();
         }
       } catch (error) {
         console.error("ProtectedRoute: Authentication check failed:", error);
-        // Clear any invalid state and handle expired token
-        useUserStore.getState().handleExpiredToken();
+        // Clear any invalid state but don't redirect (let the API error handling do it)
+        console.log("ProtectedRoute: Error during auth check, clearing state");
+        reset();
       }
 
       hasCheckedAuth.current = true;

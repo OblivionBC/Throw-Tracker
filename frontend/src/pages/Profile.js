@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { useUser } from "../stores/userStore";
 import "typeface-rubik";
+import logo from "../images/LogoIcon.png";
 
 const Profile = () => {
   const user = useUser();
+  const [profileImageError, setProfileImageError] = useState(false);
   console.log(user);
   if (!user) {
     return (
@@ -21,6 +23,19 @@ const Profile = () => {
     <Page>
       <ProfileContainer>
         <Title>Profile</Title>
+
+        <ProfileImageSection>
+          <ProfileImage
+            src={
+              user?.profile_url && !profileImageError ? user.profile_url : logo
+            }
+            alt={`${user.first_nm} ${user.last_nm}`}
+            onError={() => setProfileImageError(true)}
+          />
+          <ProfileName>
+            {user.first_nm} {user.last_nm}
+          </ProfileName>
+        </ProfileImageSection>
 
         <ProfileSection>
           <SectionTitle>Personal Information</SectionTitle>
@@ -96,6 +111,32 @@ const Title = styled.h1`
   margin-bottom: 30px;
   text-align: center;
   font-weight: bold;
+`;
+
+const ProfileImageSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 20px;
+`;
+
+const ProfileImage = styled.img`
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 4px solid #1976d2;
+  margin-bottom: 15px;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+`;
+
+const ProfileName = styled.h2`
+  font-size: 1.8rem;
+  color: #333;
+  margin: 0;
+  font-weight: 600;
+  text-align: center;
 `;
 
 const ProfileSection = styled.div`

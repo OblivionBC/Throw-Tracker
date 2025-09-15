@@ -8,6 +8,7 @@ import {
   meetsApi,
   eventTypesApi,
 } from "../../api";
+import { useApi } from "../../hooks/useApi";
 
 const FormContainer = styled.div`
   padding: 20px;
@@ -110,14 +111,24 @@ const AddEventAssignmentForm = ({ onSuccess, onCancel }) => {
   const [athletes, setAthletes] = useState([]);
   const [eventTypes, setEventTypes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { apiCall } = useApi();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [meetsData, athletesData, eventTypesData] = await Promise.all([
-          meetsApi.getAll(),
-          personsApi.getAllAthletes(),
-          eventTypesApi.getAll(),
+          apiCall(
+            () => meetsApi.getForCoachOrg(),
+            "Fetching meets for assignment form"
+          ),
+          apiCall(
+            () => personsApi.getAllAthletes(),
+            "Fetching athletes for assignment form"
+          ),
+          apiCall(
+            () => eventTypesApi.getAll(),
+            "Fetching event types for assignment form"
+          ),
         ]);
         setMeets(meetsData);
         setAthletes(athletesData);
@@ -130,11 +141,14 @@ const AddEventAssignmentForm = ({ onSuccess, onCancel }) => {
     };
 
     fetchData();
-  }, []);
+  }, [apiCall]);
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     try {
-      await eventAssignmentsApi.create(values);
+      await apiCall(
+        () => eventAssignmentsApi.create(values),
+        "Creating event assignment"
+      );
       onSuccess();
     } catch (error) {
       console.error("Error creating event assignment:", error);

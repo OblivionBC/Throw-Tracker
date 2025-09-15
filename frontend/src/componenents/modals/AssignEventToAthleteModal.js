@@ -2,7 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import styled from "styled-components";
-import { eventAssignmentsApi, eventTypesApi, personsApi } from "../../api";
+import { eventAssignmentsApi, personsApi, meetsApi } from "../../api";
+import { useApi } from "../../hooks/useApi";
+import {
+  StyledButton,
+  CloseButton,
+  CancelButton,
+} from "../../styles/design-system";
 
 const Overlay = styled.div`
   position: fixed;
@@ -25,22 +31,6 @@ const ModalContainer = styled.div`
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
-`;
-
-const CloseButton = styled.button`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  color: #666;
-  z-index: 1;
-
-  &:hover {
-    color: #333;
-  }
 `;
 
 const Content = styled.div`
@@ -86,50 +76,23 @@ const ErrorText = styled.div`
   margin-top: 5px;
 `;
 
-const Button = styled.button`
-  background-color: #007bff;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  margin-right: 10px;
-
-  &:hover {
-    background-color: #0056b3;
-  }
-
-  &:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
-`;
-
-const CancelButton = styled.button`
-  background-color: #6c757d;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-
-  &:hover {
-    background-color: #545b62;
-  }
-`;
-
 const validationSchema = Yup.object({
   prsn_rk: Yup.string().required("Athlete is required"),
   etyp_rk: Yup.string().required("Event type is required"),
   notes: Yup.string().optional(),
 });
 
-const AssignEventToAthleteModal = ({ open, onClose, onSuccess, meet }) => {
+const AssignEventToAthleteModal = ({
+  open,
+  onClose,
+  onSuccess,
+  meet,
+  selectedEvent,
+}) => {
   const [athletes, setAthletes] = useState([]);
-  const [eventTypes, setEventTypes] = useState([]);
+  const [meetEvents, setMeetEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { apiCall } = useApi();
 
   useEffect(() => {
     if (open) {
@@ -140,12 +103,18 @@ const AssignEventToAthleteModal = ({ open, onClose, onSuccess, meet }) => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [athletesData, eventTypesData] = await Promise.all([
-        personsApi.getAthletesForCoach(),
-        eventTypesApi.getAll(),
+      const [athletesData, meetEventsData] = await Promise.all([
+        apiCall(
+          () => personsApi.getAthletesForCoach(),
+          "Fetching athletes for assignment"
+        ),
+        apiCall(
+          () => meetsApi.getSchedule(meet.meet_rk),
+          `Fetching meet schedule for ${meet.meet_rk}`
+        ),
       ]);
       setAthletes(athletesData);
-      setEventTypes(eventTypesData);
+      setMeetEvents(meetEventsData);
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {
@@ -156,20 +125,24 @@ const AssignEventToAthleteModal = ({ open, onClose, onSuccess, meet }) => {
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     try {
       // Create event assignment in event_assignment table
-      await eventAssignmentsApi.create({
-        meet_rk: meet.meet_rk,
-        prsn_rk: parseInt(values.prsn_rk),
-        etyp_rk: parseInt(values.etyp_rk),
-        notes: values.notes || null,
-        // Set attempt fields to null initially
-        attempt_one: null,
-        attempt_two: null,
-        attempt_three: null,
-        attempt_four: null,
-        attempt_five: null,
-        attempt_six: null,
-        final_mark: null,
-      });
+      await apiCall(
+        () =>
+          eventAssignmentsApi.create({
+            meet_rk: meet.meet_rk,
+            prsn_rk: parseInt(values.prsn_rk),
+            etyp_rk: parseInt(values.etyp_rk),
+            notes: values.notes || null,
+            // Set attempt fields to null initially
+            attempt_one: null,
+            attempt_two: null,
+            attempt_three: null,
+            attempt_four: null,
+            attempt_five: null,
+            attempt_six: null,
+            final_mark: null,
+          }),
+        "Assigning event to athlete"
+      );
 
       onSuccess();
       onClose();
@@ -189,7 +162,7 @@ const AssignEventToAthleteModal = ({ open, onClose, onSuccess, meet }) => {
     return (
       <Overlay>
         <ModalContainer>
-          <CloseButton onClick={onClose}>×</CloseButton>
+          <CloseButton onClick={onClose}>Close</CloseButton>
           <Content>
             <div>Loading...</div>
           </Content>
@@ -201,7 +174,7 @@ const AssignEventToAthleteModal = ({ open, onClose, onSuccess, meet }) => {
   return (
     <Overlay>
       <ModalContainer>
-        <CloseButton onClick={onClose}>×</CloseButton>
+        <CloseButton onClick={onClose}>Close</CloseButton>
         <Content>
           <FormContainer>
             <h2>Assign Athlete to Event</h2>
@@ -213,7 +186,7 @@ const AssignEventToAthleteModal = ({ open, onClose, onSuccess, meet }) => {
             <Formik
               initialValues={{
                 prsn_rk: "",
-                etyp_rk: "",
+                etyp_rk: selectedEvent ? selectedEvent.etyp_rk.toString() : "",
                 notes: "",
               }}
               validationSchema={validationSchema}
@@ -247,29 +220,46 @@ const AssignEventToAthleteModal = ({ open, onClose, onSuccess, meet }) => {
 
                   <FormGroup>
                     <Label htmlFor="etyp_rk">Event Type *</Label>
-                    <Field
-                      as="select"
-                      name="etyp_rk"
-                      id="etyp_rk"
-                      style={{
-                        width: "100%",
-                        padding: "8px",
-                        border: "1px solid #ddd",
-                        borderRadius: "4px",
-                        fontSize: "14px",
-                      }}
-                    >
-                      <option value="">Select an event type</option>
-                      {eventTypes.map((eventType) => (
-                        <option
-                          key={eventType.etyp_rk}
-                          value={eventType.etyp_rk}
-                        >
-                          {eventType.etyp_type_name} -{" "}
-                          {eventType.event_group_name}
-                        </option>
-                      ))}
-                    </Field>
+                    {meetEvents.length === 0 ? (
+                      <div
+                        style={{
+                          padding: "10px",
+                          backgroundColor: "#f8f9fa",
+                          border: "1px solid #ddd",
+                          borderRadius: "4px",
+                          color: "#666",
+                          fontStyle: "italic",
+                        }}
+                      >
+                        No events are currently scheduled for this meet. Please
+                        add events to the meet first.
+                      </div>
+                    ) : (
+                      <Field
+                        as="select"
+                        name="etyp_rk"
+                        id="etyp_rk"
+                        style={{
+                          width: "100%",
+                          padding: "8px",
+                          border: "1px solid #ddd",
+                          borderRadius: "4px",
+                          fontSize: "14px",
+                        }}
+                      >
+                        <option value="">Select an event type</option>
+                        {meetEvents.map((meetEvent) => (
+                          <option
+                            key={meetEvent.etyp_rk}
+                            value={meetEvent.etyp_rk}
+                          >
+                            {meetEvent.etyp_type_name} -{" "}
+                            {meetEvent.event_group_name} (
+                            {meetEvent.scheduled_time})
+                          </option>
+                        ))}
+                      </Field>
+                    )}
                     <ErrorMessage name="etyp_rk" component={ErrorText} />
                   </FormGroup>
 
@@ -287,11 +277,16 @@ const AssignEventToAthleteModal = ({ open, onClose, onSuccess, meet }) => {
                   {errors.submit && <ErrorText>{errors.submit}</ErrorText>}
 
                   <div style={{ marginTop: "20px" }}>
-                    <Button type="submit" disabled={isSubmitting}>
+                    <StyledButton
+                      type="submit"
+                      disabled={isSubmitting || meetEvents.length === 0}
+                    >
                       {isSubmitting
                         ? "Assigning..."
+                        : meetEvents.length === 0
+                        ? "No Events Available"
                         : "Assign Athlete to Event"}
-                    </Button>
+                    </StyledButton>
                     <CancelButton type="button" onClick={onClose}>
                       Cancel
                     </CancelButton>

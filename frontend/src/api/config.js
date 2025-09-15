@@ -86,7 +86,8 @@ const apiCall = async (endpoint, options = {}) => {
         if (
           response.status === 401 &&
           !isRefreshing &&
-          endpoint !== "/auth/refresh"
+          endpoint !== "/auth/refresh" &&
+          !isAuthEndpoint
         ) {
           if (isRefreshing) {
             // If already refreshing, queue this request
@@ -155,13 +156,32 @@ const apiCall = async (endpoint, options = {}) => {
           (response.status === 401 || response.status === 403) &&
           !isAuthEndpoint
         ) {
-          useUserStore.getState().handleExpiredToken();
+          console.log("🔐 401/403 error detected - handling expired token");
+          console.log("🔐 Response status:", response.status);
+          console.log("🔐 Is auth endpoint:", isAuthEndpoint);
+          console.log("🔐 Current URL:", window.location.href);
+          console.log("🔐 Current pathname:", window.location.pathname);
+
+          // Handle expired token first
+          try {
+            useUserStore.getState().handleExpiredToken();
+            console.log("🔐 handleExpiredToken called successfully");
+          } catch (error) {
+            console.error("🔐 Error calling handleExpiredToken:", error);
+          }
+
           throw new Error("Authentication failed");
         }
 
-        throw new Error(
-          errorData.message || `HTTP error! status: ${response.status}`
-        );
+        throw {
+          response: { data: errorData },
+          status: response.status,
+          message:
+            errorData.error?.message ||
+            errorData.message ||
+            `HTTP error! status: ${response.status}`,
+          code: errorData.error?.code || "HTTP_ERROR",
+        };
       }
       const result = await response.json();
 
@@ -178,6 +198,43 @@ const apiCall = async (endpoint, options = {}) => {
       setTimeout(() => {
         pendingRequests.delete(requestKey);
       }, DEBOUNCE_DELAY);
+
+      // Handle network errors
+      if (!error.response && !error.status) {
+        throw {
+          message: "Network error. Please check your connection.",
+          code: "NETWORK_ERROR",
+        };
+      }
+
+      // Handle timeout errors
+      if (error.name === "AbortError") {
+        throw {
+          message: "Request timeout. Please try again.",
+          code: "TIMEOUT",
+        };
+      }
+
+      // If this is an authentication error, ensure we handle it
+      if (error.message === "Authentication failed") {
+        console.log("🔐 Authentication error caught - redirecting to login");
+        console.log("🔐 Current pathname:", window.location.pathname);
+
+        // The handleExpiredToken should have already been called, but let's ensure it
+        if (window.location.pathname !== "/login") {
+          try {
+            useUserStore.getState().handleExpiredToken();
+            console.log("🔐 handleExpiredToken called in fallback");
+          } catch (fallbackError) {
+            console.error(
+              "🔐 Error in fallback handleExpiredToken:",
+              fallbackError
+            );
+          }
+        } else {
+          console.log("🔐 Already on login page, skipping redirect");
+        }
+      }
 
       throw error;
     }

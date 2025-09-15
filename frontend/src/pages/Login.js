@@ -5,7 +5,13 @@ import { Navigate } from "react-router-dom";
 import ErrorBoundary from "../componenents/ErrorBoundary";
 import logo from "../images/LogoIcon.png";
 import text from "../images/LogoText.png";
-import { Col, FormContainer, Logo, PageContent, Row } from "../styles/styles";
+import {
+  Col,
+  FormContainer,
+  Logo,
+  PageContent,
+  Row,
+} from "../styles/design-system";
 import LoginForm from "../componenents/forms/LoginForm";
 import SignUpForm from "../componenents/forms/SignUpForm";
 import useUserStore, { useIsAuthenticated } from "../stores/userStore";

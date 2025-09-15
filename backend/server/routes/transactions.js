@@ -10,6 +10,7 @@ router.use("/practices", require("./practices"));
 router.use("/training-periods", require("./trainingPeriods"));
 router.use("/exercises", require("./exercises"));
 router.use("/meets", require("./meets"));
+router.use("/meet-templates", require("./meetTemplates"));
 router.use("/events", require("./events"));
 router.use("/event-assignments", require("./eventAssignments"));
 router.use("/event-types", require("./eventTypes"));
@@ -26,5 +27,7 @@ router.use(
   "/program-measurable-assignments",
   require("./programMeasurableAssignments")
 );
+router.use("/subscriptions", require("./subscriptions"));
+router.use("/admin", require("./admin"));
 
 module.exports = router;

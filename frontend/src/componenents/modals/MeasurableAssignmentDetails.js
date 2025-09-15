@@ -10,7 +10,7 @@ import {
   Title,
   FieldOutputContainer,
   FieldLabel,
-} from "../../styles/styles";
+} from "../../styles/design-system";
 import EditMeasurableAssignmentForm from "../forms/EditMeasurableAssignment";
 import ConfirmMeasurableAssignmentDelete from "../modals/ConfirmMeasurableAssignmentDelete";
 

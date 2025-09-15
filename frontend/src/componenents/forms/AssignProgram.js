@@ -8,18 +8,23 @@ import {
   FieldLabel,
   SubmitError,
   StyledInput,
-} from "../../styles/styles.js";
+} from "../../styles/design-system";
 import "typeface-nunito";
 import { programMeasurableAssignmentsApi, measurablesApi } from "../../api";
+import { useApi } from "../../hooks/useApi";
 
 const AssignProgramForm = ({ close, refresh, program }) => {
   const [measurables, setMeasurables] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { apiCall } = useApi();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const measurablesResponse = await measurablesApi.getForAthletes();
+        const measurablesResponse = await apiCall(
+          () => measurablesApi.getForAthletes(),
+          "Fetching measurables for assignment"
+        );
         setMeasurables(measurablesResponse);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -28,7 +33,7 @@ const AssignProgramForm = ({ close, refresh, program }) => {
       }
     };
     fetchData();
-  }, []);
+  }, [apiCall]);
 
   const initialValues = {
     measurables: [
@@ -70,15 +75,19 @@ const AssignProgramForm = ({ close, refresh, program }) => {
       // Add each measurable to the program
       for (const measurable of values.measurables) {
         if (measurable.meas_rk) {
-          await programMeasurableAssignmentsApi.addToProgram(program.prog_rk, {
-            meas_rk: measurable.meas_rk,
-            sort_order: 1,
-            target_reps: measurable.exas_reps,
-            target_sets: measurable.exas_sets,
-            target_weight: measurable.exas_weight,
-            notes: measurable.exas_notes,
-            is_measured: measurable.is_measurable,
-          });
+          await apiCall(
+            () =>
+              programMeasurableAssignmentsApi.addToProgram(program.prog_rk, {
+                meas_rk: measurable.meas_rk,
+                sort_order: 1,
+                target_reps: measurable.exas_reps,
+                target_sets: measurable.exas_sets,
+                target_weight: measurable.exas_weight,
+                notes: measurable.exas_notes,
+                is_measured: measurable.is_measurable,
+              }),
+            "Adding measurable to program"
+          );
         }
       }
       alert("Measurables added to program successfully");

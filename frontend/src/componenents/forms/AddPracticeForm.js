@@ -8,7 +8,7 @@ import {
   FieldLabel,
   SubmitError,
   ParagraphInput,
-} from "../../styles/styles.js";
+} from "../../styles/design-system";
 import "typeface-nunito";
 import dayjs from "dayjs";
 import { MeasurableFieldArray } from "../formHelpers/MeasurableFieldArray.js";
@@ -17,29 +17,29 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import ProgramSelectWithMeasurables from "../formHelpers/ProgramSelectWithExercise";
 import { practicesApi, measurementsApi } from "../../api";
+import { useApi } from "../../hooks/useApi";
 
 //Grab the initial values
-const addMeasurement = async (measurable, prac_rk) => {
-  const response = await measurementsApi.create(measurable, prac_rk);
-  const jsonData = await response.json();
-  if (response.ok === false) {
-    console.log("ERROR HAS OCCURRED ", response.statusText);
-  }
+const addMeasurement = async (measurable, prac_rk, apiCall) => {
+  const response = await apiCall(
+    () => measurementsApi.create(measurable, prac_rk),
+    "Creating measurement"
+  );
+  return response;
 };
 
-const addPractice = async (prac_dt, trpe_rk, notes) => {
-  const response = await practicesApi.create(prac_dt, trpe_rk, notes);
-
-  const jsonData = await response.json();
-  if (!response.ok) {
-    throw new Error(jsonData.message || "Something went wrong");
-  }
-  return jsonData.prac_rk;
+const addPractice = async (prac_dt, trpe_rk, notes, apiCall) => {
+  const response = await apiCall(
+    () => practicesApi.create(prac_dt, trpe_rk, notes),
+    "Creating practice"
+  );
+  return response.prac_rk;
 };
 
 const AddPracticeForm = ({ close, refresh }) => {
   const [failed, setFailed] = useState(false);
   const [programData, setProgramData] = useState([]);
+  const { apiCall } = useApi();
   let formikRef = null;
 
   useEffect(() => {
@@ -80,10 +80,15 @@ const AddPracticeForm = ({ close, refresh }) => {
     //Make call on submit to update practice, and delete all measurments in for the prac, then create a new one for each in the array
     setSubmitting(true);
     try {
-      const prac_rk = await addPractice(values.date, values.trpe, values.notes);
-      values.measurables.forEach((element) => {
-        addMeasurement(element, prac_rk);
-      });
+      const prac_rk = await addPractice(
+        values.date,
+        values.trpe,
+        values.notes,
+        apiCall
+      );
+      for (const element of values.measurables) {
+        await addMeasurement(element, prac_rk, apiCall);
+      }
       alert("Practice Added Successfully");
       close();
       refresh();

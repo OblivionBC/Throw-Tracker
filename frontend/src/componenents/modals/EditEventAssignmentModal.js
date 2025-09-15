@@ -3,6 +3,12 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import styled from "styled-components";
 import { eventAssignmentsApi } from "../../api";
+import {
+  StyledButton,
+  CloseButton,
+  CancelButton,
+  DeleteButton,
+} from "../../styles/design-system";
 
 const Overlay = styled.div`
   position: fixed;
@@ -25,22 +31,6 @@ const ModalContainer = styled.div`
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
-`;
-
-const CloseButton = styled.button`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  color: #666;
-  z-index: 1;
-
-  &:hover {
-    color: #333;
-  }
 `;
 
 const Content = styled.div`
@@ -84,55 +74,6 @@ const ErrorText = styled.div`
   color: red;
   font-size: 12px;
   margin-top: 5px;
-`;
-
-const Button = styled.button`
-  background-color: #007bff;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  margin-right: 10px;
-
-  &:hover {
-    background-color: #0056b3;
-  }
-
-  &:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
-`;
-
-const CancelButton = styled.button`
-  background-color: #6c757d;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-
-  &:hover {
-    background-color: #545b62;
-  }
-`;
-
-const DeleteButton = styled.button`
-  background-color: #dc3545;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  margin-left: 10px;
-
-  &:hover {
-    background-color: #c82333;
-  }
 `;
 
 const InfoRow = styled.div`
@@ -180,13 +121,20 @@ const EditEventAssignmentModal = ({
       // Convert empty strings to null for numeric fields
       const cleanedValues = {
         ...values,
-        attempt_one: values.attempt_one === "" ? null : parseFloat(values.attempt_one),
-        attempt_two: values.attempt_two === "" ? null : parseFloat(values.attempt_two),
-        attempt_three: values.attempt_three === "" ? null : parseFloat(values.attempt_three),
-        attempt_four: values.attempt_four === "" ? null : parseFloat(values.attempt_four),
-        attempt_five: values.attempt_five === "" ? null : parseFloat(values.attempt_five),
-        attempt_six: values.attempt_six === "" ? null : parseFloat(values.attempt_six),
-        final_mark: values.final_mark === "" ? null : parseFloat(values.final_mark),
+        attempt_one:
+          values.attempt_one === "" ? null : parseFloat(values.attempt_one),
+        attempt_two:
+          values.attempt_two === "" ? null : parseFloat(values.attempt_two),
+        attempt_three:
+          values.attempt_three === "" ? null : parseFloat(values.attempt_three),
+        attempt_four:
+          values.attempt_four === "" ? null : parseFloat(values.attempt_four),
+        attempt_five:
+          values.attempt_five === "" ? null : parseFloat(values.attempt_five),
+        attempt_six:
+          values.attempt_six === "" ? null : parseFloat(values.attempt_six),
+        final_mark:
+          values.final_mark === "" ? null : parseFloat(values.final_mark),
       };
 
       await eventAssignmentsApi.update(
@@ -195,7 +143,7 @@ const EditEventAssignmentModal = ({
         assignment.etyp_rk,
         cleanedValues
       );
-      
+
       onSuccess();
       onClose();
     } catch (error) {
@@ -244,23 +192,23 @@ const EditEventAssignmentModal = ({
   return (
     <Overlay>
       <ModalContainer>
-        <CloseButton onClick={onClose}>×</CloseButton>
+        <CloseButton onClick={onClose}>Close</CloseButton>
         <Content>
           <FormContainer>
             <h2>Edit Event Assignment</h2>
-            
+
             <InfoRow>
               <InfoLabel>Athlete:</InfoLabel>
               <InfoValue>
                 {assignment.athlete_first_nm} {assignment.athlete_last_nm}
               </InfoValue>
             </InfoRow>
-            
+
             <InfoRow>
               <InfoLabel>Event:</InfoLabel>
               <InfoValue>{assignment.event_name}</InfoValue>
             </InfoRow>
-            
+
             <InfoRow>
               <InfoLabel>Meet:</InfoLabel>
               <InfoValue>{meet?.meet_nm}</InfoValue>
@@ -371,14 +319,14 @@ const EditEventAssignmentModal = ({
                   {errors.submit && <ErrorText>{errors.submit}</ErrorText>}
 
                   <div style={{ marginTop: "20px" }}>
-                    <Button type="submit" disabled={isSubmitting}>
+                    <StyledButton type="submit" disabled={isSubmitting}>
                       {isSubmitting ? "Updating..." : "Update Assignment"}
-                    </Button>
+                    </StyledButton>
                     <CancelButton type="button" onClick={onClose}>
                       Cancel
                     </CancelButton>
-                    <DeleteButton 
-                      type="button" 
+                    <DeleteButton
+                      type="button"
                       onClick={handleDelete}
                       disabled={isDeleting}
                     >

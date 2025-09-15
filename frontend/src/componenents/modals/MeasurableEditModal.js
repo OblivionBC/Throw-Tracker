@@ -10,7 +10,7 @@ import {
   RowDiv,
   RowContainer,
   FieldName,
-} from "../../styles/styles";
+} from "../../styles/design-system";
 const MeasurableEditModal = ({ open, onClose, measObj, refresh }) => {
   if (!open) return null;
   return (

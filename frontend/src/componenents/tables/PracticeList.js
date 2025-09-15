@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
   Table,
   TableWrap,
@@ -7,17 +7,17 @@ import {
   CompWrap,
   AddButton,
   EditButton,
-} from "../../styles/styles.js";
+} from "../../styles/design-system";
 import dayjs from "dayjs";
 import PracticeDetailsModal from "../modals/PracticeDetailsModal";
 import ConfirmPracDeleteModal from "../modals/ConfirmPracDeleteModal";
 import AddPracticeModal from "../modals/AddPracticeModal";
-import { practicesApi } from "../../api";
+import { practicesApi, trainingPeriodsApi } from "../../api";
 import { useDataChange } from "../contexts/DataChangeContext";
-import {
-  getPaginationNumber,
-  getContainerHeight,
-} from "../../utils/tableUtils";
+import { useIsCoach, useSelectedAthlete } from "../../stores/userStore";
+import useUserStore from "../../stores/userStore";
+import { getPaginationNumber } from "../../utils/tableUtils";
+import styled from "styled-components";
 
 const TableStyles = {
   pagination: {
@@ -36,6 +36,22 @@ const TableStyles = {
   headRow: { style: { minHeight: "25px", maxHeight: "40px" } }, // Set your desired height here
 };
 
+const FilterContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+`;
+
+const FilterSelect = styled.select`
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 14px;
+  min-width: 200px;
+`;
+
 const Practices = ({
   trpe_rk,
   bAdd,
@@ -50,6 +66,11 @@ const Practices = ({
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [confirmPracDelete, setConfirmPracDelete] = useState(false);
   const [selectedPrac, setSelectedPrac] = useState({});
+  const [trainingPeriods, setTrainingPeriods] = useState([]);
+  const [selectedTrainingPeriod, setSelectedTrainingPeriod] = useState("");
+  const isCoach = useIsCoach();
+  const selectedAthlete = useSelectedAthlete();
+  const getUserId = useUserStore((state) => state.getUserId);
 
   const {
     isCacheValid,
@@ -73,43 +94,113 @@ const Practices = ({
     return () => window.removeEventListener("resize", updateHeight);
   }, []);
 
-  const getPracticeData = async (forceRefresh = false) => {
-    const cacheKey = `practices_${trpe_rk || "all"}`;
-
-    // Check if we have valid cached data and don't need to force refresh
-    if (!forceRefresh && isCacheValid(cacheKey)) {
-      const cachedData = getCachedData(cacheKey);
-      if (cachedData && cachedData.data) {
-        setPracticeData(cachedData.data);
-        return;
-      }
-    }
-
-    // Set loading state
-    setCacheLoading(cacheKey, true);
-
+  // Load training periods
+  const loadTrainingPeriods = useCallback(async () => {
     try {
-      let response;
-      //If the training period was passed in, we want to get the practices only from the training period
-      if (trpe_rk) {
-        response = await practicesApi.getInTrainingPeriod(trpe_rk);
+      let personId;
+      if (isCoach) {
+        // For coaches, use selected athlete if available
+        personId = selectedAthlete;
       } else {
-        //No Training Period was specified so get all for the person
-        response = await practicesApi.getAll();
+        // For athletes, get their own training periods
+        personId = getUserId();
       }
 
-      setPracticeData(response);
-      setCacheData(cacheKey, response);
+      if (personId) {
+        const response = await trainingPeriodsApi.getAllForPerson(personId);
+        setTrainingPeriods(response);
+      } else {
+        setTrainingPeriods([]);
+      }
     } catch (error) {
-      console.error(error.message);
-    } finally {
-      setCacheLoading(cacheKey, false);
+      console.error("Error loading training periods:", error);
+      setTrainingPeriods([]);
     }
-  };
+  }, [isCoach, selectedAthlete, getUserId]);
+
+  useEffect(() => {
+    loadTrainingPeriods();
+  }, [loadTrainingPeriods]);
+
+  const getPracticeData = useCallback(
+    async (forceRefresh = false) => {
+      // Create cache key that includes athlete selection for coaches
+      const cacheKey = isCoach
+        ? `practices_coach_${selectedAthlete || "no_athlete"}_${
+            selectedTrainingPeriod || trpe_rk || "all"
+          }`
+        : `practices_${selectedTrainingPeriod || trpe_rk || "all"}`;
+
+      // Check if we have valid cached data and don't need to force refresh
+      if (!forceRefresh && isCacheValid(cacheKey)) {
+        const cachedData = getCachedData(cacheKey);
+        if (cachedData && cachedData.data) {
+          setPracticeData(cachedData.data);
+          return;
+        }
+      }
+
+      // Set loading state
+      setCacheLoading(cacheKey, true);
+
+      try {
+        let response;
+
+        if (isCoach) {
+          // For coaches, always get all practices for their athletes
+          if (!selectedAthlete) {
+            // No athlete selected, show empty data
+            response = [];
+          } else {
+            // Get all practices for coach's athletes
+            response = await practicesApi.getAllForCoach();
+
+            // Filter by selected athlete
+            response = response.filter(
+              (practice) =>
+                String(practice.athlete_prsn_rk) === String(selectedAthlete)
+            );
+
+            // If a training period is selected, also filter by that
+            if (selectedTrainingPeriod) {
+              response = response.filter(
+                (practice) =>
+                  String(practice.trpe_rk) === String(selectedTrainingPeriod)
+              );
+            } else if (trpe_rk) {
+              // If trpe_rk prop is provided, filter by that
+              response = response.filter(
+                (practice) => String(practice.trpe_rk) === String(trpe_rk)
+              );
+            }
+          }
+        } else {
+          // For athletes, use existing logic
+          if (selectedTrainingPeriod) {
+            response = await practicesApi.getInTrainingPeriod(
+              selectedTrainingPeriod
+            );
+          } else if (trpe_rk) {
+            response = await practicesApi.getInTrainingPeriod(trpe_rk);
+          } else {
+            response = await practicesApi.getAll();
+          }
+        }
+
+        setPracticeData(response);
+        setCacheData(cacheKey, response);
+      } catch (error) {
+        console.error(error.message);
+      } finally {
+        setCacheLoading(cacheKey, false);
+      }
+    },
+    [isCoach, selectedAthlete, selectedTrainingPeriod, trpe_rk]
+  );
 
   useEffect(() => {
     getPracticeData();
-  }, [trpe_rk, refreshFlags.practices]);
+  }, [getPracticeData, refreshFlags.practices]);
 
   const handleRefresh = () => {
     getPracticeData(true);
@@ -117,6 +208,10 @@ const Practices = ({
 
   const handleDataChange = () => {
     invalidateCache("practices");
+  };
+
+  const handleTrainingPeriodChange = (event) => {
+    setSelectedTrainingPeriod(event.target.value);
   };
 
   // Calculate optimal pagination
@@ -143,38 +238,43 @@ const Practices = ({
     },
     {
       name: "TRPE",
-      selector: (row) => trpe_rk || row.trpe_rk,
+      selector: (row) => selectedTrainingPeriod || trpe_rk || row.trpe_rk,
       sortable: true,
     },
   ];
 
-  if (bDetail)
+  // Add Actions column if any action buttons are enabled
+  if (bDetail || bDelete) {
     columns.push({
+      name: "Actions",
       cell: (row) => (
-        <EditButton
-          onClick={() => {
-            setDetailModalOpen(true);
-            setSelectedPrac(row);
-          }}
-          style={{ display: "block" }}
-        >
-          Details
-        </EditButton>
+        <div style={{ display: "flex", gap: "5px" }}>
+          {bDetail && (
+            <EditButton
+              $size="sm"
+              onClick={() => {
+                setDetailModalOpen(true);
+                setSelectedPrac(row);
+              }}
+            >
+              Details
+            </EditButton>
+          )}
+          {bDelete && (
+            <EditButton
+              $size="sm"
+              onClick={() => {
+                setConfirmPracDelete(true);
+                setSelectedPrac(row);
+              }}
+            >
+              Delete
+            </EditButton>
+          )}
+        </div>
       ),
     });
-  if (bDelete)
-    columns.push({
-      cell: (row) => (
-        <EditButton
-          onClick={() => {
-            setConfirmPracDelete(true);
-            setSelectedPrac(row);
-          }}
-        >
-          Delete
-        </EditButton>
-      ),
-    });
+  }
   return (
     <CompWrap ref={containerRef}>
       {detailModalOpen && (
@@ -202,10 +302,29 @@ const Practices = ({
       )}
       <RowDiv>
         <Title>Practices</Title>
-        {bAdd ? (
-          <AddButton onClick={() => setAddPracticeOpen(true)}>Add</AddButton>
-        ) : null}
-        <AddButton onClick={handleRefresh}>Refresh</AddButton>
+        <FilterContainer>
+          {/* Only show training period filter if no specific trpe_rk is provided */}
+          {!trpe_rk && (
+            <FilterSelect
+              value={selectedTrainingPeriod}
+              onChange={handleTrainingPeriodChange}
+            >
+              <option value="">All Training Periods</option>
+              {trainingPeriods.map((period) => (
+                <option key={period.trpe_rk} value={period.trpe_rk}>
+                  {dayjs(period.trpe_start_dt).format("MMM D YYYY")} -
+                  {period.trpe_end_dt
+                    ? dayjs(period.trpe_end_dt).format("MMM D YYYY")
+                    : "Ongoing"}
+                </option>
+              ))}
+            </FilterSelect>
+          )}
+          {bAdd ? (
+            <AddButton onClick={() => setAddPracticeOpen(true)}>Add</AddButton>
+          ) : null}
+          <AddButton onClick={handleRefresh}>Refresh</AddButton>
+        </FilterContainer>
       </RowDiv>
 
       <TableWrap>

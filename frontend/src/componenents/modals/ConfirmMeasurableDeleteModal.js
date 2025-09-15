@@ -2,12 +2,13 @@ import React from "react";
 import {
   Overlay,
   ModalContainer,
+  CloseButton,
   DeleteButton,
   ButtonContainer,
   CancelButton,
   FieldLabel,
   FieldContainer,
-} from "../../styles/styles";
+} from "../../styles/design-system";
 import { measurablesApi } from "../../api";
 
 const ConfirmMeasurableDeleteModal = ({ open, onClose, measObj, refresh }) => {
@@ -27,6 +28,13 @@ const ConfirmMeasurableDeleteModal = ({ open, onClose, measObj, refresh }) => {
   return (
     <Overlay>
       <ModalContainer>
+        <CloseButton
+          onClick={() => {
+            onClose();
+          }}
+        >
+          Close
+        </CloseButton>
         <FieldContainer>
           <FieldLabel>Are you sure you want to delete Measurable: </FieldLabel>
           <h2>{measObj.meas_id}</h2>

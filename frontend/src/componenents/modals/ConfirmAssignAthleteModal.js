@@ -5,7 +5,7 @@ import {
   CloseButton,
   Content,
   StyledButton,
-} from "../../styles/styles";
+} from "../../styles/design-system";
 import { personsApi } from "../../api";
 
 const ConfirmAssignAthleteModal = ({ open, onClose, refresh, athlete }) => {

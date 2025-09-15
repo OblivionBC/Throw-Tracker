@@ -9,7 +9,7 @@ import {
   Title,
   FieldOutputContainer,
   FieldLabel,
-} from "../../styles/styles";
+} from "../../styles/design-system";
 import { programMeasurableAssignmentsApi } from "../../api";
 
 const ConfirmMeasurableAssignmentDelete = ({

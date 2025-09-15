@@ -13,5 +13,8 @@ export { eventTypesApi } from "./eventTypes";
 export { athleteEventAssignmentsApi } from "./athleteEventAssignments";
 export { exerciseAssignmentsApi } from "./exerciseAssignments";
 export { programsApi } from "./programs";
+export { meetTemplatesApi } from "./meetTemplates";
 export { programAthleteAssignmentsApi } from "./programAthleteAssignments";
 export { programMeasurableAssignmentsApi } from "./programMeasurableAssignments";
+export { subscriptionsApi } from "./subscriptions";
+export { adminApi } from "./admin";

@@ -4,6 +4,7 @@
 
 const router = require("express").Router();
 const { requireAuth } = require("../middleware/auth");
+const { checkProgramLimit } = require("../middleware/subscriptionLimits");
 const {
   addProgram,
   getAllProgramsForCoach,
@@ -14,7 +15,7 @@ const {
 } = require("../controllers/programs");
 
 // All program routes require authentication
-router.post("/", requireAuth, addProgram); // POST /programs
+router.post("/", requireAuth, checkProgramLimit, addProgram); // POST /programs
 router.get("/", requireAuth, getAllProgramsForCoach); // GET /programs
 router.get(
   "/training-period/:trpe_rk",

@@ -4,7 +4,7 @@ import {
   ModalContainer,
   CloseButton,
   Content,
-} from "../../styles/styles";
+} from "../../styles/design-system";
 import AddProgramForm from "../forms/AddProgram";
 import { trainingPeriodsApi } from "../../api";
 

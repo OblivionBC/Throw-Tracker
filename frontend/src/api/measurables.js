@@ -14,14 +14,7 @@ export const measurablesApi = {
 
   // Get measurables for coach (no caching)
   getForCoach: async () => {
-    try {
-      const response = await apiCall("/measurables/coach");
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.message || "Failed to get measurables for coach"
-      );
-    }
+    return await apiCall("/measurables/coach");
   },
 
   // Get measurables for athletes (no caching)
@@ -31,14 +24,14 @@ export const measurablesApi = {
 
   // Get measurables for the current user (no caching)
   getAllForPerson: async () => {
-    try {
-      const response = await apiCall("/measurables/person");
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.message || "Failed to get measurables for user"
-      );
-    }
+    return await apiCall("/measurables/person");
+  },
+
+  // Get measurables assigned to a specific program (no caching)
+  getForProgram: async (prog_rk) => {
+    return await apiCall(
+      `/program-measurable-assignments/programs/${prog_rk}/measurables`
+    );
   },
 
   // Create new measurable (no caching)

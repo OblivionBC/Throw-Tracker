@@ -8,22 +8,27 @@ import {
   FieldLabel,
   SubmitError,
   StyledInput,
-} from "../../styles/styles.js";
+} from "../../styles/design-system";
 import "typeface-nunito";
 import {
   programAthleteAssignmentsApi,
   personsApi,
   trainingPeriodsApi,
 } from "../../api";
+import { useApi } from "../../hooks/useApi";
 
 const AssignProgramToAthletesForm = ({ close, refresh, program }) => {
   const [trainingPeriods, setTrainingPeriods] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { apiCall } = useApi();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const periodsResponse = await trainingPeriodsApi.getAll();
+        const periodsResponse = await apiCall(
+          () => trainingPeriodsApi.getAll(),
+          "Fetching training periods for athlete assignment"
+        );
         setTrainingPeriods(periodsResponse);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -32,7 +37,7 @@ const AssignProgramToAthletesForm = ({ close, refresh, program }) => {
       }
     };
     fetchData();
-  }, []);
+  }, [apiCall]);
 
   const initialValues = {
     assignments: [
@@ -68,9 +73,13 @@ const AssignProgramToAthletesForm = ({ close, refresh, program }) => {
         return;
       }
 
-      await programAthleteAssignmentsApi.assignToTrainingPeriods(
-        program.prog_rk,
-        validAssignments
+      await apiCall(
+        () =>
+          programAthleteAssignmentsApi.assignToTrainingPeriods(
+            program.prog_rk,
+            validAssignments
+          ),
+        "Assigning program to athletes"
       );
       alert("Program Assigned Successfully");
       refresh();

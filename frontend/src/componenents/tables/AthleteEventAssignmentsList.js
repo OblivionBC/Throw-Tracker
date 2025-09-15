@@ -10,7 +10,7 @@ import {
   Title,
   CompWrap,
   AddButton,
-} from "../../styles/styles.js";
+} from "../../styles/design-system";
 import { athleteEventAssignmentsApi } from "../../api";
 
 const TableStyles = {

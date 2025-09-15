@@ -8,11 +8,13 @@ import {
   FieldLabel,
   SubmitError,
   StyledInput,
-} from "../../styles/styles.js";
+} from "../../styles/design-system";
 import "typeface-nunito";
 import { programMeasurableAssignmentsApi } from "../../api";
+import { useApi } from "../../hooks/useApi";
 
 const EditMeasurableAssignmentForm = ({ close, refresh, measurable }) => {
+  const { apiCall } = useApi();
   const initialValues = {
     sort_order: measurable.sort_order || 1,
     target_val: measurable.target_val || "",
@@ -40,7 +42,11 @@ const EditMeasurableAssignmentForm = ({ close, refresh, measurable }) => {
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     setSubmitting(true);
     try {
-      await programMeasurableAssignmentsApi.update(measurable.prma_rk, values);
+      await apiCall(
+        () =>
+          programMeasurableAssignmentsApi.update(measurable.prma_rk, values),
+        "Updating measurable assignment"
+      );
       alert("Measurable assignment updated successfully");
       refresh();
       close();

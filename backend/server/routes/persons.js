@@ -4,6 +4,8 @@
 
 const router = require("express").Router();
 const { requireAuth } = require("../middleware/auth");
+const { personValidation } = require("../middleware/validation");
+const { checkPersonRoleLimit } = require("../middleware/subscriptionLimits");
 const {
   addPerson,
   getPerson,
@@ -27,7 +29,13 @@ router
 
 // Admin routes (authentication required)
 router
-  .post("/", requireAuth, addPerson) // POST /persons
+  .post(
+    "/",
+    requireAuth,
+    personValidation.addPerson,
+    checkPersonRoleLimit,
+    addPerson
+  ) // POST /persons
   .get("/", requireAuth, getAllPersons) // GET /persons
   .get("/:prsn_rk", requireAuth, getPerson) // GET /persons/:prsn_rk
   .put("/:prsn_rk/password", requireAuth, updatePassword) // PUT /persons/:prsn_rk/password

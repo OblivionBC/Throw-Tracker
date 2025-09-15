@@ -1,6 +1,6 @@
 import React from "react";
 import { Field, FieldArray } from "formik";
-import { AddButton, DeleteButton } from "../../styles/styles.js";
+import { AddButton, DeleteButton } from "../../styles/design-system";
 import PersonMeasurableOptions from "./PersonMeasurableOptions";
 
 // Here is an example of a form with an editable list.

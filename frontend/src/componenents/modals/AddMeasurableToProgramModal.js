@@ -6,7 +6,7 @@ import {
   ModalContainer,
   CloseButton,
   Content,
-} from "../../styles/styles";
+} from "../../styles/design-system";
 
 const AddMeasurableToProgramModal = ({ open, onClose, refresh, prog_rk }) => {
   if (!open) return null;

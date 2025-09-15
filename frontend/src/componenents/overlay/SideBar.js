@@ -4,7 +4,7 @@ import styled from "styled-components";
 import logo from "../../images/LogoIcon.png";
 import useUserStore, { useUser, useIsCoach } from "../../stores/userStore";
 import { authApi } from "../../api";
-import AthleteSelect from "../formHelpers/AthleteSelect";
+import { useApi } from "../../hooks/useApi";
 
 const Sidebar = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -12,6 +12,7 @@ const Sidebar = () => {
   const [practicesOpen, setPracticesOpen] = useState(false);
   const [meetsOpen, setMeetsOpen] = useState(false);
   const [coachOpen, setCoachOpen] = useState(false);
+  const [profileImageError, setProfileImageError] = useState(false);
 
   const [tokenStatus, setTokenStatus] = useState(null);
   const profileRef = useRef(null);
@@ -19,7 +20,7 @@ const Sidebar = () => {
   const isCoach = useIsCoach();
   const { logout: logoutUser } = useUserStore();
   const navigate = useNavigate();
-  const location = useLocation();
+  const { apiCall } = useApi();
 
   // Always call hooks at the top level
   useEffect(() => {
@@ -46,6 +47,11 @@ const Sidebar = () => {
     // Token status checks are handled by the user store, not the sidebar
     // This prevents duplicate interval setup and multiple API calls
   }, [user]);
+
+  // Reset profile image error when user changes
+  useEffect(() => {
+    setProfileImageError(false);
+  }, [user?.profile_url]);
 
   // Profile modal logic
   const handleProfileClick = () => {
@@ -79,7 +85,10 @@ const Sidebar = () => {
     }
 
     try {
-      const status = await authApi.checkTokenStatus();
+      const status = await apiCall(
+        () => authApi.checkTokenStatus(),
+        "Checking token status"
+      );
       setTokenStatus(status);
 
       // Update token cache with current expiration (refresh token stays the same)
@@ -112,8 +121,11 @@ const Sidebar = () => {
       {/* User Profile Section */}
       <ProfileTrigger ref={profileRef} onClick={handleProfileClick}>
         <ProfilePicture
-          src={logo}
+          src={
+            user?.profile_url && !profileImageError ? user.profile_url : logo
+          }
           alt={user ? `${user.first_nm} ${user.last_nm}` : "Profile"}
+          onError={() => setProfileImageError(true)}
         />
       </ProfileTrigger>
       <UserName>{user ? `${user.first_nm} ${user.last_nm}` : "User"}</UserName>
@@ -152,12 +164,6 @@ const Sidebar = () => {
             {practicesOpen && (
               <DropdownMenu>
                 <DropdownItem>
-                  <StyledNavLink to="/practices">
-                    <SubNavIcon>📊</SubNavIcon>
-                    Dashboard
-                  </StyledNavLink>
-                </DropdownItem>
-                <DropdownItem>
                   <StyledNavLink to="/practice-charts">
                     <SubNavIcon>📈</SubNavIcon>
                     Chart
@@ -194,12 +200,6 @@ const Sidebar = () => {
             </DropdownButton>
             {meetsOpen && (
               <DropdownMenu>
-                <DropdownItem>
-                  <StyledNavLink to="/meets">
-                    <SubNavIcon>📊</SubNavIcon>
-                    Dashboard
-                  </StyledNavLink>
-                </DropdownItem>
                 <DropdownItem>
                   <StyledNavLink to="/meet-charts">
                     <SubNavIcon>📈</SubNavIcon>
@@ -262,6 +262,42 @@ const Sidebar = () => {
           </NavItem>
         )}
       </NavSection>
+
+      {/* Admin Section */}
+      {user?.prsn_role?.toLowerCase() === "admin" && (
+        <NavSection>
+          <NavItem>
+            <DropdownContainer>
+              <DropdownButton>
+                <NavIcon>🛡️</NavIcon>
+                Admin
+                <span>▼</span>
+              </DropdownButton>
+              <DropdownMenu>
+                <DropdownItem>
+                  <StyledNavLink to="/admin">
+                    <SubNavIcon>🏢</SubNavIcon>
+                    Organizations
+                  </StyledNavLink>
+                </DropdownItem>
+                <DropdownItem>
+                  <StyledNavLink to="/admin">
+                    <SubNavIcon>💳</SubNavIcon>
+                    Subscriptions
+                  </StyledNavLink>
+                </DropdownItem>
+                <DropdownItem>
+                  <StyledNavLink to="/admin">
+                    <SubNavIcon>📊</SubNavIcon>
+                    Analytics
+                  </StyledNavLink>
+                </DropdownItem>
+              </DropdownMenu>
+            </DropdownContainer>
+          </NavItem>
+        </NavSection>
+      )}
+
       {isCoach && (
         <div
           style={{

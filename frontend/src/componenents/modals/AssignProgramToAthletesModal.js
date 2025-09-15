@@ -8,7 +8,7 @@ import {
   FieldLabel,
   FieldOutputContainer,
   SubmitError,
-} from "../../styles/styles";
+} from "../../styles/design-system";
 import {
   personsApi,
   trainingPeriodsApi,

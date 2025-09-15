@@ -8,7 +8,7 @@ import {
   CompWrap,
   AddButton,
   EditButton,
-} from "../../styles/styles.js";
+} from "../../styles/design-system";
 import AddProgramModal from "../modals/AddProgramModal";
 import AssignProgramModal from "../modals/AssignProgramModal";
 import ProgramDetailsModal from "../modals/ProgramDetailsModal";
@@ -108,6 +108,7 @@ const ProgramsList = ({ paginationNum }) => {
       cell: (row) => (
         <div style={{ display: "flex", gap: "5px" }}>
           <EditButton
+            $size="sm"
             onClick={() => {
               setSelectedProgram(row);
               setAssignProgramOpen(true);
@@ -116,6 +117,7 @@ const ProgramsList = ({ paginationNum }) => {
             Assign
           </EditButton>
           <EditButton
+            $size="sm"
             onClick={() => {
               setSelectedProgram(row);
               setDetailsProgramOpen(true);

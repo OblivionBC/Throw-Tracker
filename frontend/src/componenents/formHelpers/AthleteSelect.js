@@ -5,6 +5,7 @@ import useUserStore, {
   useSelectedAthlete,
   useUser,
 } from "../../stores/userStore";
+import { useApi } from "../../hooks/useApi";
 
 const AthleteSelect = ({ org_name, updateUser }) => {
   const [athletes, setAthletes] = useState([]);
@@ -12,17 +13,21 @@ const AthleteSelect = ({ org_name, updateUser }) => {
   const selectedAthlete = useSelectedAthlete();
   const { setSelectedAthlete } = useUserStore();
   const user = useUser();
+  const { apiCall } = useApi();
   useEffect(() => {
     const fetchAthletes = async () => {
       try {
-        const data = await personsApi.getAthletesForCoach();
+        const data = await apiCall(
+          () => personsApi.getAthletesForCoach(),
+          "Fetching athletes for select"
+        );
         setAthletes(data);
       } catch (error) {
         console.error("Error fetching athletes:", error);
       }
     };
     fetchAthletes();
-  }, []);
+  }, [apiCall]);
   if (user?.role !== "COACH") {
     return null;
   }

@@ -5,7 +5,9 @@ import {
   CloseButton,
   Content,
   StyledButton,
-} from "../../styles/styles";
+  DeleteButton,
+  CancelButton,
+} from "../../styles/design-system";
 import { programsApi } from "../../api";
 
 const ConfirmProgramDelete = ({ open, onClose, refresh, program }) => {
@@ -44,13 +46,8 @@ const ConfirmProgramDelete = ({ open, onClose, refresh, program }) => {
               marginTop: "20px",
             }}
           >
-            <StyledButton
-              onClick={handleDelete}
-              style={{ backgroundColor: "#dc3545" }}
-            >
-              Delete Program
-            </StyledButton>
-            <StyledButton onClick={onClose}>Cancel</StyledButton>
+            <DeleteButton onClick={handleDelete}>Delete Program</DeleteButton>
+            <CancelButton onClick={onClose}>Cancel</CancelButton>
           </div>
         </Content>
       </ModalContainer>

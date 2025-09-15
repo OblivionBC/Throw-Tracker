@@ -12,12 +12,14 @@ const {
   deletePractice,
   updatePractice,
   getPracticesInTrpe,
+  getAllPracticesForCoach,
 } = require("../controllers/practices");
 
 // All practice routes require authentication
 router
   .post("/", requireAuth, addPractice) // POST /practices
   .get("/", requireAuth, getAllPractices) // GET /practices (uses req.user.id)
+  .get("/coach/all", requireAuth, getAllPracticesForCoach) // GET /practices/coach/all
   .get("/last", requireAuth, getLastPractice) // GET /practices/last
   .get("/training-period/:trpe_rk", requireAuth, getPracticesInTrpe) // GET /practices/training-period
   .get("/:prac_rk", requireAuth, getPractice) // GET /practices/:prac_rk

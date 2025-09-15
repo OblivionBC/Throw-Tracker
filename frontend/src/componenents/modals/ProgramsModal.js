@@ -9,7 +9,7 @@ import {
   Content,
   AddButton,
   RowDiv,
-} from "../../styles/styles";
+} from "../../styles/design-system";
 import {
   programAthleteAssignmentsApi,
   programMeasurableAssignmentsApi,

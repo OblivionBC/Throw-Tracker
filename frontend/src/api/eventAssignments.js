@@ -20,9 +20,19 @@ export const eventAssignmentsApi = {
     return await apiCall(`/event-assignments/meet/${meet_rk}/all`);
   },
 
+  // Get event assignments by meet and event
+  getByMeetAndEvent: async (meet_rk, etyp_rk) => {
+    return await apiCall(`/event-assignments/meet/${meet_rk}/event/${etyp_rk}`);
+  },
+
   // Get event assignments by athlete
   getByAthlete: async (prsn_rk) => {
     return await apiCall(`/event-assignments/athlete/${prsn_rk}`);
+  },
+
+  // Get all event assignments for coach's organization
+  getAllForCoach: async () => {
+    return await apiCall("/event-assignments/coach/all");
   },
 
   // Get specific event assignment

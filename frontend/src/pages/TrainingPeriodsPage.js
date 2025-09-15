@@ -30,3 +30,4 @@ const Page = styled.div`
 `;
 
 export default TrainingPeriodsPage;
+

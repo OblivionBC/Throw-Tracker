@@ -49,4 +49,21 @@ export const measurementsApi = {
       method: "DELETE",
     });
   },
+
+  // Get measurements for all athletes under a coach
+  getForCoach: async (athlete_prsn_rk = null) => {
+    const params = athlete_prsn_rk ? { athlete_prsn_rk } : {};
+    const queryString = new URLSearchParams(params).toString();
+    return await apiCall(
+      `/measurements/coach${queryString ? `?${queryString}` : ""}`
+    );
+  },
+
+  // Get all measurements for a specific person
+  getAllForPerson: async (prsn_rk) => {
+    if (!prsn_rk) {
+      throw new Error("Person ID (prsn_rk) is required");
+    }
+    return await apiCall(`/measurements/person/${prsn_rk}`);
+  },
 };

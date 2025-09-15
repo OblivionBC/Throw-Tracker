@@ -5,18 +5,49 @@ import styled from "styled-components";
 import logo from "../../images/LogoIcon.png";
 import text from "../../images/LogoText.png";
 import "typeface-nunito";
-import useUserStore, { useUser, useIsCoach } from "../../stores/userStore";
+import useUserStore, {
+  useUser,
+  useIsCoach,
+  useSelectedAthlete,
+} from "../../stores/userStore";
+import { personsApi } from "../../api";
+import { useApi } from "../../hooks/useApi";
 
 const Navbar = () => {
   const user = useUser();
   const isCoach = useIsCoach();
-  const { fetchUser, logout } = useUserStore();
+  const selectedAthlete = useSelectedAthlete();
+  const { fetchUser, logout, setSelectedAthlete } = useUserStore();
+  const { apiCall } = useApi();
+  const [athletes, setAthletes] = useState([]);
+  const [loadingAthletes, setLoadingAthletes] = useState(false);
 
   useEffect(() => {
     fetchUser();
   }, [fetchUser]);
 
+  useEffect(() => {
+    const loadAthletes = async () => {
+      if (isCoach) {
+        setLoadingAthletes(true);
+        try {
+          const athletesData = await apiCall(
+            () => personsApi.getAthletesForCoach(),
+            "Loading athletes for navbar"
+          );
+          setAthletes(athletesData);
+        } catch (error) {
+          console.error("Error loading athletes for navbar:", error);
+        } finally {
+          setLoadingAthletes(false);
+        }
+      }
+    };
+    loadAthletes();
+  }, [isCoach, apiCall]);
+
   const [profile, setProfile] = useState(false);
+
   return (
     <NavWrap>
       <NavLeft></NavLeft>
@@ -24,7 +55,24 @@ const Navbar = () => {
         <Logo src={logo} />
         <Text src={text} />
       </NavCenter>
-      <NavRight></NavRight>
+      <NavRight>
+        {isCoach && (
+          <AthleteSelectContainer>
+            <AthleteSelect
+              value={selectedAthlete || ""}
+              onChange={(e) => setSelectedAthlete(e.target.value || null)}
+              disabled={loadingAthletes}
+            >
+              <option value="">Select Athlete</option>
+              {athletes.map((athlete) => (
+                <option key={athlete.prsn_rk} value={athlete.prsn_rk}>
+                  {athlete.prsn_first_nm} {athlete.prsn_last_nm}
+                </option>
+              ))}
+            </AthleteSelect>
+          </AthleteSelectContainer>
+        )}
+      </NavRight>
     </NavWrap>
   );
 };
@@ -72,6 +120,34 @@ const NavRight = styled.div`
   align-items: center;
   margin-right: 2%;
   flex: 1;
+  gap: 15px;
+`;
+
+const AthleteSelectContainer = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const AthleteSelect = styled.select`
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: "Nunito", sans-serif;
+  background-color: white;
+  min-width: 150px;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: #2b81e2;
+    box-shadow: 0 0 0 2px rgba(43, 129, 226, 0.2);
+  }
+
+  &:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+  }
 `;
 
 const NavPath = styled(NavLink)`
