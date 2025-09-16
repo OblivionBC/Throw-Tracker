@@ -425,7 +425,7 @@ exports.requestOTP = asyncHandler(async (req, res) => {
     const { Resend } = require("resend");
     const resend = new Resend(process.env.RESEND_API_KEY);
     await resend.emails.send({
-      from: "onboarding@resend.dev",
+      from: "noreply@throwspace.app",
       to: prsn_email,
       subject: "Password Reset Code for Throwspace",
       html: `<p>Hey ${prsn_first_nm}! Here is your password reset code for Throwspace: <strong>${otp}</strong></p>

@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Throwspace",
+  "name": "Throwspace Track and Field Data Manager",
   "icons": [
     {
       "src": "favicon.ico",
