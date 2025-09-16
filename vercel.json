@@ -8,7 +8,7 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/api/index.js"
+      "dest": "/backend/server/vercel-server.js"
     },
     {
       "src": "/(.*)",
