@@ -133,6 +133,10 @@ const corsConfig = {
       ? [process.env.FRONTEND_URL]
       : ["http://localhost:3000", "http://localhost:5001"];
 
+    if (process.env.NODE_ENV !== "dev" && !process.env.FRONTEND_URL) {
+      return callback(null, true);
+    }
+
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
