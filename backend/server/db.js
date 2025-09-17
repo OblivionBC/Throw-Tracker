@@ -9,7 +9,7 @@ const PASS = process.env.DB_USER_PASS;
 const USER = process.env.DB_USER;
 const HOST = process.env.DB_HOST;
 const DB = process.env.DB_NAME;
-const DB_URL = process.env.URL;
+const DB_URL = process.env.DB_URL;
 const env = process.env.NODE_ENV;
 
 let isDev = process.env.NODE_ENV === 'dev'
@@ -24,7 +24,7 @@ if(isDev){
     });
 }else{
      pool = new Pool({
-        connectionString: process.env.DATABASE_URL,
+        connectionString: DB_URL,
         ssl: { rejectUnauthorized: false }
     });
 }

@@ -1,7 +1,7 @@
 import useUserStore from "../stores/userStore";
 
 const API_BASE_URL =
-  process.env.NODE_ENV === "production" ? "/api" : "http://localhost:3000/api";
+  process.env.NODE_ENV === "dev" ? "http://localhost:3000/api" : "/api";
 
 // Common fetch options
 const defaultOptions = {

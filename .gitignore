@@ -10,3 +10,4 @@
 *.sql
 
 backend/sql/
+.vercel
