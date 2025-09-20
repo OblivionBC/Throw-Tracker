@@ -3,7 +3,6 @@ import {
   Overlay,
   ModalContainer,
   CloseButton,
-  Content,
   StyledButton,
   FieldLabel,
   FieldOutputContainer,

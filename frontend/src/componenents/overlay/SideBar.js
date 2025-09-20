@@ -1,10 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useLocation, useNavigate, NavLink } from "react-router-dom";
+import { useNavigate, NavLink } from "react-router-dom";
 import styled from "styled-components";
 import logo from "../../images/LogoIcon.png";
 import useUserStore, { useUser, useIsCoach } from "../../stores/userStore";
-import { authApi } from "../../api";
-import { useApi } from "../../hooks/useApi";
 
 const Sidebar = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -20,7 +18,6 @@ const Sidebar = () => {
   const isCoach = useIsCoach();
   const { logout: logoutUser } = useUserStore();
   const navigate = useNavigate();
-  const { apiCall } = useApi();
 
   // Always call hooks at the top level
   useEffect(() => {
@@ -77,7 +74,7 @@ const Sidebar = () => {
   const toggleCoach = () => setCoachOpen((open) => !open);
 
   // Function to check token status (only for manual refresh)
-  const checkTokenStatus = async () => {
+  /* const checkTokenStatus = async () => {
     // Don't check token status if no user is authenticated
     if (!user) {
       setTokenStatus(null);
@@ -114,7 +111,7 @@ const Sidebar = () => {
         useUserStore.getState().handleExpiredToken();
       }
     }
-  };
+  }; */
 
   return (
     <SidebarContainer data-sidebar>

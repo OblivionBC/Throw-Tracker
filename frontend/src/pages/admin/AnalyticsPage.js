@@ -11,7 +11,7 @@ const AnalyticsPage = () => {
 
   useEffect(() => {
     loadAnalytics();
-  }, []);
+  });
 
   const loadAnalytics = async () => {
     try {

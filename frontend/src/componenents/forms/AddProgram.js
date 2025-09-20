@@ -11,13 +11,11 @@ import {
 } from "../../styles/design-system";
 import "typeface-nunito";
 import { programsApi, measurablesApi } from "../../api";
-import useUserStore, { useUser } from "../../stores/userStore";
 import { useApi } from "../../hooks/useApi";
 
 const AddProgramForm = ({ close, refresh, onProgramCreated }) => {
   const [measurables, setMeasurables] = useState([]);
   const [loading, setLoading] = useState(true);
-  const user = useUser();
   const { apiCall } = useApi();
 
   useEffect(() => {
@@ -251,7 +249,7 @@ const AddProgramForm = ({ close, refresh, onProgramCreated }) => {
 
                         // Auto-fill unit from selected measurable
                         const selectedMeasurable = measurables.find(
-                          (m) => m.meas_rk == e.target.value
+                          (m) => m.meas_rk === parseInt(e.target.value)
                         );
                         if (selectedMeasurable) {
                           newMeasurables[index].target_unit =

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Line } from "react-chartjs-2";
 import { Chart as ChartJS } from "chart.js/auto";
 import { Tooltip } from "chart.js/auto";
@@ -129,7 +129,7 @@ function MeasurementChart() {
   };
 
   // Load training periods for the current person
-  const loadTrainingPeriods = async () => {
+  const loadTrainingPeriods = useCallback(async () => {
     try {
       let personId;
       if (isCoach) {
@@ -153,10 +153,10 @@ function MeasurementChart() {
       console.error("Error loading training periods:", error);
       setTrainingPeriods([]);
     }
-  };
+  }, [isCoach, selectedAthlete, user?.id, apiCall]);
 
   // Load programs for the selected training period
-  const loadPrograms = async () => {
+  const loadPrograms = useCallback(async () => {
     if (!selectedTrainingPeriod) {
       setPrograms([]);
       setSelectedProgram("all");
@@ -179,9 +179,9 @@ function MeasurementChart() {
       setPrograms([]);
       setSelectedProgram("all");
     }
-  };
+  }, [selectedTrainingPeriod, apiCall]);
 
-  async function GetMeasurements() {
+  const GetMeasurements = useCallback(async () => {
     try {
       let jsonData;
 
@@ -356,7 +356,14 @@ function MeasurementChart() {
     } catch (error) {
       console.error("Error fetching measurements:", error);
     }
-  }
+  }, [
+    isCoach,
+    selectedAthlete,
+    user?.prsn_rk,
+    selectedTrainingPeriod,
+    selectedProgram,
+    apiCall,
+  ]);
 
   const getMeasurementStats = () => {
     if (!measurementData.length) return [];
@@ -394,12 +401,12 @@ function MeasurementChart() {
   // Load training periods on component mount
   useEffect(() => {
     loadTrainingPeriods();
-  }, [isCoach, selectedAthlete, user?.id]);
+  }, [loadTrainingPeriods]);
 
   // Load programs when training period changes
   useEffect(() => {
     loadPrograms();
-  }, [selectedTrainingPeriod]);
+  }, [loadPrograms]);
 
   // Get measurements when filters change
   useEffect(() => {
@@ -409,7 +416,7 @@ function MeasurementChart() {
       setLoading(false);
     };
     fetchData();
-  }, [selectedTrainingPeriod, selectedProgram, selectedAthlete, isCoach]);
+  }, [GetMeasurements]);
 
   // Cleanup on unmount
   useEffect(() => {

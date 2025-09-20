@@ -9,7 +9,7 @@ import {
   Content,
 } from "../../styles/design-system";
 const AddPracticeModal = ({ open, onClose, refresh }) => {
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
 
   if (!open || loading) return null;
   return (

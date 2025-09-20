@@ -22,7 +22,7 @@ const SubscriptionsPage = () => {
 
   useEffect(() => {
     loadSubscriptions();
-  }, []);
+  });
 
   const loadSubscriptions = async () => {
     try {

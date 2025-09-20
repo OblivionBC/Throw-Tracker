@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Formik, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import {
@@ -12,7 +12,7 @@ import {
 import "typeface-nunito";
 import { measurablesApi } from "../../api";
 import { useApi } from "../../hooks/useApi";
-import useUserStore, { useUser } from "../../stores/userStore";
+import { useUser } from "../../stores/userStore";
 
 const addMeasurable = async (
   meas_id,
@@ -60,7 +60,7 @@ const AddMeasurableForm = ({ close, refresh }) => {
     //Make call on submit to update practice, and delete all measurments in for the prac, then create a new one for each in the array
     setSubmitting(true);
     try {
-      const measurable = await addMeasurable(
+      await addMeasurable(
         values.meas_id,
         values.meas_typ,
         values.meas_unit,

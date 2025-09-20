@@ -23,7 +23,7 @@ const OrganizationsPage = () => {
 
   useEffect(() => {
     loadOrganizations();
-  }, []);
+  });
 
   const loadOrganizations = async () => {
     try {

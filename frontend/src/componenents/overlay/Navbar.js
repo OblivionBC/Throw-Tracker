@@ -6,7 +6,6 @@ import logo from "../../images/LogoIcon.png";
 import text from "../../images/LogoText.png";
 import "typeface-nunito";
 import useUserStore, {
-  useUser,
   useIsCoach,
   useSelectedAthlete,
 } from "../../stores/userStore";
@@ -14,10 +13,9 @@ import { personsApi } from "../../api";
 import { useApi } from "../../hooks/useApi";
 
 const Navbar = () => {
-  const user = useUser();
   const isCoach = useIsCoach();
   const selectedAthlete = useSelectedAthlete();
-  const { fetchUser, logout, setSelectedAthlete } = useUserStore();
+  const { fetchUser, setSelectedAthlete } = useUserStore();
   const { apiCall } = useApi();
   const [athletes, setAthletes] = useState([]);
   const [loadingAthletes, setLoadingAthletes] = useState(false);
@@ -46,14 +44,12 @@ const Navbar = () => {
     loadAthletes();
   }, [isCoach, apiCall]);
 
-  const [profile, setProfile] = useState(false);
-
   return (
     <NavWrap>
       <NavLeft></NavLeft>
       <NavCenter>
-        <Logo src={logo} />
-        <Text src={text} />
+        <Logo src={logo} alt="Logo" />
+        <Text src={text} alt="Text" />
       </NavCenter>
       <NavRight>
         {isCoach && (

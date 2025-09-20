@@ -6,7 +6,6 @@ import {
   Title,
   CompWrap,
   AddButton,
-  EditButton,
 } from "../../styles/design-system";
 import DynamicModal from "../dynamicModals/DynamicModal";
 import EditMeasurableForm from "../forms/EditMeasurableForm";
@@ -38,10 +37,8 @@ const CurrentMeasurableList = ({ paginationNum }) => {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState([]);
   const user = useUser();
-  const isCoach = useIsCoach();
-  const { logout: logoutUser } = useUserStore();
-
-  useEffect(() => {
+    useIsCoach();
+    useEffect(() => {
     const fetchUser = async () => {};
     fetchUser();
   }, []);

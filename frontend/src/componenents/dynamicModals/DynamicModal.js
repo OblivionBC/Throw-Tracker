@@ -4,7 +4,7 @@ import { useState } from "react";
 import "typeface-nunito";
 
 const DynamicModal = ({ open, onClose, refresh, Component, props }) => {
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   if (!open || loading) return null;
   console.log(props);
   return (

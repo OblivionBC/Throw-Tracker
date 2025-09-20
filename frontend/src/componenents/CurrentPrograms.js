@@ -1,14 +1,6 @@
 import React, { useState, useEffect } from "react";
-import {
-  CompWrap,
-  Title,
-  RowDiv,
-  AddButton,
-  FieldOutputContainer,
-  FieldLabel,
-} from "../styles/design-system";
+import { CompWrap, Title, RowDiv, AddButton } from "../styles/design-system";
 import { programAthleteAssignmentsApi, trainingPeriodsApi } from "../api";
-import useUserStore, { useUser } from "../stores/userStore";
 import { useApi } from "../hooks/useApi";
 import ProgramDetailsModal from "./modals/ProgramDetailsModal";
 
@@ -20,7 +12,6 @@ const CurrentPrograms = () => {
   const [loading, setLoading] = useState(true);
   const [selectedProgram, setSelectedProgram] = useState(null);
   const [showProgramDetails, setShowProgramDetails] = useState(false);
-  const user = useUser();
   const { apiCall } = useApi();
 
   useEffect(() => {

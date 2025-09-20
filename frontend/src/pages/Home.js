@@ -1,6 +1,5 @@
 import React from "react";
 import styled from "styled-components";
-import CurrentMeasurableList from "../componenents/tables/CurrentExerciseList";
 import LastPractice from "../componenents/LastPractice";
 import "typeface-rubik";
 import Measurables from "../componenents/tables/MeasurableList";

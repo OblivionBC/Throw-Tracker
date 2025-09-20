@@ -2,13 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   StyledButton,
-  FieldOutputContainer,
-  FieldLabel,
   SubmitError,
 } from "../styles/design-system";
-import { adminApi } from "../api";
 import { useApi } from "../hooks/useApi";
-import useUserStore, { useUser } from "../stores/userStore";
+import { useUser } from "../stores/userStore";
 import OrganizationsPage from "./admin/OrganizationsPage";
 import SubscriptionsPage from "./admin/SubscriptionsPage";
 import AnalyticsPage from "./admin/AnalyticsPage";
@@ -19,11 +16,9 @@ const AdminDashboard = () => {
   const [error, setError] = useState("");
   const user = useUser();
   const navigate = useNavigate();
-  const { apiCall } = useApi();
 
   useEffect(() => {
-    // Check if user is admin
-    console.log("🔍 User role:", user.prsn_role);
+    console.log("User role:", user.prsn_role);
     if (user.prsn_role?.toLowerCase() !== "admin") {
       navigate("/");
       return;

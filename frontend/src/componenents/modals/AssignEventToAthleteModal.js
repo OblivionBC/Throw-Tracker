@@ -52,13 +52,13 @@ const Label = styled.label`
   font-weight: bold;
 `;
 
-const Select = styled(Field)`
+/* const Select = styled(Field)`
   width: 100%;
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 14px;
-`;
+`; */
 
 const TextArea = styled(Field)`
   width: 100%;

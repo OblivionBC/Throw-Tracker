@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,14 +11,9 @@ import {
   BarElement,
 } from "chart.js";
 import { Line, Bar } from "react-chartjs-2";
-import { eventAssignmentsApi, eventTypesApi, personsApi } from "../api";
+import { eventAssignmentsApi, eventTypesApi } from "../api";
 import { useApi } from "../hooks/useApi";
-import {
-  StyledButton,
-  FieldContainer,
-  FieldLabel,
-  FieldOutputContainer,
-} from "../styles/design-system";
+import { FieldLabel } from "../styles/design-system";
 import styled from "styled-components";
 
 ChartJS.register(
@@ -43,7 +38,7 @@ const MeetPerformanceChart = ({ meetId, athleteId }) => {
   const [performanceData, setPerformanceData] = useState([]);
   const { apiCall } = useApi();
 
-  const [options, setOptions] = useState({
+  const [options] = useState({
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -82,19 +77,7 @@ const MeetPerformanceChart = ({ meetId, athleteId }) => {
     },
   });
 
-  useEffect(() => {
-    if (meetId) {
-      loadData();
-    }
-  }, [meetId]);
-
-  useEffect(() => {
-    if (performanceData.length > 0) {
-      generateChartData();
-    }
-  }, [performanceData, selectedEvent, selectedAthlete, chartType]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -132,9 +115,9 @@ const MeetPerformanceChart = ({ meetId, athleteId }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [meetId, apiCall]);
 
-  const generateChartData = () => {
+  const generateChartData = useCallback(() => {
     let filteredData = performanceData;
 
     // Filter by event if not "all"
@@ -197,7 +180,25 @@ const MeetPerformanceChart = ({ meetId, athleteId }) => {
       labels,
       datasets,
     });
-  };
+  }, [performanceData, selectedEvent, selectedAthlete, chartType, eventTypes]);
+
+  useEffect(() => {
+    if (meetId) {
+      loadData();
+    }
+  }, [meetId, loadData]);
+
+  useEffect(() => {
+    if (performanceData.length > 0) {
+      generateChartData();
+    }
+  }, [
+    performanceData,
+    selectedEvent,
+    selectedAthlete,
+    chartType,
+    generateChartData,
+  ]);
 
   const getPerformanceStats = () => {
     const filteredData = performanceData.filter((item) => {

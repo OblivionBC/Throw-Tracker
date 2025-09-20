@@ -6,10 +6,10 @@ import {
   CompWrap,
   AddButton,
 } from "../../styles/design-system";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import AddMeasurableToProgramModal from "../modals/AddMeasurableToProgramModal";
 import MeasurableAssignmentDetails from "../modals/MeasurableAssignmentDetails";
-import useUserStore, { useUser } from "../../stores/userStore";
+import { useUser } from "../../stores/userStore";
 
 const TableStyles = {
   pagination: {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import {
   Chart as ChartJS,
@@ -35,17 +35,7 @@ const MeetComparison = () => {
   const [loading, setLoading] = useState(true);
   const { apiCall } = useApi();
 
-  useEffect(() => {
-    loadInitialData();
-  }, []);
-
-  useEffect(() => {
-    if (selectedMeets.length > 0) {
-      loadComparisonData();
-    }
-  }, [selectedMeets, selectedAthlete, selectedEvent]);
-
-  const loadInitialData = async () => {
+  const loadInitialData = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -87,9 +77,9 @@ const MeetComparison = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [apiCall]);
 
-  const loadComparisonData = async () => {
+  const loadComparisonData = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -114,89 +104,113 @@ const MeetComparison = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [
+    selectedMeets,
+    apiCall,
+    athletes,
+    eventTypes,
+    selectedAthlete,
+    selectedEvent,
+    generateComparisonChart,
+  ]);
 
-  const generateComparisonChart = (allData) => {
-    const datasets = [];
-    const labels = allData.map((data) => data.meet.meet_nm);
+  const generateComparisonChart = useCallback(
+    (allData) => {
+      const datasets = [];
+      const labels = allData.map((data) => data.meet.meet_nm);
 
-    // Get all unique athlete-event combinations
-    const athleteEventCombinations = new Set();
+      // Get all unique athlete-event combinations
+      const athleteEventCombinations = new Set();
 
-    allData.forEach((data) => {
-      data.assignments.forEach((assignment) => {
-        const key = `${assignment.prsn_rk}-${assignment.etyp_rk}`;
-        athleteEventCombinations.add(key);
+      allData.forEach((data) => {
+        data.assignments.forEach((assignment) => {
+          const key = `${assignment.prsn_rk}-${assignment.etyp_rk}`;
+          athleteEventCombinations.add(key);
+        });
       });
-    });
 
-    // Create datasets for each athlete-event combination
-    athleteEventCombinations.forEach((combination) => {
-      const [athleteId, eventId] = combination.split("-");
+      // Create datasets for each athlete-event combination
+      athleteEventCombinations.forEach((combination) => {
+        const [athleteId, eventId] = combination.split("-");
 
-      // Filter by selected athlete and event
-      if (
-        selectedAthlete !== "all" &&
-        parseInt(athleteId) !== parseInt(selectedAthlete)
-      ) {
-        return;
-      }
-      if (
-        selectedEvent !== "all" &&
-        parseInt(eventId) !== parseInt(selectedEvent)
-      ) {
-        return;
-      }
+        // Filter by selected athlete and event
+        if (
+          selectedAthlete !== "all" &&
+          parseInt(athleteId) !== parseInt(selectedAthlete)
+        ) {
+          return;
+        }
+        if (
+          selectedEvent !== "all" &&
+          parseInt(eventId) !== parseInt(selectedEvent)
+        ) {
+          return;
+        }
 
-      const athlete = athletes.find((a) => a.prsn_rk === parseInt(athleteId));
-      const eventType = eventTypes.find((e) => e.etyp_rk === parseInt(eventId));
-
-      if (!athlete || !eventType) return;
-
-      const dataPoints = allData.map((data) => {
-        const assignment = data.assignments.find(
-          (a) =>
-            a.prsn_rk === parseInt(athleteId) && a.etyp_rk === parseInt(eventId)
+        const athlete = athletes.find((a) => a.prsn_rk === parseInt(athleteId));
+        const eventType = eventTypes.find(
+          (e) => e.etyp_rk === parseInt(eventId)
         );
 
-        if (!assignment) return null;
+        if (!athlete || !eventType) return;
 
-        const attempts = [
-          assignment.attempt_one,
-          assignment.attempt_two,
-          assignment.attempt_three,
-          assignment.attempt_four,
-          assignment.attempt_five,
-          assignment.attempt_six,
-        ].filter((attempt) => attempt !== null && attempt !== undefined);
+        const dataPoints = allData.map((data) => {
+          const assignment = data.assignments.find(
+            (a) =>
+              a.prsn_rk === parseInt(athleteId) &&
+              a.etyp_rk === parseInt(eventId)
+          );
 
-        return attempts.length > 0 ? Math.max(...attempts) : null;
+          if (!assignment) return null;
+
+          const attempts = [
+            assignment.attempt_one,
+            assignment.attempt_two,
+            assignment.attempt_three,
+            assignment.attempt_four,
+            assignment.attempt_five,
+            assignment.attempt_six,
+          ].filter((attempt) => attempt !== null && attempt !== undefined);
+
+          return attempts.length > 0 ? Math.max(...attempts) : null;
+        });
+
+        // Only include datasets with at least 2 data points
+        const validDataPoints = dataPoints.filter((point) => point !== null);
+        if (validDataPoints.length < 2) return;
+
+        const colorIndex = datasets.length;
+        const color = `hsl(${colorIndex * 60}, 70%, 50%)`;
+
+        datasets.push({
+          label: `${athlete.athlete_first_nm} ${athlete.athlete_last_nm} - ${eventType.etyp_type_name}`,
+          data: dataPoints,
+          borderColor: color,
+          backgroundColor: `hsla(${colorIndex * 60}, 70%, 50%, 0.1)`,
+          tension: 0.1,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          fill: false,
+        });
       });
 
-      // Only include datasets with at least 2 data points
-      const validDataPoints = dataPoints.filter((point) => point !== null);
-      if (validDataPoints.length < 2) return;
-
-      const colorIndex = datasets.length;
-      const color = `hsl(${colorIndex * 60}, 70%, 50%)`;
-
-      datasets.push({
-        label: `${athlete.athlete_first_nm} ${athlete.athlete_last_nm} - ${eventType.etyp_type_name}`,
-        data: dataPoints,
-        borderColor: color,
-        backgroundColor: `hsla(${colorIndex * 60}, 70%, 50%, 0.1)`,
-        tension: 0.1,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-        fill: false,
+      setComparisonData({
+        labels,
+        datasets,
       });
-    });
+    },
+    [athletes, eventTypes, selectedAthlete, selectedEvent]
+  );
 
-    setComparisonData({
-      labels,
-      datasets,
-    });
-  };
+  useEffect(() => {
+    loadInitialData();
+  }, [loadInitialData]);
+
+  useEffect(() => {
+    if (selectedMeets.length > 0) {
+      loadComparisonData();
+    }
+  }, [loadComparisonData, selectedMeets]);
 
   const handleMeetToggle = (meet) => {
     setSelectedMeets((prev) => {

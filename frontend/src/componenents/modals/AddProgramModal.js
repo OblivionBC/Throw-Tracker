@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Overlay,
   ModalContainer,
@@ -6,10 +6,9 @@ import {
   Content,
 } from "../../styles/design-system";
 import AddProgramForm from "../forms/AddProgram";
-import { trainingPeriodsApi } from "../../api";
 
 const AddProgramModal = ({ open, onClose, refresh }) => {
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
 
   if (!open || loading) return null;
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import MeetList from "../componenents/tables/MeetList";
 import MeetPerformanceChart from "../componenents/MeetPerformanceChart";
 import MeetAnalytics from "../componenents/MeetAnalytics";
 import MeetComparison from "../componenents/MeetComparison";
@@ -10,11 +9,7 @@ import { useApi } from "../hooks/useApi";
 import "typeface-rubik";
 import ErrorBoundary from "../componenents/ErrorBoundary";
 import {
-  StyledButton,
   Title,
-  FieldContainer,
-  FieldLabel,
-  FieldOutputContainer,
 } from "../styles/design-system";
 
 const MeetsChartPage = () => {
@@ -27,7 +22,7 @@ const MeetsChartPage = () => {
 
   useEffect(() => {
     loadMeets();
-  }, []);
+  });
 
   const loadMeets = async () => {
     try {
@@ -47,10 +42,6 @@ const MeetsChartPage = () => {
   const handleMeetSelect = (meet) => {
     setSelectedMeet(meet);
     setSelectedAthlete(null); // Reset athlete selection when meet changes
-  };
-
-  const handleAthleteSelect = (athlete) => {
-    setSelectedAthlete(athlete);
   };
 
   const renderContent = () => {

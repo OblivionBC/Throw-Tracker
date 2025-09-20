@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import {
   Chart as ChartJS,
@@ -39,17 +39,7 @@ const AllMeetsPerformanceChart = () => {
   const [allAssignments, setAllAssignments] = useState([]);
   const { apiCall } = useApi();
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  useEffect(() => {
-    if (allAssignments.length > 0) {
-      generateChartData();
-    }
-  }, [selectedAthlete, selectedEvent, chartType, allAssignments]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -73,9 +63,9 @@ const AllMeetsPerformanceChart = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [apiCall]);
 
-  const generateChartData = () => {
+  const generateChartData = useCallback(() => {
     if (!selectedAthlete || !selectedEvent) {
       setChartData(null);
       return;
@@ -126,7 +116,24 @@ const AllMeetsPerformanceChart = () => {
     };
 
     setChartData(chartConfig);
-  };
+  }, [
+    selectedAthlete,
+    selectedEvent,
+    allAssignments,
+    athletes,
+    eventTypes,
+    chartType,
+  ]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  useEffect(() => {
+    if (allAssignments.length > 0) {
+      generateChartData();
+    }
+  }, [generateChartData, allAssignments]);
 
   const getPerformanceStats = () => {
     if (!selectedAthlete || !selectedEvent || !chartData) return null;

@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { CompWrap, Title, RowDiv, AddButton } from "../styles/design-system";
-import { programsApi, programAthleteAssignmentsApi } from "../api";
-import useUserStore, { useUser } from "../stores/userStore";
+import { programsApi } from "../api";
 import { useApi } from "../hooks/useApi";
 import AssignProgramModal from "./modals/AssignProgramModal";
 import ProgramDetailsModal from "./modals/ProgramDetailsModal";
@@ -14,14 +13,9 @@ const CoachPrograms = () => {
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [showProgramDetails, setShowProgramDetails] = useState(false);
   const [showAddProgramModal, setShowAddProgramModal] = useState(false);
-  const user = useUser();
   const { apiCall } = useApi();
 
-  useEffect(() => {
-    fetchPrograms();
-  }, []);
-
-  const fetchPrograms = async () => {
+  const fetchPrograms = useCallback(async () => {
     try {
       const programsData = await apiCall(
         () => programsApi.getAll(),
@@ -34,7 +28,11 @@ const CoachPrograms = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [apiCall]);
+
+  useEffect(() => {
+    fetchPrograms();
+  }, [fetchPrograms]);
 
   const handleAssignProgram = (program) => {
     setSelectedProgram(program);

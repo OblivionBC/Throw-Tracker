@@ -104,7 +104,7 @@ const AddMeasurableToProgramForm = ({ close, refresh, prog_rk }) => {
                     setFieldValue("meas_rk", e.target.value);
                     // Auto-fill unit from selected measurable
                     const selectedMeasurable = measurables.find(
-                      (m) => m.meas_rk == e.target.value
+                      (m) => m.meas_rk === parseInt(e.target.value)
                     );
                     if (selectedMeasurable) {
                       setFieldValue(

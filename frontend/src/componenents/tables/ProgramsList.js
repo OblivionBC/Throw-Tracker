@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from "react";
-import dayjs from "dayjs";
 import {
   Table,
   TableWrap,
@@ -10,11 +9,10 @@ import {
   EditButton,
 } from "../../styles/design-system";
 import AddProgramModal from "../modals/AddProgramModal";
-import AssignProgramModal from "../modals/AssignProgramModal";
 import ProgramDetailsModal from "../modals/ProgramDetailsModal";
 import AssignProgramToAthletesModal from "../modals/AssignProgramToAthletesModal";
 import { getPaginationNumber } from "../../utils/tableUtils";
-import useUserStore, { useUser } from "../../stores/userStore";
+import { useUser } from "../../stores/userStore";
 import { programsApi } from "../../api";
 
 const TableStyles = {

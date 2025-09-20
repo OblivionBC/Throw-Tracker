@@ -136,12 +136,25 @@ const TrainingPeriodList = ({
         setCacheLoading(cacheKey, false);
       }
     },
-    [getPersonForTrainingPeriods, isCoach, selectedAthlete]
+
+    [
+      getPersonForTrainingPeriods,
+      isCoach,
+      selectedAthlete,
+      apiCall,
+      isCacheValid,
+      getCachedData,
+      setCacheLoading,
+      setCacheData,
+    ]
   );
+
+  // Extract the complex expression from dependency array
+  const personRefreshFlag = refreshFlags[prsn_rk];
 
   useEffect(() => {
     getTRPEData();
-  }, [getTRPEData, refreshFlags[prsn_rk]]);
+  }, [getTRPEData, personRefreshFlag]);
 
   const handleRefresh = () => {
     getTRPEData(true);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import { eventAssignmentsApi, eventTypesApi } from "../api";
 import { useApi } from "../hooks/useApi";
@@ -11,19 +11,7 @@ const MeetAnalytics = ({ meetId }) => {
   const [performanceData, setPerformanceData] = useState([]);
   const { apiCall } = useApi();
 
-  useEffect(() => {
-    if (meetId) {
-      loadData();
-    }
-  }, [meetId]);
-
-  useEffect(() => {
-    if (performanceData.length > 0) {
-      generateAnalytics();
-    }
-  }, [performanceData, selectedEvent]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -46,9 +34,9 @@ const MeetAnalytics = ({ meetId }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [meetId, apiCall]);
 
-  const generateAnalytics = () => {
+  const generateAnalytics = useCallback(() => {
     const filteredData =
       selectedEvent === "all"
         ? performanceData
@@ -98,10 +86,6 @@ const MeetAnalytics = ({ meetId }) => {
       ].filter((attempt) => attempt !== null && attempt !== undefined);
 
       const bestAttempt = attempts.length > 0 ? Math.max(...attempts) : 0;
-      const averageAttempt =
-        attempts.length > 0
-          ? attempts.reduce((a, b) => a + b, 0) / attempts.length
-          : 0;
 
       analyticsData.eventBreakdown[eventName].count++;
       analyticsData.eventBreakdown[eventName].attempts.push(...attempts);
@@ -148,7 +132,19 @@ const MeetAnalytics = ({ meetId }) => {
         : 0;
 
     setAnalytics(analyticsData);
-  };
+  }, [performanceData, selectedEvent, eventTypes]);
+
+  useEffect(() => {
+    if (meetId) {
+      loadData();
+    }
+  }, [meetId, loadData]);
+
+  useEffect(() => {
+    if (performanceData.length > 0) {
+      generateAnalytics();
+    }
+  }, [performanceData, selectedEvent, generateAnalytics]);
 
   if (loading) {
     return <LoadingMessage>Loading analytics...</LoadingMessage>;

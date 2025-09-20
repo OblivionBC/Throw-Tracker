@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Formik, ErrorMessage } from "formik";
+import { Formik } from "formik";
 import * as Yup from "yup";
 import {
   StyledForm,
@@ -12,12 +12,10 @@ import {
 import "typeface-nunito";
 import { trainingPeriodsApi, programAthleteAssignmentsApi } from "../../api";
 import { useApi } from "../../hooks/useApi";
-import useUserStore, { useUser } from "../../stores/userStore";
 
 const AssignProgramToTrainingPeriodsForm = ({ close, refresh, program }) => {
   const [trainingPeriods, setTrainingPeriods] = useState([]);
   const [loading, setLoading] = useState(true);
-  const user = useUser();
   const { apiCall } = useApi();
 
   useEffect(() => {

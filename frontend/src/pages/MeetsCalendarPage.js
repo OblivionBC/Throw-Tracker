@@ -15,10 +15,7 @@ import AddEventToMeetModal from "../componenents/modals/AddEventToMeetModal";
 import { useIsCoach } from "../stores/userStore";
 import {
   StyledButton,
-  Title,
-  FieldContainer,
-  FieldLabel,
-  FieldOutputContainer,
+  Title
 } from "../styles/design-system";
 
 const localizer = momentLocalizer(moment);
@@ -46,7 +43,7 @@ const MeetsCalendarPage = () => {
 
   useEffect(() => {
     loadMeets();
-  }, []);
+  });
 
   useEffect(() => {
     if (selectedMeet) {

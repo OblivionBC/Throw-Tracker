@@ -38,7 +38,7 @@ const apiCall = async (endpoint, options = {}) => {
   if (pendingRequests.has(requestKey)) {
     return pendingRequests.get(requestKey);
   }
-  console.log("Requesting at  " + API_BASE_URL + endpoint)
+  console.log("Requesting at  " + API_BASE_URL + endpoint);
   // Create the request promise and store it
   const requestPromise = (async () => {
     const url = `${API_BASE_URL}${endpoint}`;
@@ -174,7 +174,11 @@ const apiCall = async (endpoint, options = {}) => {
           throw new Error("Authentication failed");
         }
 
-        throw new Error(errorData.error?.message || errorData.message)
+        throw new Error(
+          errorData.error?.message ||
+            errorData.message ||
+            `HTTP ${response.status}`
+        );
       }
       const result = await response.json();
 
@@ -194,12 +198,12 @@ const apiCall = async (endpoint, options = {}) => {
 
       // Handle network errors
       if (!error.response && !error.status) {
-        throw new Error("Network error. Please check your connection.")
+        throw new Error("Network error. Please check your connection.");
       }
 
       // Handle timeout errors
       if (error.name === "AbortError") {
-        throw new Error("Request timeout. Please try again.")
+        throw new Error("Request timeout. Please try again.");
       }
 
       // If this is an authentication error, ensure we handle it

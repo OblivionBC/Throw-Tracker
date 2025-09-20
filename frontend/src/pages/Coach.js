@@ -1,8 +1,6 @@
 import React from "react";
 import styled from "styled-components";
 import PracticeList from "../componenents/tables/PracticeList";
-import TrainingPeriodList from "../componenents/tables/TrainingPeriodList";
-import CurrentMeasurableList from "../componenents/tables/CurrentExerciseList";
 import Measurables from "../componenents/tables/MeasurableList";
 import "typeface-rubik";
 
