@@ -174,15 +174,7 @@ const apiCall = async (endpoint, options = {}) => {
           throw new Error("Authentication failed");
         }
 
-        throw {
-          response: { data: errorData },
-          status: response.status,
-          message:
-            errorData.error?.message ||
-            errorData.message ||
-            `HTTP error! status: ${response.status}`,
-          code: errorData.error?.code || "HTTP_ERROR",
-        };
+        throw new Error(errorData.error?.message || errorData.message)
       }
       const result = await response.json();
 
@@ -202,18 +194,12 @@ const apiCall = async (endpoint, options = {}) => {
 
       // Handle network errors
       if (!error.response && !error.status) {
-        throw {
-          message: "Network error. Please check your connection.",
-          code: "NETWORK_ERROR",
-        };
+        throw new Error("Network error. Please check your connection.")
       }
 
       // Handle timeout errors
       if (error.name === "AbortError") {
-        throw {
-          message: "Request timeout. Please try again.",
-          code: "TIMEOUT",
-        };
+        throw new Error("Request timeout. Please try again.")
       }
 
       // If this is an authentication error, ensure we handle it
