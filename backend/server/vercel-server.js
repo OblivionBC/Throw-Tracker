@@ -1,6 +1,5 @@
 const express = require("express");
 const cors = require("cors");
-const serverless = require("serverless-http");
 const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
 const routes = require("./routes/transactions.js");
@@ -42,12 +41,12 @@ app.use(cors(corsConfig));
 app.options("*", cors(corsConfig));
 
 // Rate limiting - always enabled but with different limits
-app.use("/api/auth/login", rateLimiters.auth);
-app.use("/api/auth/signup", rateLimiters.auth);
-app.use("/api/auth/forgot-password", rateLimiters.passwordReset);
-app.use("/api/auth/request-otp", rateLimiters.otp);
-app.use("/api/auth/verify-otp", rateLimiters.otp);
-app.use("/api/auth/reset-password", rateLimiters.passwordReset);
+app.use("/auth/login", rateLimiters.auth);
+app.use("/auth/signup", rateLimiters.auth);
+app.use("/auth/forgot-password", rateLimiters.passwordReset);
+app.use("/auth/request-otp", rateLimiters.otp);
+app.use("/auth/verify-otp", rateLimiters.otp);
+app.use("/auth/reset-password", rateLimiters.passwordReset);
 
 // General rate limiting for all other endpoints
 app.use("/api", rateLimiters.general);
@@ -73,9 +72,13 @@ app.use(securityHeaders);
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
+app.use((req, res, next) => {
+    console.log("Hit:", req.method, req.url);
+    next();
+});
 
 // Health check endpoint for Vercel
-app.get("/api/health", (req, res) => {
+app.get("/health", (req, res) => {
   res.json({
     status: "ok",
     timestamp: new Date().toISOString(),
@@ -84,10 +87,11 @@ app.get("/api/health", (req, res) => {
 });
 
 // API routes
-app.use("/api", routes);
+app.use("/", routes);
 
 // Global error handler - must be last
 app.use(errorHandler);
 
 // Export for Vercel
-module.exports = serverless(app);
+console.log(">>> Vercel server loaded successfully");
+module.exports = app;

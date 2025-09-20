@@ -43,10 +43,13 @@ const directApiCall = async (endpoint, options = {}) => {
 export const authApi = {
   // Login
   login: async (loginData) => {
-    return await apiCall("/auth/login", {
-      method: "POST",
-      body: JSON.stringify(loginData),
-    });
+      console.log("Attempting from API")
+      let call = await apiCall("/auth/login", {
+          method: "POST",
+          body: JSON.stringify(loginData),
+      });
+      console.log(call)
+    return call
   },
 
   // Logout

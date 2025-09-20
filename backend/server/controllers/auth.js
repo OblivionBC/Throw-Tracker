@@ -125,7 +125,8 @@ const parseRefreshExpiration = (expirationString) => {
 };
 
 exports.login = asyncHandler(async (req, res) => {
-  const { username, password } = req.body;
+  console.log("Logging In!")
+    const { username, password } = req.body;
 
   const result = await pool.query(
     "SELECT p.prsn_rk, p.prsn_first_nm, p.prsn_last_nm, p.prsn_email, p.prsn_role, o.org_name FROM person p inner join organization o on o.org_rk = p.org_rk WHERE p.prsn_email = $1 AND p.prsn_pwrd = crypt($2, p.prsn_pwrd);",

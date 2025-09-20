@@ -38,7 +38,7 @@ const apiCall = async (endpoint, options = {}) => {
   if (pendingRequests.has(requestKey)) {
     return pendingRequests.get(requestKey);
   }
-
+  console.log("Requesting at  " + API_BASE_URL + endpoint)
   // Create the request promise and store it
   const requestPromise = (async () => {
     const url = `${API_BASE_URL}${endpoint}`;

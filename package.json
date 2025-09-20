@@ -31,6 +31,7 @@
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.13.1",
     "resend": "^6.0.2",
+    "serverless": "^4.19.1",
     "serverless-http": "^4.0.0"
   },
   "devDependencies": {

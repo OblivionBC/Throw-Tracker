@@ -117,6 +117,7 @@ const useUserStore = create(
       login: async (credentials) => {
         set({ isLoading: true, error: null });
         try {
+            console.log("Attempting Login")
           const loginResponse = await authApi.login(credentials);
 
           // Set token expiration cache if provided

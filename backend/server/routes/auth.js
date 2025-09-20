@@ -29,7 +29,7 @@ router
   .post("/logout", logout) // POST /auth/logout
   .post("/refresh", refreshToken) // POST /auth/refresh
   .get("/token-status", checkTokenStatus); // GET /auth/token-status
-
+console.log("Routes are Set Up")
 // Protected auth routes (authentication required)
 router.post("/revoke-all-sessions", requireAuth, revokeAllSessions); // POST /auth/revoke-all-sessions
 
