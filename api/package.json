@@ -10,6 +10,6 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "serverless": "^4.19.1"
+    "serverless-http": "^4.0.0"
   }
 }
