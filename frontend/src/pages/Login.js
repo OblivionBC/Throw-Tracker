@@ -13,7 +13,7 @@ import {
 } from "../styles/design-system";
 import LoginForm from "../componenents/forms/LoginForm";
 import SignUpForm from "../componenents/forms/SignUpForm";
-import useUserStore, { useIsAuthenticated } from "../stores/userStore";
+import { useIsAuthenticated } from "../stores/userStore";
 
 const Login = () => {
   const [loginOpen, setLoginOpen] = useState(true);

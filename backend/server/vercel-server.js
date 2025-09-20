@@ -1,5 +1,4 @@
 const express = require("express");
-const serverless = require("serverless-http");
 const cors = require("cors");
 const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
@@ -95,4 +94,4 @@ app.use(errorHandler);
 
 // Export for Vercel
 console.log(">>> Vercel server loaded successfully");
-module.exports = serverless(app);
+module.exports = app

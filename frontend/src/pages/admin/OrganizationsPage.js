@@ -7,9 +7,7 @@ import {
   FieldOutputContainer,
   FieldLabel,
   SubmitError,
-  StyledInput,
-  StyledSelect,
-} from "../../styles/design-system";
+  StyledInput} from "../../styles/design-system";
 import { adminApi } from "../../api";
 import { useApi } from "../../hooks/useApi";
 
