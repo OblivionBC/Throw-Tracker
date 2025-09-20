@@ -1,5 +1,12 @@
 {
+  "devCommand": "cd frontend && npm start",
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/backend/server/vercel-server.js" }
+    { "source": "/api/(.*)", "destination": "/api/index.js" },
+    { "source": "/static/(.*)", "destination": "/frontend/build/static/$1" },
+    {
+      "source": "/(favicon.ico|logo192.png|logo512.png|manifest.json|robots.txt)",
+      "destination": "/frontend/build/$1"
+    },
+    { "source": "/(.*)", "destination": "/frontend/build/index.html" }
   ]
 }
