@@ -3,8 +3,8 @@ const app = express();
 const cors = require("cors");
 const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
-const routes = require("./server/routes/transactions.js");
-const errorHandler = require("./server/middleware/errorHandler");
+const routes = require("../server/routes/transactions.js");
+const errorHandler = require("../server/middleware/errorHandler");
 const {
     validateEnvironment,
     rateLimiters,
@@ -13,7 +13,7 @@ const {
     requestSizeLimit,
     validateIP,
     securityLogger,
-} = require("./server/middleware/security");
+} = require("../server/middleware/security");
 
 // Production-safe logging
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -27,7 +27,7 @@ const Logger = {
 };
 
 
-const { pool } = require("./server/db.js");
+const { pool } = require("../server/db.js");
 require("dotenv").config({ path: "../.env" }); // Loading environment variables from a .env file
 
 // Validate environment variables on startup
