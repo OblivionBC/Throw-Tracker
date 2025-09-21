@@ -3,17 +3,17 @@ const app = express();
 const cors = require("cors");
 const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
-const routes = require("./server/routes/transactions.js");
-const errorHandler = require("./server/middleware/errorHandler");
+const routes = require("./routes/transactions.js");
+const errorHandler = require("./middleware/errorHandler");
 const {
-    validateEnvironment,
-    rateLimiters,
-    securityHeaders,
-    corsConfig,
-    requestSizeLimit,
-    validateIP,
-    securityLogger,
-} = require("./server/middleware/security");
+  validateEnvironment,
+  rateLimiters,
+  securityHeaders,
+  corsConfig,
+  requestSizeLimit,
+  validateIP,
+  securityLogger,
+} = require("./middleware/security");
 
 // Production-safe logging
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -27,8 +27,8 @@ const Logger = {
 };
 
 
-const { pool } = require("./server/db.js");
-require("dotenv").config({ path: "../.env" }); // Loading environment variables from a .env file
+const { pool } = require("./db.js");
+require("dotenv").config({ path: "../../.env" }); // Loading environment variables from a .env file
 
 // Validate environment variables on startup
 validateEnvironment();
@@ -43,7 +43,6 @@ app.set("trust proxy", 1);
 
 if (process.env.NODE_ENV === "production") {
     // Security middleware - must come first
-    Logger.log("In Production")
     app.use(securityLogger);
     app.use(validateIP);
     app.use(requestSizeLimit);
@@ -73,8 +72,6 @@ if (process.env.NODE_ENV === "production") {
     );
 
     app.use(securityHeaders);
-}else {
-    app.use(helmet({ contentSecurityPolicy: false }));
 }
 
 // CORS configuration
@@ -89,26 +86,13 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
 
-app.use("/api", routes);
+app.use("/", routes);
 
 // Global error handler - must be last
 app.use(errorHandler);
 
-app.get("/api/health", (req, res) => {
-    res.json({
-        status: "ok",
-        timestamp: new Date().toISOString(),
-        environment: process.env.NODE_ENV || "development",
-    });
-});
-
-app.use((req, res, next) => {
-    Logger.log("Hit:", req.method, req.url);
-    next();
-});
-
 app.listen(app.get('port'), function() {
-    Logger.log('Express app is running on port', app.get('port'));
+    Logger.log('Express app vercel-express-react-demo is running on port', app.get('port'));
 });
 
 module.exports = app;

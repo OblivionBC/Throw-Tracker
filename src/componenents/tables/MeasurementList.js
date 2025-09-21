@@ -1,0 +1,90 @@
+import React from "react";
+import { Table, TableWrap, CompWrap } from "../../styles/design-system";
+import { useEffect, useState } from "react";
+import { measurementsApi } from "../../api";
+import Logger from "../../utils/logger";
+const TableStyles = {
+  pagination: {
+    style: {
+      minHeight: "30px", // Adjust the height as needed
+      padding: "0 0px",
+      margin: "0 0px",
+    },
+    pageButtonsStyle: {
+      minWidth: "30px", // Adjust the width as needed
+      height: "10px", // Adjust the height as needed
+      margin: "0 0px",
+      padding: "0 0px",
+    },
+  },
+};
+
+const MeasurementList = ({ prac_rk }) => {
+  const [measurables, setMeasurables] = useState([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const fetchMeasurables = async () => {
+      // Don't make API call if prac_rk is not available
+      if (!prac_rk) {
+        Logger.warn("MeasurementList: prac_rk is not available");
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const response = await measurementsApi.getForPractice(prac_rk);
+        setMeasurables(response);
+      } catch (error) {
+        Logger.error(error.message);
+      }
+      setLoading(false);
+    };
+    fetchMeasurables();
+  }, [prac_rk]);
+
+  const columns = [
+    {
+      name: "ID",
+      selector: (row) => row.meas_id,
+      sortable: true,
+      //width: "9%",
+    },
+    {
+      name: "Type",
+      selector: (row) => row.meas_typ,
+      sortable: true,
+      //width: "15%",
+    },
+    {
+      name: "Measurement",
+      selector: (row) => row.msrm_value + " " + row.meas_unit,
+      sortable: true,
+      width: "20%",
+    },
+  ];
+
+  if (loading) return <div>Loading</div>;
+  return (
+    <CompWrap>
+      Measurements
+      <TableWrap>
+        <Table
+          columns={columns}
+          data={measurables}
+          fixedHeader
+          pagination
+          paginationPerPage={8}
+          paginationComponentOptions={{
+            rowsPerPageText: "Rows per page:",
+            rangeSeparatorText: "of",
+            selectAllRowsItem: false,
+          }}
+          customStyles={TableStyles}
+        />
+      </TableWrap>
+    </CompWrap>
+  );
+};
+
+export default MeasurementList;
