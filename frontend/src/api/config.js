@@ -1,8 +1,7 @@
 import useUserStore from "../stores/userStore";
 import Logger from "../utils/logger";
 
-const API_BASE_URL = process.env.REACT_APP_NODE_ENV === "development" ? process.env.REACT_APP_API_BASE_URL : "http://localhost:4000/api";
-console.log(API_BASE_URL);
+const API_BASE_URL = process.env.REACT_APP_NODE_ENV === "production" ? process.env.REACT_APP_API_BASE_URL : "http://localhost:4000/api";
 
 // Common fetch options
 const defaultOptions = {
