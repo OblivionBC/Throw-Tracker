@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import Logger from "../utils/logger";
 import useUserStore, {
   useIsAuthenticated,
   useIsLoading,

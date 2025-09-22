@@ -10,7 +10,7 @@ const {
 const asyncHandler = require("../utils/asyncHandler");
 
 // Production-safe logging
-const isDevelopment = process.env.NODE_ENV === 'development';
+const isDevelopment = process.env.NODE_ENV === "development";
 const Logger = {
   log: (...args) => isDevelopment && console.log(...args),
   error: (...args) => isDevelopment && console.error(...args),
@@ -137,8 +137,11 @@ const parseRefreshExpiration = (expirationString) => {
 };
 
 exports.login = asyncHandler(async (req, res) => {
-  Logger.log("Logging In!")
-    const { username, password } = req.body;
+  Logger.log("Logging In!");
+  console.log("🔍 Login attempt received");
+  console.log("Headers:", req.headers);
+  console.log("Body:", req.body);
+  const { username, password } = req.body;
 
   const result = await pool.query(
     "SELECT p.prsn_rk, p.prsn_first_nm, p.prsn_last_nm, p.prsn_email, p.prsn_role, o.org_name FROM person p inner join organization o on o.org_rk = p.org_rk WHERE p.prsn_email = $1 AND p.prsn_pwrd = crypt($2, p.prsn_pwrd);",
@@ -181,16 +184,24 @@ exports.login = asyncHandler(async (req, res) => {
   res.cookie("access_token", accessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "Strict" : "Lax",
+    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax", // Changed to None for cross-origin
     maxAge: accessTokenExpiresIn * 1000,
+    domain:
+      process.env.NODE_ENV === "production"
+        ? process.env.COOKIE_DOMAIN
+        : undefined,
   });
 
   // Set refresh token cookie (long-lived)
   res.cookie("refresh_token", refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "Strict" : "Lax",
+    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax", // Changed to None for cross-origin
     maxAge: refreshTokenExpiresIn * 1000,
+    domain:
+      process.env.NODE_ENV === "production"
+        ? process.env.COOKIE_DOMAIN
+        : undefined,
   });
 
   res.json({
@@ -275,16 +286,24 @@ exports.refreshToken = asyncHandler(async (req, res) => {
   res.cookie("access_token", accessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "Strict" : "Lax",
+    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax", // Changed to None for cross-origin
     maxAge: accessTokenExpiresIn * 1000,
+    domain:
+      process.env.NODE_ENV === "production"
+        ? process.env.COOKIE_DOMAIN
+        : undefined,
   });
 
   // Set new refresh token cookie
   res.cookie("refresh_token", newRefreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "Strict" : "Lax",
+    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax", // Changed to None for cross-origin
     maxAge: refreshTokenExpiresIn * 1000,
+    domain:
+      process.env.NODE_ENV === "production"
+        ? process.env.COOKIE_DOMAIN
+        : undefined,
   });
 
   res.json({

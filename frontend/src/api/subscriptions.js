@@ -1,5 +1,4 @@
 import { apiCall } from "./config";
-import Logger from "../utils/logger";
 
 // Subscriptions API functions
 export const subscriptionsApi = {

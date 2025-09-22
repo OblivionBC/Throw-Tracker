@@ -4,20 +4,18 @@
  */
 
 const isDevelopment =
-  process.env.REACT_APP_NODE_ENV === "development" || !process.env.REACT_APP_NODE_ENV;
-const isProduction = process.env.REACT_APP_NODE_ENV === "production";
+  process.env.NODE_ENV === "development" || !process.env.NODE_ENV;
+const isProduction = process.env.NODE_ENV === "production";
 
 class Logger {
   static log(...args) {
-    // Completely silent - no logs in any environment
-    // Uncomment the line below if you want development logs
-    // if (isDevelopment) { console.log(...args); }
+    // Enable logs for debugging production issues
+    console.log(...args);
   }
 
   static error(...args) {
-    // Completely silent - no logs in any environment
-    // Uncomment the line below if you want development error logs
-    // if (isDevelopment) { console.error(...args); }
+    // Enable error logs for debugging production issues
+    console.error(...args);
 
     // In production, you might want to send errors to a logging service
     if (isProduction) {
