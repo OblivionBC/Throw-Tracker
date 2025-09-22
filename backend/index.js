@@ -1,10 +1,11 @@
+require("dotenv").config();
 const express = require("express");
 const app = express();
 const cors = require("cors");
 const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
-const routes = require("./routes/transactions.js");
-const errorHandler = require("./middleware/errorHandler");
+const routes = require("./server/routes/transactions.js");
+const errorHandler = require("./server/middleware/errorHandler");
 const {
   validateEnvironment,
   rateLimiters,
@@ -13,7 +14,7 @@ const {
   requestSizeLimit,
   validateIP,
   securityLogger,
-} = require("./middleware/security");
+} = require("./server/middleware/security");
 
 // Production-safe logging
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -27,12 +28,10 @@ const Logger = {
 };
 
 
-const { pool } = require("./db.js");
-require("dotenv").config({ path: "../../.env" }); // Loading environment variables from a .env file
+const { pool } = require("./server/db.js");
 
 // Validate environment variables on startup
 validateEnvironment();
-
 app.set('port', (process.env.PORT || 8081));
 
 // Trust proxy for accurate IP addresses (required for Vercel)
@@ -42,6 +41,7 @@ app.set("trust proxy", 1);
 
 
 if (process.env.NODE_ENV === "production") {
+    Logger.info("In Production")
     // Security middleware - must come first
     app.use(securityLogger);
     app.use(validateIP);
@@ -86,13 +86,13 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
 
-app.use("/", routes);
+app.use("/api", routes);
 
 // Global error handler - must be last
 app.use(errorHandler);
 
-app.listen(app.get('port'), function() {
-    Logger.log('Express app vercel-express-react-demo is running on port', app.get('port'));
+app.listen(app.get('port'), () => {
+    Logger.info(`Backend running on port ${app.get('port')}`);
 });
 
 module.exports = app;

@@ -1,5 +1,4 @@
 const rateLimit = require("express-rate-limit");
-const {ValidationError} = require("../utils/errors");
 
 // Production-safe logging
 const isDevelopment = process.env.NODE_ENV === 'development';

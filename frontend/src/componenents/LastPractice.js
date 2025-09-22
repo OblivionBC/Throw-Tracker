@@ -5,6 +5,7 @@ import dayjs from "dayjs";
 import * as FaIcons from "react-icons/fa";
 import { practicesApi } from "../api";
 import { useApi } from "../hooks/useApi";
+import Logger from "../utils/logger";
 // This is your PracticeItem component
 //Test that this works and add it to the practices component
 

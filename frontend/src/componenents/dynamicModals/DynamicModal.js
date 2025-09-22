@@ -1,4 +1,5 @@
 import React from "react";
+import Logger from "../../utils/logger";
 import styled from "styled-components";
 import { useState } from "react";
 import "typeface-nunito";

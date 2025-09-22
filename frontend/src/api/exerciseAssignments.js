@@ -1,4 +1,5 @@
 import { apiCall } from "./config";
+import Logger from "../utils/logger";
 
 // Exercise Assignments API functions
 export const exerciseAssignmentsApi = {

@@ -1,5 +1,5 @@
+require("dotenv").config();
 const { Pool } = require("pg");
-require("dotenv").config({ path: "../../.env" });
 
 // Production-safe logging
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -21,9 +21,8 @@ const DB = process.env.DB_NAME;
 const DB_URL = process.env.DB_URL;
 const env = process.env.NODE_ENV;
 
-let isDev = env === "development";
-let pool = new Pool({});
-if (isDev) {
+let pool;
+if (isDevelopment) {
   pool = new Pool({
     user: USER,
     password: PASS,

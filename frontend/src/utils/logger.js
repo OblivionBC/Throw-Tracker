@@ -4,8 +4,8 @@
  */
 
 const isDevelopment =
-  process.env.NODE_ENV === "development" || !process.env.NODE_ENV;
-const isProduction = process.env.NODE_ENV === "production";
+  process.env.REACT_APP_NODE_ENV === "development" || !process.env.REACT_APP_NODE_ENV;
+const isProduction = process.env.REACT_APP_NODE_ENV === "production";
 
 class Logger {
   static log(...args) {

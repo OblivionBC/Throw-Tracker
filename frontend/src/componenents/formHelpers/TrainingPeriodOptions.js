@@ -3,6 +3,7 @@ import { Field, useFormikContext } from "formik";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { trainingPeriodsApi } from "../../api";
+import Logger from "../../utils/logger";
 import { useApi } from "../../hooks/useApi";
 
 const TrainingPeriodOptions = ({ name }) => {

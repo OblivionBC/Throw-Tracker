@@ -22,7 +22,7 @@ const ErrorNotifications = () => {
         <ErrorToast key={error.id} type={error.code}>
           <ErrorContent>
             <ErrorMessage>{error.userMessage}</ErrorMessage>
-            {process.env.NODE_ENV === "development" && (
+            {process.env.REACT_APP_NODE_ENV === "development" && (
               <ErrorDetails>
                 Code: {error.code} | Context: {error.context}
               </ErrorDetails>
