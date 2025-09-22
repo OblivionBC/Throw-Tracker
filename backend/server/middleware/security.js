@@ -1,4 +1,5 @@
 const rateLimit = require("express-rate-limit");
+const { ipKeyGenerator } = require("express-rate-limit");
 
 // Production-safe logging
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -57,7 +58,7 @@ const createRateLimiter = (
         legacyHeaders: false,
         keyGenerator: (req) => {
             // fallback for local dev where req.ip might be undefined
-            return req.ip || req.headers["x-forwarded-for"] || "127.0.0.1";
+            return ipKeyGenerator(req);
         },
         skipSuccessfulRequests,
         handler: (req, res) => {
@@ -144,8 +145,8 @@ const corsConfig = {
         const frontendUrl = process.env.FRONTEND_URL
         Logger.log(frontendUrl);
         const allowedOrigins = frontendUrl
-            ? [frontendUrl]
-            : ["http://localhost:3000", "http://localhost:5001"];
+            ? [frontendUrl, "https://throw-tracker-4ocoiahrh-connors-projects-5e27ef17.vercel.app", "https://throwspace.app"]
+            : ["http://localhost:3000", "http://localhost:5001", "https://throw-tracker-4ocoiahrh-connors-projects-5e27ef17.vercel.app"];
 
         if (process.env.NODE_ENV !== "dev" && !frontendUrl) {
             return callback(null, true);

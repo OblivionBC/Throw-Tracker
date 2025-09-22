@@ -157,18 +157,18 @@ const apiCall = async (endpoint, options = {}) => {
           (response.status === 401 || response.status === 403) &&
           !isAuthEndpoint
         ) {
-          Logger.log("🔐 401/403 error detected - handling expired token");
-          Logger.log("🔐 Response status:", response.status);
-          Logger.log("🔐 Is auth endpoint:", isAuthEndpoint);
-          Logger.log("🔐 Current URL:", window.location.href);
-          Logger.log("🔐 Current pathname:", window.location.pathname);
+          Logger.log("  401/403 error detected - handling expired token");
+          Logger.log("  Response status:", response.status);
+          Logger.log("  Is auth endpoint:", isAuthEndpoint);
+          Logger.log("  Current URL:", window.location.href);
+          Logger.log("  Current pathname:", window.location.pathname);
 
           // Handle expired token first
           try {
             useUserStore.getState().handleExpiredToken();
-            Logger.log("🔐 handleExpiredToken called successfully");
+            Logger.log("  handleExpiredToken called successfully");
           } catch (error) {
-            Logger.error("🔐 Error calling handleExpiredToken:", error);
+            Logger.error("  Error calling handleExpiredToken:", error);
           }
 
           throw new Error("Authentication failed");
@@ -208,22 +208,22 @@ const apiCall = async (endpoint, options = {}) => {
 
       // If this is an authentication error, ensure we handle it
       if (error.message === "Authentication failed") {
-        Logger.log("🔐 Authentication error caught - redirecting to login");
-        Logger.log("🔐 Current pathname:", window.location.pathname);
+        Logger.log("  Authentication error caught - redirecting to login");
+        Logger.log("  Current pathname:", window.location.pathname);
 
         // The handleExpiredToken should have already been called, but let's ensure it
         if (window.location.pathname !== "/login") {
           try {
             useUserStore.getState().handleExpiredToken();
-            Logger.log("🔐 handleExpiredToken called in fallback");
+            Logger.log("handleExpiredToken called in fallback");
           } catch (fallbackError) {
             Logger.error(
-              "🔐 Error in fallback handleExpiredToken:",
+              "  Error in fallback handleExpiredToken:",
               fallbackError
             );
           }
         } else {
-          Logger.log("🔐 Already on login page, skipping redirect");
+          Logger.log("  Already on login page, skipping redirect");
         }
       }
 
