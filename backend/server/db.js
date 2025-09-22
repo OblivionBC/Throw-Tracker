@@ -50,7 +50,6 @@ if (isDevelopment) {
     }
 })();
 
-console.log(result)
 pool.on("error", (err) => {
   Logger.error("Unexpected DB error", err);
   process.exit(-1);
