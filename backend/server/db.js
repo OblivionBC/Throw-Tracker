@@ -39,17 +39,6 @@ if (isDevelopment) {
   });
 }
 
-(async () => {
-    try {
-        const res = await pool.query("SELECT NOW()");
-        console.log("Supabase connected! Server time:", res.rows[0]);
-        process.exit(0);
-    } catch (err) {
-        console.error("Failed to connect to Supabase:", err);
-        process.exit(1);
-    }
-})();
-
 pool.on("error", (err) => {
   Logger.error("Unexpected DB error", err);
   process.exit(-1);
