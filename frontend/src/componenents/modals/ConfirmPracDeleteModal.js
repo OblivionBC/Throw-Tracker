@@ -4,26 +4,17 @@ import MeasurementList from "../tables/MeasurementList";
 import {
   Overlay,
   ModalContainer,
+  CloseButton,
   DeleteButton,
   ButtonContainer,
   CancelButton,
-} from "../styles/styles";
+} from "../../styles/design-system";
+import { practicesApi } from "../../api";
 const ConfirmPracDeleteModal = ({ open, onClose, pracObj, refresh }) => {
   async function deletePrac(prac_rk) {
-    alert("PRAC DELETED");
     try {
-      const response = await fetch(
-        `http://localhost:5000/api//delete-practice`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            prac_rk: pracObj.prac_rk,
-          }),
-        }
-      );
+      await practicesApi.delete(prac_rk);
+      alert("Practice Deleted Successfully");
       onClose();
       refresh();
     } catch (error) {
@@ -35,6 +26,13 @@ const ConfirmPracDeleteModal = ({ open, onClose, pracObj, refresh }) => {
   return (
     <Overlay>
       <ModalContainer>
+        <CloseButton
+          onClick={() => {
+            onClose();
+          }}
+        >
+          Close
+        </CloseButton>
         <h3>
           Are you sure you want to delete Practice {pracObj.prac_rk} and its{" "}
           {pracObj.measurement_count} measurements?

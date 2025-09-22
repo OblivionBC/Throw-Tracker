@@ -1,11 +1,11 @@
 import React from "react";
 import styled from "styled-components";
-import CurrentExcersiseList from "../componenents/tables/CurrentExerciseList";
 import LastPractice from "../componenents/LastPractice";
 import "typeface-rubik";
 import Measurables from "../componenents/tables/MeasurableList";
 import ErrorBoundary from "../componenents/ErrorBoundary";
 import MeetList from "../componenents/tables/MeetList";
+import CurrentPrograms from "../componenents/CurrentPrograms";
 
 const Home = () => {
   return (
@@ -16,7 +16,7 @@ const Home = () => {
         </ErrorBoundary>
 
         <ErrorBoundary>
-          <CurrentExcersiseList />
+          <CurrentPrograms />
         </ErrorBoundary>
       </LeftColumn>
       <RightColumn>

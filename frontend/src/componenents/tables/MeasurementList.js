@@ -1,8 +1,8 @@
 import React from "react";
-import styled from "styled-components";
-import DataTable from "react-data-table-component";
+import { Table, TableWrap, CompWrap } from "../../styles/design-system";
 import { useEffect, useState } from "react";
-import { useUser } from "../contexts/UserContext";
+import { measurementsApi } from "../../api";
+import Logger from "../../utils/logger";
 const TableStyles = {
   pagination: {
     style: {
@@ -22,32 +22,26 @@ const TableStyles = {
 const MeasurementList = ({ prac_rk }) => {
   const [measurables, setMeasurables] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { getUser } = useUser();
   useEffect(() => {
     const fetchMeasurables = async () => {
+      // Don't make API call if prac_rk is not available
+      if (!prac_rk) {
+        Logger.warn("MeasurementList: prac_rk is not available");
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       try {
-        const response = await fetch(
-          `http://localhost:5000/api//get-measurementsForPrac`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              prac_rk: prac_rk,
-            }),
-          }
-        );
-        const jsonData = await response.json();
-        setMeasurables(jsonData.rows);
+        const response = await measurementsApi.getForPractice(prac_rk);
+        setMeasurables(response);
       } catch (error) {
-        console.error(error.message);
+        Logger.error(error.message);
       }
       setLoading(false);
     };
     fetchMeasurables();
-  }, [prac_rk, getUser()]);
+  }, [prac_rk]);
 
   const columns = [
     {
@@ -72,7 +66,7 @@ const MeasurementList = ({ prac_rk }) => {
 
   if (loading) return <div>Loading</div>;
   return (
-    <Content>
+    <CompWrap>
       Measurements
       <TableWrap>
         <Table
@@ -89,44 +83,8 @@ const MeasurementList = ({ prac_rk }) => {
           customStyles={TableStyles}
         />
       </TableWrap>
-    </Content>
+    </CompWrap>
   );
 };
 
-const Content = styled.div`
-  display: flex;
-  margin: 1rem;
-  width: 100%;
-  height: auto;
-  flex-direction: column;
-`;
-const TableWrap = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding: 0.3rem;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
-  border-radius: 5px;
-`;
-const Table = styled(DataTable)`
-  width: 100%;
-  .rdt_Table {
-    background-color: white;
-  }
-  .rdt_TableHeadRow {
-    background-color: #a9a5ba;
-    font-weight: bold;
-  }
-  .rdt_TableRow {
-    &:nth-of-type(odd) {
-      background-color: white;
-    }
-    &:nth-of-type(even) {
-      background-color: #eeeeee;
-    }
-  }
-  .rdt_Pagination {
-    background-color: #343a40;
-    color: #fff;
-  }
-`;
 export default MeasurementList;

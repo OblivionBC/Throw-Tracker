@@ -1,0 +1,54 @@
+import { apiCall } from "./config";
+
+// Practices API functions
+export const practicesApi = {
+  // Get all practices
+  getAll: async () => {
+    return await apiCall(`/practices`);
+  },
+
+  // Get practice by ID
+  getById: async (prac_rk) => {
+    return await apiCall(`/practices/${prac_rk}`);
+  },
+
+  // Get last practice
+  getLast: async () => {
+    return await apiCall("/practices/last");
+  },
+
+  // Get practices in training period
+  getInTrainingPeriod: async (trpe_rk) => {
+    return await apiCall(`/practices/training-period/${trpe_rk}`, {
+      method: "GET",
+    });
+  },
+
+  // Create new practice
+  create: async (practiceData) => {
+    return await apiCall("/practices", {
+      method: "POST",
+      body: JSON.stringify(practiceData),
+    });
+  },
+
+  // Update practice
+  update: async (prac_rk, practiceData) => {
+    return await apiCall(`/practices/${prac_rk}`, {
+      method: "PUT",
+      body: JSON.stringify(practiceData),
+    });
+  },
+
+  // Delete practice
+  delete: async (prac_rk) => {
+    return await apiCall(`/practices/${prac_rk}`, {
+      method: "DELETE",
+    });
+  },
+
+  // Get all practices for coach's athletes
+  getAllForCoach: async () => {
+    return await apiCall("/practices/coach/all");
+  },
+};

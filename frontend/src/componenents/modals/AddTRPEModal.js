@@ -7,9 +7,9 @@ import {
   ModalContainer,
   CloseButton,
   Content,
-} from "../styles/styles";
+} from "../../styles/design-system";
 const AddTRPEModal = ({ open, onClose, refresh }) => {
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
 
   if (!open || loading) return null;
   return (

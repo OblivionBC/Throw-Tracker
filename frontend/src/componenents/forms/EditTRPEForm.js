@@ -1,15 +1,20 @@
-import React, { useState } from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import React from "react";
+import { Formik, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import dayjs from "dayjs";
-import styled from "styled-components";
+import {
+  StyledForm,
+  StyledButton,
+  FieldOutputContainer,
+  FieldLabel,
+  SubmitError,
+} from "../../styles/design-system";
 import "typeface-nunito";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { useUser } from "../contexts/UserContext";
-
+import { trainingPeriodsApi } from "../../api";
+import Logger from "../../utils/logger";
 const EditTRPEForm = ({ trpe, refresh, close }) => {
-  const { getUser } = useUser();
   //Trim the dates to make them work better with the date picker
   let startDate = new Date(trpe.trpe_start_dt);
   let trimmedStartDate = startDate.toISOString().split("T")[0];
@@ -38,46 +43,20 @@ const EditTRPEForm = ({ trpe, refresh, close }) => {
       ),
   });
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
-    // Handle form submission here
-    //Make call on submit to update trpetice, and delete all measurments in for the trpe, then create a new one for each in the array
     setSubmitting(true);
     if (values.trpe_end_dt === "") {
       values.trpe_end_dt = null;
     }
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/update-trainingPeriod`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            trpe_rk: trpe.trpe_rk,
-            trpe_start_dt: values.trpe_start_dt,
-            trpe_end_dt: values.trpe_end_dt,
-            prsn_rk: getUser(),
-          }),
-        }
-      );
-      const jsonData = await response.json();
-
-      //Throw error if the response wasn't clean ( Something went wrong in validations?)
-      if (!response.ok) {
-        console.log("ERROR HAS OCCURRED ", response.statusText);
-        throw new Error(jsonData.message || "Something went wrong");
-      }
-
-      //Update the table, and send a success message
+      await trainingPeriodsApi.update(trpe.trpe_rk, values);
       refresh();
       setSubmitting(false);
       alert("Training Period Updated Successfully");
       close();
       return;
     } catch (error) {
-      //Set error for UI
       setErrors({ submit: error.message });
-      console.error(error.message);
+      Logger.error(error.message);
       return false;
     }
   };
@@ -91,7 +70,6 @@ const EditTRPEForm = ({ trpe, refresh, close }) => {
         onSubmit={handleSubmit}
       >
         {({ handleSubmit, isSubmitting, values, setFieldValue, errors }) => (
-          //date, training period, wind, notes, measurables
           <StyledForm onSubmit={handleSubmit}>
             <h4>Training Period: {trpe.trpe_rk}</h4>
             <Field type="date" name="trpe_start_dt">
@@ -149,35 +127,4 @@ const EditTRPEForm = ({ trpe, refresh, close }) => {
   );
 };
 
-const StyledForm = styled(Form)`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-`;
-
-const StyledButton = styled.button`
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-`;
-const SubmitError = styled.div`
-  font-size: 18;
-  color: red;
-  font-family: "Nunito", sans-serif;
-`;
-
-const FieldOutputContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-`;
-const FieldLabel = styled.h3`
-  margin-right: 10px;
-`;
 export default EditTRPEForm;

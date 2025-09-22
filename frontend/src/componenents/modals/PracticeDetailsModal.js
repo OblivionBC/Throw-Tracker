@@ -12,7 +12,7 @@ import {
   EditButton,
   RowContainer,
   FieldName,
-} from "../styles/styles";
+} from "../../styles/design-system";
 
 const PracticeDetailsModal = ({ open, onClose, pracObj, refresh }) => {
   const [editing, setEditing] = useState(false);
@@ -34,6 +34,10 @@ const PracticeDetailsModal = ({ open, onClose, pracObj, refresh }) => {
           <p>{pracObj.trpe_rk}</p>
         </RowContainer>
         <MeasurablesList prac_rk={pracObj.prac_rk} />
+        <RowContainer>
+          <FieldName>Notes:</FieldName>
+          <p>{pracObj.notes}</p>
+        </RowContainer>
       </>
     );
   };

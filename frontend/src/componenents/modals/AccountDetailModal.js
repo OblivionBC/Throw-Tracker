@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
-import { useUser } from "../contexts/UserContext";
 import { useNavigate } from "react-router-dom";
 import "typeface-nunito";
+import useUserStore, { useUser } from "../../stores/userStore";
 
 const Modal = styled.div`
   background-color: white;
@@ -65,25 +65,26 @@ const SignOut = styled.button`
 `;
 
 const AccountDetailsModal = ({ on }) => {
-  const { user, signOut } = useUser();
+  const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
   const navigate = useNavigate();
+  const user = useUser();
+  const { logout: logoutUser } = useUserStore();
 
   async function logout() {
     try {
-      navigate("/");
-      signOut();
+      await logoutUser();
+      navigate("/login");
     } catch (error) {}
   }
-
   if (!on) {
     return null;
   }
   return (
     <Modal>
       <List>
-        <Name>{user.prsn_first_nm + " " + user.prsn_last_nm}</Name>
-        <Org>{user.org_name}</Org>
-        <Role>{user.prsn_role}</Role>
+        <Name>{user?.first_nm + " " + user?.last_nm}</Name>
+        <Org>{user?.org_name}</Org>
+        <Role>{user?.role}</Role>
       </List>
       <SignOut onClick={() => logout()}>Sign Out</SignOut>
     </Modal>

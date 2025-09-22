@@ -1,9 +1,8 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
 import "typeface-nunito";
-import ProgramContent from "../tables/ProgramContentList";
-import DynamicModal from "../dynamicModals/DynamicModal";
-import AddProgramForm from "../forms/AddProgram";
+import ProgramMeasurableContent from "../tables/ProgramContentList";
+import Logger from "../../utils/logger";
 import {
   Overlay,
   ModalContainer,
@@ -11,81 +10,62 @@ import {
   Content,
   AddButton,
   RowDiv,
-} from "../styles/styles";
-
-const ProgramsModal = ({ open, onClose, refresh, prsn_rk, trpe_rk }) => {
+} from "../../styles/design-system";
+import {
+  programAthleteAssignmentsApi,
+  programMeasurableAssignmentsApi,
+} from "../../api";
+const ProgramsModal = ({ open, onClose, refresh, trpe_rk }) => {
   const [loading, setLoading] = useState(false);
-  const [programData, setProgramData] = useState(new Map());
-  const [addProgram, setAddProgram] = useState(false);
-  const getProgramData = async () => {
+  const [programData, setProgramData] = useState([]);
+  const getProgramData = async (forceRefresh = false) => {
+    // Don't make API call if trpe_rk is not available
+    if (!trpe_rk) {
+      Logger.warn("ProgramsModal: trpe_rk is not available");
+      return;
+    }
+
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/get-programsAndExerciseForTRPE`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            trpe_rk: trpe_rk,
-          }),
-        }
-      );
+      // Get programs assigned to this training period
+      const programsResponse =
+        await programAthleteAssignmentsApi.getTrainingPeriodPrograms(
+          trpe_rk,
+          forceRefresh
+        );
 
-      const jsonData = await response.json();
-      console.log(jsonData);
-      let newDataMap = new Map();
-      jsonData.rows.forEach((element) => {
-        console.log(element);
-        if (!newDataMap.has(element.prog_rk)) {
-          newDataMap.set(element.prog_rk, [
-            {
-              excr_nm: element.excr_nm,
-              exas_rk: element.exas_rk,
-              excr_rk: element.excr_rk,
-              exas_reps: element.exas_reps,
-              exas_sets: element.exas_sets,
-              exas_weight: element.exas_weight,
-              exas_notes: element.exas_notes,
-              excr_notes: element.excr_notes,
-              is_measurable: element.is_measurable,
-            },
-          ]);
-          //There is already an array, so we just need to push to it
-        } else {
-          newDataMap.get(element.prog_rk).push({
-            excr_nm: element.excr_nm,
-            exas_rk: element.exas_rk,
+      let newDataArr = [];
 
-            exas_reps: element.exas_reps,
-            excr_rk: element.excr_rk,
-            exas_sets: element.exas_sets,
-            exas_weight: element.exas_weight,
-            exas_notes: element.exas_notes,
-            excr_notes: element.excr_notes,
-            is_measurable: element.is_measurable,
-          });
+      // For each program, get its measurables
+      for (const program of programsResponse) {
+        let measurables = [];
+        try {
+          const measurablesResponse =
+            await programMeasurableAssignmentsApi.getProgramMeasurables(
+              program.prog_rk
+            );
+          measurables = measurablesResponse;
+        } catch (error) {
+          Logger.error(
+            `Error fetching measurables for program ${program.prog_rk}:`,
+            error
+          );
         }
-      });
-      setProgramData(newDataMap);
+        newDataArr.push({ program, measurables });
+      }
+      setProgramData(newDataArr);
     } catch (error) {
-      console.error(error.message);
+      Logger.error(error.message);
     }
   };
   useEffect(() => {
-    getProgramData();
-    console.log("REFRESHING THE PROGRAMS");
-  }, [trpe_rk]);
+    // Only fetch data if modal is open and we have valid trpe_rk
+    if (open && trpe_rk) {
+      getProgramData(true); // Always force refresh on open
+    }
+  }, [trpe_rk, open]);
   if (!open || loading) return null;
   return (
     <Overlay>
-      <DynamicModal
-        open={addProgram}
-        onClose={() => setAddProgram(false)}
-        refresh={() => getProgramData()}
-        Component={AddProgramForm}
-        props={{ trpe_rk }}
-      />
       <ModalContainer>
         <CloseButton
           onClick={() => {
@@ -95,27 +75,84 @@ const ProgramsModal = ({ open, onClose, refresh, prsn_rk, trpe_rk }) => {
           Close
         </CloseButton>
 
-        <AddButton onClick={() => setAddProgram(true)}>Add Program</AddButton>
         <Content>
           <RowDiv>
-            <h1>Training Period {trpe_rk}</h1>
-            <AddButton onClick={() => getProgramData()}>Refresh</AddButton>
+            <h1>Programs Assigned to Training Period {trpe_rk}</h1>
+            <AddButton onClick={() => getProgramData(true)}>Refresh</AddButton>
           </RowDiv>
-          {programData.size <= 0 ? (
+          {programData.length === 0 ? (
             <div>No Programs</div>
           ) : (
-            [...programData.entries()].map(([key, row]) => (
-              <ProgramContent
-                data={row}
-                prog_rk={key}
-                prsn_rk={prsn_rk}
-                bAdd
-                bDelete
-                bEdit
-                refresh={() => getProgramData()}
-              />
+            programData.map(({ program, measurables }) => (
+              <div
+                key={program.prog_rk}
+                style={{
+                  border: "1px solid #eee",
+                  borderRadius: 8,
+                  marginBottom: 16,
+                  padding: 12,
+                }}
+              >
+                <div style={{ fontWeight: "bold", fontSize: 16 }}>
+                  {program.prog_nm}
+                </div>
+                <div style={{ fontSize: 13, color: "#555" }}>
+                  <b>Notes:</b> {program.notes || "None"}
+                </div>
+                <div style={{ fontSize: 13, color: "#555" }}>
+                  <b>Assigned by:</b> {program.assigner_first_nm}{" "}
+                  {program.assigner_last_nm}
+                </div>
+                <div style={{ fontSize: 13, color: "#555" }}>
+                  <b>Assigned on:</b>{" "}
+                  {program.assigned_dt
+                    ? new Date(program.assigned_dt).toLocaleDateString()
+                    : "N/A"}
+                </div>
+                <div style={{ marginTop: 8 }}>
+                  <ProgramMeasurableContent
+                    data={measurables}
+                    prog_rk={program.prog_rk}
+                    bAdd
+                    bDelete
+                    bEdit
+                    refresh={() => getProgramData(true)}
+                  />
+                </div>
+              </div>
             ))
           )}
+          {/* Display assigned athletes and their training periods if available */}
+          {Array.isArray(programData.assignments) &&
+            programData.assignments.length > 0 && (
+              <div style={{ marginTop: 24 }}>
+                <h3>Athletes Assigned</h3>
+                {programData.assignments.map((assignment, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      border: "1px solid #ddd",
+                      padding: 10,
+                      margin: "5px 0",
+                      borderRadius: 5,
+                    }}
+                  >
+                    <p>
+                      <strong>Athlete:</strong> {assignment.athlete_first_nm}{" "}
+                      {assignment.athlete_last_nm}
+                    </p>
+                    <p>
+                      <strong>Training Period:</strong> {assignment.trpe_rk}
+                    </p>
+                    {assignment.notes && (
+                      <p>
+                        <strong>Notes:</strong> {assignment.notes}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
         </Content>
       </ModalContainer>
     </Overlay>

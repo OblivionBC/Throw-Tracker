@@ -1,13 +1,24 @@
-import React, { useEffect, useState } from "react";
-import styled from "styled-components";
-import "typeface-nunito";
-import DataTable from "react-data-table-component";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import dayjs from "dayjs";
+import {
+  Table,
+  TableWrap,
+  RowDiv,
+  Title,
+  CompWrap,
+  AddButton,
+  EditButton,
+} from "../../styles/design-system";
 import ConfirmTRPEDelete from "../modals/ConfirmTRPEDelete";
 import AddTRPEModal from "../modals/AddTRPEModal";
-import { useUser } from "../contexts/UserContext";
 import TrainingPeriodEditModal from "../modals/TrainingPeriodEditModal";
 import ProgramsModal from "../modals/ProgramsModal";
+import { trainingPeriodsApi } from "../../api";
+import { useDataChange } from "../contexts/DataChangeContext";
+import { useApi } from "../../hooks/useApi";
+import { useIsCoach, useSelectedAthlete } from "../../stores/userStore";
+import { getPaginationNumber } from "../../utils/tableUtils";
+import Logger from "../../utils/logger";
 
 const TableStyles = {
   pagination: {
@@ -24,6 +35,7 @@ const TableStyles = {
     },
   },
 };
+
 const TrainingPeriodList = ({
   prsn_rk,
   bAdd,
@@ -35,48 +47,125 @@ const TrainingPeriodList = ({
   selectable,
   setSharedState,
 }) => {
+  const containerRef = useRef(null);
+  const [containerHeight, setContainerHeight] = useState(600);
   const [trpeData, setTrpeData] = useState([]);
   const [addTRPEOpen, setAddTRPEOpen] = useState(false);
   const [deleteTRPEOpen, setDeleteTRPEOpen] = useState(false);
   const [programs, setPrograms] = useState(false);
   const [editTRPEOpen, setEditTRPEOpen] = useState(false);
   const [selectedTRPE, setSelectedTRPE] = useState({});
-  const { getUser } = useUser();
-  let pagination = 3;
-  paginationNum === undefined ? (pagination = 3) : (pagination = paginationNum);
+  const { apiCall } = useApi();
+  const isCoach = useIsCoach();
+  const selectedAthlete = useSelectedAthlete();
+  const {
+    isCacheValid,
+    setCacheData,
+    setCacheLoading,
+    getCachedData,
+    invalidateCache,
+    refreshFlags,
+  } = useDataChange();
+
+  // Update container height on mount and resize
+  useEffect(() => {
+    const updateHeight = () => {
+      if (containerRef.current) {
+        setContainerHeight(containerRef.current.clientHeight);
+      }
+    };
+
+    updateHeight();
+    window.addEventListener("resize", updateHeight);
+    return () => window.removeEventListener("resize", updateHeight);
+  }, []);
+
+  // Calculate optimal pagination
+  const optimalPagination = getPaginationNumber(paginationNum, containerHeight);
   selectable === undefined ? (selectable = false) : (selectable = true);
-  let user = getUser();
-  if (prsn_rk !== undefined) user = prsn_rk;
-  const getTRPEData = async () => {
-    try {
-      const response = await fetch(
-        `http://localhost:5000/api/get-all-trainingPeriods`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            prsn_rk: user,
-          }),
-        }
-      );
-      const jsonData = await response.json();
-      setTrpeData(jsonData.rows);
-      console.log(trpeData);
-    } catch (error) {
-      console.error(error.message);
+
+  // Determine which person to get training periods for
+  const getPersonForTrainingPeriods = useCallback(() => {
+    if (isCoach) {
+      // For coaches, use selected athlete if available, otherwise use provided prsn_rk
+      return selectedAthlete || prsn_rk;
+    } else {
+      // For athletes, use provided prsn_rk
+      return prsn_rk;
     }
-  };
+  }, [isCoach, selectedAthlete, prsn_rk]);
+
+  const getTRPEData = useCallback(
+    async (forceRefresh = false) => {
+      const personId = getPersonForTrainingPeriods();
+
+      // Create cache key that includes athlete selection for coaches
+      const cacheKey = isCoach
+        ? `trpe_coach_${selectedAthlete || "no_athlete"}`
+        : `trpe_${personId}`;
+
+      // Check if we have valid cached data and don't need to force refresh
+      if (!forceRefresh && isCacheValid(cacheKey)) {
+        const cachedData = getCachedData(cacheKey);
+        if (cachedData && cachedData.data) {
+          setTrpeData(cachedData.data);
+          return;
+        }
+      }
+
+      setCacheLoading(cacheKey, true);
+
+      try {
+        let response;
+
+        if (isCoach && !selectedAthlete) {
+          // No athlete selected for coach, show empty data
+          response = [];
+        } else {
+          // Get training periods for the determined person
+          response = await apiCall(
+            () => trainingPeriodsApi.getAllForPerson(personId),
+            `Fetching training periods for person ${personId}`
+          );
+        }
+
+        setTrpeData(response);
+        setCacheData(cacheKey, response);
+      } catch (error) {
+        Logger.error(error.message);
+      } finally {
+        setCacheLoading(cacheKey, false);
+      }
+    },
+
+    [
+      getPersonForTrainingPeriods,
+      isCoach,
+      selectedAthlete,
+      apiCall,
+      isCacheValid,
+      getCachedData,
+      setCacheLoading,
+      setCacheData,
+    ]
+  );
+
+  // Extract the complex expression from dependency array
+  const personRefreshFlag = refreshFlags[prsn_rk];
 
   useEffect(() => {
-    try {
-      getTRPEData();
-    } catch (error) {
-      console.error(error.message);
-    }
-  }, [getUser()]);
+    getTRPEData();
+  }, [getTRPEData, personRefreshFlag]);
 
+  const handleRefresh = () => {
+    getTRPEData(true);
+  };
+
+  const handleDataChange = () => {
+    const personId = getPersonForTrainingPeriods();
+    invalidateCache(personId);
+    getTRPEData(true); // Force refresh the data
+  };
   const handleChange = ({ selectedRows }) => {
     if (selectedRows) {
       const ids = selectedRows?.map((row) => {
@@ -86,11 +175,11 @@ const TrainingPeriodList = ({
     }
   };
   const columns = [
-    {
+    /* {
       name: "ID",
-      selector: (row) => row.trpe_rk,
+      selector: (row) => row.trpe_rk, 
       sortable: true,
-    },
+    },*/
     {
       name: "Start",
       selector: (row) => row.trpe_start_dt,
@@ -109,84 +198,95 @@ const TrainingPeriodList = ({
       sortable: true,
     },
   ];
-  if (bEdit === true)
+  // Add Actions column if any action buttons are enabled
+  if (bEdit === true || bDelete === true || bPrograms === true) {
     columns.push({
+      name: "Actions",
       cell: (row) => (
-        <DeleteButton
-          onClick={() => {
-            setEditTRPEOpen(true);
-            setSelectedTRPE(row);
-          }}
-        >
-          Edit
-        </DeleteButton>
+        <div style={{ display: "flex", gap: "5px" }}>
+          {bEdit === true && (
+            <EditButton
+              $size="sm"
+              onClick={() => {
+                setEditTRPEOpen(true);
+                setSelectedTRPE(row);
+              }}
+            >
+              Edit
+            </EditButton>
+          )}
+          {bDelete === true && (
+            <EditButton
+              $size="sm"
+              onClick={() => {
+                setDeleteTRPEOpen(true);
+                setSelectedTRPE(row);
+              }}
+            >
+              Delete
+            </EditButton>
+          )}
+          {bPrograms === true && (
+            <EditButton
+              $size="sm"
+              onClick={() => {
+                setSelectedTRPE(row);
+                setPrograms(true);
+              }}
+            >
+              Programs
+            </EditButton>
+          )}
+        </div>
       ),
     });
-  if (bDelete === true)
-    columns.push({
-      cell: (row) => (
-        <DeleteButton
-          onClick={() => {
-            setDeleteTRPEOpen(true);
-            setSelectedTRPE(row);
-          }}
-        >
-          Delete
-        </DeleteButton>
-      ),
-    });
-  if (bPrograms === true)
-    columns.push({
-      cell: (row) => (
-        <DeleteButton
-          onClick={() => {
-            setSelectedTRPE(row);
-            setPrograms(true);
-          }}
-        >
-          Programs
-        </DeleteButton>
-      ),
-    });
+  }
   //Add the Detail/Edit modal now
   return (
-    <CompWrap>
-      <ConfirmTRPEDelete
-        open={deleteTRPEOpen}
-        onClose={() => setDeleteTRPEOpen(false)}
-        trpeObj={selectedTRPE}
-        refresh={() => getTRPEData()}
-      />
-      <AddTRPEModal
-        open={addTRPEOpen}
-        onClose={() => setAddTRPEOpen(false)}
-        refresh={() => getTRPEData()}
-      />
-      <TrainingPeriodEditModal
-        open={editTRPEOpen}
-        onClose={() => setEditTRPEOpen(false)}
-        refresh={() => getTRPEData()}
-        trpeObj={selectedTRPE}
-      />
-      <ProgramsModal
-        prsn_rk={user}
-        open={programs}
-        onClose={() => setPrograms(false)}
-        trpe_rk={selectedTRPE.trpe_rk}
-      />
+    <CompWrap ref={containerRef}>
+      {deleteTRPEOpen && (
+        <ConfirmTRPEDelete
+          open={deleteTRPEOpen}
+          onClose={() => setDeleteTRPEOpen(false)}
+          trpeObj={selectedTRPE}
+          refresh={handleDataChange}
+        />
+      )}
+      {addTRPEOpen && (
+        <AddTRPEModal
+          open={addTRPEOpen}
+          onClose={() => setAddTRPEOpen(false)}
+          refresh={handleDataChange}
+        />
+      )}
+      {editTRPEOpen && selectedTRPE && selectedTRPE.trpe_rk && (
+        <TrainingPeriodEditModal
+          open={editTRPEOpen}
+          onClose={() => setEditTRPEOpen(false)}
+          refresh={handleDataChange}
+          trpeObj={selectedTRPE}
+        />
+      )}
+      {programs && selectedTRPE && selectedTRPE.trpe_rk && (
+        <ProgramsModal
+          open={programs}
+          onClose={() => setPrograms(false)}
+          trpe_rk={selectedTRPE.trpe_rk}
+        />
+      )}
       <RowDiv>
         <Title>Training Periods</Title>
         {bAdd === true && (
           <AddButton onClick={() => setAddTRPEOpen(true)}>Add</AddButton>
         )}
-        <AddButton onClick={() => getTRPEData()}>Refresh</AddButton>
+        <AddButton onClick={handleRefresh}>Refresh</AddButton>
       </RowDiv>
       <TableWrap>
         <Table
           columns={columns}
           data={trpeData}
           pagination
-          paginationPerPage={pagination}
+          paginationPerPage={optimalPagination}
           paginationComponentOptions={{
             rowsPerPageText: "Rows per page:",
             rangeSeparatorText: "of",
@@ -203,96 +303,4 @@ const TrainingPeriodList = ({
   );
 };
 
-const DeleteButton = styled.button`
-  background: linear-gradient(45deg, black 30%, #808080 95%);
-  border: none;
-  border-radius: 25px;
-  color: white;
-  padding: 5px 10px;
-  margin: 0px;
-  font-size: 12px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transform: translateY(0);
-  }
-`;
-const AddButton = styled.button`
-  background: linear-gradient(45deg, #808080 30%, white 95%);
-  border: none;
-  border-radius: 25px;
-  color: white;
-  padding: 5px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transform: translateY(0);
-  }
-`;
-const RowDiv = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-`;
-const CompWrap = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 95%;
-  height: 100%;
-`;
-const TableWrap = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: auto;
-  padding: 0.2rem;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
-  border-radius: 5px;
-`;
-const Table = styled(DataTable)`
-  width: 100%;
-  .rdt_Table {
-    background-color: white;
-  }
-  .rdt_TableHeadRow {
-    background-color: #a9a5ba;
-    font-weight: bold;
-  }
-  .rdt_TableRow {
-    &:nth-of-type(odd) {
-      background-color: white;
-    }
-    &:nth-of-type(even) {
-      background-color: #eeeeee;
-    }
-  }
-  .rdt_Pagination {
-    background-color: #343a40;
-    color: #fff;
-  }
-`;
-const Title = styled.h1`
-  display: flex;
-  align-self: flex-start;
-  margin: 0 0 5px 0;
-  padding: 0;
-  height: 15%;
-`;
 export default TrainingPeriodList;

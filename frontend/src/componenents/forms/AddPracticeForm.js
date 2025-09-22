@@ -1,94 +1,76 @@
 import React, { useEffect, useState } from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import styled from "styled-components";
+import {
+  StyledForm,
+  StyledButton,
+  FieldOutputContainer,
+  FieldLabel,
+  SubmitError,
+  ParagraphInput,
+} from "../../styles/design-system";
 import "typeface-nunito";
 import dayjs from "dayjs";
-import { useUser } from "../contexts/UserContext";
-import { MeasurableFieldArray } from "./MeasurableFieldArray";
+import { MeasurableFieldArray } from "../formHelpers/MeasurableFieldArray.js";
 import TrainingPeriodOptions from "../formHelpers/TrainingPeriodOptions";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import ProgramSelectWithExercise from "../formHelpers/ProgramSelectWithExercise";
+import ProgramSelectWithMeasurables from "../formHelpers/ProgramSelectWithExercise";
+import { practicesApi, measurementsApi } from "../../api";
+import { useApi } from "../../hooks/useApi";
 
 //Grab the initial values
-const addMeasurement = async (measurable, prac_rk) => {
-  console.log(measurable.meas_rk);
-  const response = await fetch(`http://localhost:5000/api/add-measurement`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      meas_rk: measurable.meas_rk,
-      msrm_value: measurable.msrm_value,
-      prac_rk: prac_rk,
-    }),
-  });
-  const jsonData = await response.json();
-  if (response.ok === false) {
-    console.log("ERROR HAS OCCURRED ", response.statusText);
-  }
+const addMeasurement = async (measurable, prac_rk, apiCall) => {
+  const response = await apiCall(
+    () => measurementsApi.create(measurable, prac_rk),
+    "Creating measurement"
+  );
+  return response;
 };
 
-const addPractice = async (prac_dt, trpe_rk, prsn_rk) => {
-  console.log(prac_dt);
-  const response = await fetch(`http://localhost:5000/api//add-practice`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      prac_dt: prac_dt,
-      trpe_rk: trpe_rk,
-      prsn_rk: prsn_rk,
-    }),
-  });
-  const jsonData = await response.json();
-  if (!response.ok) {
-    console.log("ERROR HAS OCCURRED ", response.statusText);
-    throw new Error(jsonData.message || "Something went wrong");
-  }
-  return jsonData.rows[0].prac_rk;
+const addPractice = async (prac_dt, trpe_rk, notes, apiCall) => {
+  const response = await apiCall(
+    () => practicesApi.create(prac_dt, trpe_rk, notes),
+    "Creating practice"
+  );
+  return response.prac_rk;
 };
 
 const AddPracticeForm = ({ close, refresh }) => {
   const [failed, setFailed] = useState(false);
   const [programData, setProgramData] = useState([]);
+  const { apiCall } = useApi();
   let formikRef = null;
 
   useEffect(() => {
-    console.log("STUFF CHANGED");
     let defaultMeasurables = [];
     programData?.forEach((row) => {
       defaultMeasurables.push({ meas_rk: row.meas_rk, msrm_value: 0 });
     });
     if (formikRef) {
       formikRef.setFieldValue("measurables", defaultMeasurables);
-      console.log("CHANGED IT");
     }
-    console.log({ defaultMeasurables });
   }, [programData, formikRef]);
   const initialValues = {
     trpe: "",
     date: "",
     measurables: [],
+    notes: "",
   };
-  const { getUser } = useUser();
   const validationSchema = Yup.object().shape({
     trpe: Yup.number("Must be a number").required(
       "Training Period is a required field"
     ),
-    date: Yup.date().required(),
-    measurables: Yup.array()
+    date: Yup.date("Must be a valid Date").required("Date is required"),
+    measurables: Yup.array("Must be an array")
       .of(
         Yup.object().shape({
           meas_rk: Yup.number("Must be a number")
             .typeError("Must Be Number")
-            .required(),
+            .required("Measurable key is required"),
           msrm_value: Yup.number("Must be a Number")
             .typeError("Must Be Number")
-            .required(),
+            .required("Measurement Value is required"),
         })
       )
       .required("Must have measurables"),
@@ -97,12 +79,16 @@ const AddPracticeForm = ({ close, refresh }) => {
     // Handle form submission here
     //Make call on submit to update practice, and delete all measurments in for the prac, then create a new one for each in the array
     setSubmitting(true);
-    console.log(values);
     try {
-      const prac_rk = await addPractice(values.date, values.trpe, getUser());
-      values.measurables.forEach((element) => {
-        addMeasurement(element, prac_rk);
-      });
+      const prac_rk = await addPractice(
+        values.date,
+        values.trpe,
+        values.notes,
+        apiCall
+      );
+      for (const element of values.measurables) {
+        await addMeasurement(element, prac_rk, apiCall);
+      }
       alert("Practice Added Successfully");
       close();
       refresh();
@@ -132,13 +118,13 @@ const AddPracticeForm = ({ close, refresh }) => {
               {({ field }) => (
                 <FieldOutputContainer>
                   <FieldLabel>Training Period:</FieldLabel>
-                  <TrainingPeriodOptions prsn_rk={getUser()} name="trpe" />
+                  <TrainingPeriodOptions name="trpe" />
                 </FieldOutputContainer>
               )}
             </Field>
             <ErrorMessage name="trpe" component={SubmitError} />
 
-            <ProgramSelectWithExercise
+            <ProgramSelectWithMeasurables
               trpe_rk={values.trpe}
               disabled={values.trpe === ""}
               setData={setProgramData}
@@ -167,6 +153,20 @@ const AddPracticeForm = ({ close, refresh }) => {
             <MeasurableFieldArray />
             <ErrorMessage name="measurables" component={SubmitError} />
 
+            <Field name="notes" type="text">
+              {({ field }) => (
+                <FieldOutputContainer>
+                  <FieldLabel>Notes:</FieldLabel>
+                  <ParagraphInput
+                    type="text"
+                    placeholder={"Notes Here"}
+                    {...field}
+                  />
+                </FieldOutputContainer>
+              )}
+            </Field>
+            <ErrorMessage name="notes" component={SubmitError} />
+
             <StyledButton type="submit" disabled={isSubmitting}>
               Save
             </StyledButton>
@@ -183,57 +183,4 @@ const AddPracticeForm = ({ close, refresh }) => {
   );
 };
 
-const StyledForm = styled(Form)`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-`;
-
-const StyledInput = styled.input`
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  margin-bottom: 10px;
-`;
-
-const StyledButton = styled.button`
-  background: linear-gradient(45deg, darkblue 30%, skyblue 95%);
-  border: none;
-  border-radius: 25px;
-  color: white;
-  padding: 5px 10px;
-  margin-top: 10px;
-  font-size: 14px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transform: translateY(0);
-  }
-`;
-const SubmitError = styled.div`
-  font-size: 18;
-  color: red;
-  font-family: "Nunito", sans-serif;
-`;
-
-const FieldOutputContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-`;
-
-const FieldLabel = styled.h3`
-  margin-right: 10px;
-`;
 export default AddPracticeForm;

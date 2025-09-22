@@ -2,93 +2,122 @@
   Purpose: Exercises.js holds all the HTTP Requests for editing the Exercise Table
       The table is selected through the SQL Queries
 */
-const { pool } = require(".././db");
+const { pool } = require("../db");
+const {
+  NotFoundError,
+  ValidationError,
+  ConflictError,
+} = require("../utils/errors");
+const asyncHandler = require("../utils/asyncHandler");
 
-exports.addExercise = async (req, res) => {
-  try {
-    const { excr_nm, excr_notes, coach_prsn_rk, excr_units } = req.body;
-    console.log("Adding exercise " + excr_nm + " for coach " + coach_prsn_rk);
-    //$1 is the variable to add in the db, runs sql query in quotes which is same as in the CLI
-    //Returning * returns back the data
-    const newExercise = await pool.query(
-      "INSERT INTO Exercise (excr_nm, excr_notes, coach_prsn_rk, excr_units) VALUES($1, $2, $3, $4) RETURNING *",
-      [excr_nm, excr_notes, coach_prsn_rk, excr_units]
-    );
-
-    res.json(newExercise);
-  } catch (err) {
-    console.error("Async Error:", err.message);
-    res.status(500).json({ message: err.message });
+// Input validation helper
+const validateExerciseData = (data) => {
+  const errors = [];
+  if (!data.excr_nm || data.excr_nm.trim() === "") {
+    errors.push("Exercise name is required");
   }
+  if (!data.coach_prsn_rk) {
+    errors.push("Coach person rank is required");
+  }
+  if (!data.excr_units || data.excr_units.trim() === "") {
+    errors.push("Exercise units are required");
+  }
+  return errors;
 };
 
-exports.getAllExercises = async (req, res) => {
-  try {
-    const allExercises = await pool.query("SELECT * FROM Exercise");
-    res.json(allExercises);
-  } catch (err) {
-    console.error("Async Error:", err.message);
-    res.status(500).json({ message: "Error occurred getting All Exercises." });
+exports.addExercise = asyncHandler(async (req, res) => {
+  const { excr_nm, excr_notes, excr_units } = req.body;
+  const coach_prsn_rk = req.user.id;
+
+  // Input validation
+  const validationErrors = validateExerciseData({
+    ...req.body,
+    coach_prsn_rk,
+  });
+  if (validationErrors.length > 0) {
+    throw new ValidationError(validationErrors.join(", "));
   }
-};
 
-exports.getExerciseForCoach = async (req, res) => {
-  try {
-    const { coach_prsn_rk } = req.body;
+  const newExercise = await pool.query(
+    "INSERT INTO Exercise (excr_nm, excr_notes, coach_prsn_rk, excr_units) VALUES($1, $2, $3, $4) RETURNING *",
+    [excr_nm, excr_notes, coach_prsn_rk, excr_units]
+  );
 
-    const allExercises = await pool.query(
-      "SELECT * FROM Exercise where coach_prsn_rk = $1;",
-      [coach_prsn_rk]
-    );
-    res.json(allExercises);
-  } catch (err) {
-    console.error("Async Error:", err.message);
+  res.status(201).json(newExercise.rows[0]);
+});
+
+exports.getAllExercises = asyncHandler(async (req, res) => {
+  const allExercises = await pool.query("SELECT * FROM Exercise");
+  res.json(allExercises.rows);
+});
+
+exports.getExerciseForCoach = asyncHandler(async (req, res) => {
+  const coach_prsn_rk = req.user.id;
+
+  const allExercises = await pool.query(
+    "SELECT * FROM Exercise where coach_prsn_rk = $1;",
+    [coach_prsn_rk]
+  );
+  res.json(allExercises.rows);
+});
+
+exports.getExercise = asyncHandler(async (req, res) => {
+  const { excr_rk } = req.params;
+
+  if (!excr_rk) {
+    throw new ValidationError("Exercise rank is required");
   }
-};
 
-exports.getExercise = async (req, res) => {
-  try {
-    const { excr_rk } = req.params;
-    const Exercise = await pool.query(
-      "SELECT * FROM Exercise WHERE excr_rk = $1",
-      [excr_rk]
-    );
+  const exercise = await pool.query(
+    "SELECT * FROM Exercise WHERE excr_rk = $1",
+    [excr_rk]
+  );
 
-    res.json(Exercise.rows);
-    console.log(req.params);
-  } catch (err) {
-    console.error("Async Error:", err.message);
-    res.status(500).json({ message: "Error occurred Getting Exercise." });
+  if (exercise.rows.length === 0) {
+    throw new NotFoundError("Exercise");
   }
-};
 
-exports.updateExercise = async (req, res) => {
-  try {
-    const { excr_rk, excr_nm, excr_notes } = req.body;
-    console.log("Updating exercise " + excr_rk + " : " + excr_nm);
-    const updateTodo = await pool.query(
-      "UPDATE Exercise SET excr_nm = $1, excr_notes = $2 WHERE excr_rk = $3",
-      [excr_nm, excr_notes, excr_rk]
-    );
-    res.json("Exercise was Updated");
-  } catch (err) {
-    console.error("Async Error:", err.message);
-    res.status(500).json({ message: err.message });
+  res.json(exercise.rows[0]);
+});
+
+exports.updateExercise = asyncHandler(async (req, res) => {
+  const { excr_rk, excr_nm, excr_notes } = req.body;
+
+  // Input validation
+  if (!excr_rk) {
+    throw new ValidationError("Exercise rank is required");
   }
-};
-
-exports.deleteExercise = async (req, res) => {
-  try {
-    const { excr_rk } = req.body;
-    console.log("Deleting exercise " + excr_rk);
-    const deleteExercise = await pool.query(
-      "DELETE FROM Exercise WHERE excr_rk = $1",
-      [excr_rk]
-    );
-
-    res.json("Exercise has been Deleted");
-  } catch (err) {
-    console.error("Async Error:", err.message);
-    res.status(500).json({ message: "Error occurred Deleting Exercise." });
+  if (!excr_nm || excr_nm.trim() === "") {
+    throw new ValidationError("Exercise name is required");
   }
-};
+
+  const updateExercise = await pool.query(
+    "UPDATE Exercise SET excr_nm = $1, excr_notes = $2 WHERE excr_rk = $3 RETURNING *",
+    [excr_nm, excr_notes, excr_rk]
+  );
+
+  if (updateExercise.rows.length === 0) {
+    throw new NotFoundError("Exercise");
+  }
+
+  res.json({ success: true, exercise: updateExercise.rows[0] });
+});
+
+exports.deleteExercise = asyncHandler(async (req, res) => {
+  const { excr_rk } = req.params;
+
+  if (!excr_rk) {
+    throw new ValidationError("Exercise rank is required");
+  }
+
+  const deleteExercise = await pool.query(
+    "DELETE FROM Exercise WHERE excr_rk = $1 RETURNING *",
+    [excr_rk]
+  );
+
+  if (deleteExercise.rows.length === 0) {
+    throw new NotFoundError("Exercise");
+  }
+
+  res.json({ success: true, message: "Exercise has been deleted" });
+});

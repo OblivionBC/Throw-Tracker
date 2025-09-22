@@ -1,10 +1,16 @@
-import styled from "styled-components";
-import "typeface-nunito";
-import DataTable from "react-data-table-component";
+import {
+  Table,
+  TableWrap,
+  RowDiv,
+  Title,
+  CompWrap,
+  AddButton,
+} from "../../styles/design-system";
 import { useState } from "react";
-import AddExerciseAssignment from "../modals/AddExerciseAssignmentModal";
-import ExerciseAssignmentDetails from "../modals/ExerciseAssignmentDetails";
-import { useUser } from "../contexts/UserContext";
+import AddMeasurableToProgramModal from "../modals/AddMeasurableToProgramModal";
+import MeasurableAssignmentDetails from "../modals/MeasurableAssignmentDetails";
+import { useUser } from "../../stores/userStore";
+
 const TableStyles = {
   pagination: {
     style: {
@@ -21,85 +27,102 @@ const TableStyles = {
   },
 };
 
-const ProgramContent = ({
+const ProgramMeasurableContent = ({
   paginationNum,
   data,
   prog_rk,
-  prsn_rk,
   refresh,
   bAdd,
   bEdit,
   bDelete,
 }) => {
-  //Make modal/form for adding exercise_assignment and deleteing one
-  const [assignExercise, setAssignExercise] = useState(false);
-  const [selectedExcr, setSelectedExcr] = useState({});
-  const [editExcr, setEditExcr] = useState(false);
+  const [addMeasurable, setAddMeasurable] = useState(false);
+  const [selectedMeasurable, setSelectedMeasurable] = useState({});
+  const [editMeasurable, setEditMeasurable] = useState(false);
   let pagination = 3;
-  const { user } = useUser();
+  const user = useUser();
   paginationNum === undefined ? (pagination = 3) : (pagination = paginationNum);
-  console.log(data);
+
   let columns = [];
-  if (data.length === 1 && !data[0].excr_nm) {
+  if (data.length === 1 && !data[0].meas_id) {
     columns = [
       {
-        name: "Exercise",
-        selector: (row) => row.excr_nm,
-        cell: (row) => <p>No Exercises</p>,
+        name: "Measurable",
+        selector: (row) => row.meas_id,
+        cell: (row) => <p>No Measurables</p>,
       },
     ];
   } else {
     columns = [
       {
-        name: "Exercise",
-        selector: (row) => row.excr_nm,
+        name: "Measurable",
+        selector: (row) => row.meas_id,
         sortable: true,
       },
       {
-        name: "Reps",
-        selector: (row) => row.exas_reps,
+        name: "Type",
+        selector: (row) => row.meas_typ,
         sortable: true,
       },
       {
-        name: "Sets",
-        selector: (row) => row.exas_sets,
+        name: "Target Value",
+        selector: (row) => row.target_val,
         sortable: true,
       },
       {
-        name: "Weight",
-        selector: (row) => row.exas_weight,
+        name: "Target Reps",
+        selector: (row) => row.target_reps,
         sortable: true,
       },
       {
-        name: "Notes",
-        selector: (row) => row.excr_notes + " - " + row.exas_notes,
+        name: "Target Sets",
+        selector: (row) => row.target_sets,
         sortable: true,
       },
       {
-        name: "Measurable?",
-        selector: (row) => row.is_measurable,
+        name: "Target Weight",
+        selector: (row) => row.target_weight,
+        sortable: true,
+      },
+      {
+        name: "Unit",
+        selector: (row) => row.target_unit || row.meas_unit,
+        sortable: true,
+      },
+      {
+        name: "Measured?",
+        selector: (row) => row.is_measured,
         cell: (row) => {
-          return row.excr_nm ? (
+          return row.meas_id ? (
             <input
               type="checkbox"
-              id="measurable_checkbox"
-              checked={row.is_measurable === "Y"}
+              id="measured_checkbox"
+              checked={row.is_measured === true}
               disabled
             />
           ) : null;
         },
       },
       {
+        name: "Notes",
+        selector: (row) => row.notes,
+        sortable: true,
+      },
+      {
+        name: "Actions",
         cell: (row) => {
-          return row.excr_nm ? (
-            <AddButton
-              onClick={() => {
-                setSelectedExcr(row);
-                setEditExcr(true);
-              }}
-            >
-              Details
-            </AddButton>
+          return row.meas_id ? (
+            <div style={{ display: "flex", gap: "5px" }}>
+              <AddButton
+                $size="sm"
+                onClick={() => {
+                  setSelectedMeasurable(row);
+                  setEditMeasurable(true);
+                }}
+              >
+                Details
+              </AddButton>
+            </div>
           ) : null;
         },
       },
@@ -108,27 +131,25 @@ const ProgramContent = ({
 
   return (
     <CompWrap>
-      <AddExerciseAssignment
-        open={assignExercise}
-        onClose={() => setAssignExercise(false)}
+      <AddMeasurableToProgramModal
+        open={addMeasurable}
+        onClose={() => setAddMeasurable(false)}
         refresh={() => refresh()}
         prog_rk={prog_rk}
-        prsn_rk={prsn_rk}
       />
-      <ExerciseAssignmentDetails
-        open={editExcr}
-        onClose={() => setEditExcr(!editExcr)}
+      <MeasurableAssignmentDetails
+        open={editMeasurable}
+        onClose={() => setEditMeasurable(!editMeasurable)}
         refresh={() => refresh()}
-        excrObj={selectedExcr}
-        bEdit={user.prsn_role === "COACH" && bEdit}
-        bDelete={user.prsn_role === "COACH" && bDelete}
-        prsn_rk={prsn_rk}
+        measurableObj={selectedMeasurable}
+        bEdit={user?.role === "COACH" && bEdit}
+        bDelete={user?.role === "COACH" && bDelete}
       />
       <RowDiv>
-        <Title>Program : {prog_rk} </Title>
-        {user.prsn_role === "COACH" && bAdd && (
-          <AddButton onClick={() => setAssignExercise(true)}>
-            Add Exercise
+        <Title>Program : {data[0]?.prog_nm} </Title>
+        {user?.role === "COACH" && bAdd && (
+          <AddButton onClick={() => setAddMeasurable(true)}>
+            Add Measurable
           </AddButton>
         )}
 
@@ -154,74 +175,4 @@ const ProgramContent = ({
   );
 };
 
-const CompWrap = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 95%;
-  height: 100%;
-`;
-const RowDiv = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-`;
-const TableWrap = styled.div`
-  display: flex;
-  flex-direction: column;
-
-  width: 100%;
-  height: auto;
-  padding: 0.2rem;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
-  border-radius: 5px;
-`;
-const AddButton = styled.button`
-  background: linear-gradient(45deg, #808080 30%, white 95%);
-  border: none;
-  border-radius: 25px;
-  color: white;
-  padding: 5px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transform: translateY(0);
-  }
-`;
-const Table = styled(DataTable)`
-  width: 100%;
-  .rdt_Table {
-    background-color: white;
-  }
-  .rdt_TableHeadRow {
-    background-color: #a9a5ba;
-    font-weight: bold;
-  }
-  .rdt_TableRow {
-    &:nth-of-type(odd) {
-      background-color: white;
-    }
-    &:nth-of-type(even) {
-      background-color: #eeeeee;
-    }
-  }
-  .rdt_Pagination {
-    background-color: #343a40;
-    color: #fff;
-  }
-`;
-const Title = styled.h1`
-  display: flex;
-  align-self: flex-start;
-  margin: 0;
-  padding: 0 5px 5px;
-`;
-export default ProgramContent;
+export default ProgramMeasurableContent;

@@ -1,21 +1,30 @@
 import React, { useEffect, useState } from "react";
-import styled from "styled-components";
-import "typeface-nunito";
-import DataTable from "react-data-table-component";
+import {
+  Table,
+  TableWrap,
+  Title,
+  CompWrap,
+  AddButton,
+  EditButton,
+  StyledButton,
+} from "../../styles/design-system";
+import { meetsApi } from "../../api";
 import dayjs from "dayjs";
-// This is your PracticeItem component
-//Test that this works and add it to the practices component
+import MeetCreationWizardModal from "../modals/MeetCreationWizardModal";
+import EditMeetModal from "../modals/EditMeetModal";
+import ViewMeetModal from "../modals/ViewMeetModal";
+import Logger from "../../utils/logger";
 
 const TableStyles = {
   pagination: {
     style: {
-      minHeight: "30px", // Adjust the height as needed
+      minHeight: "30px",
       padding: "0 0px",
       margin: "0 0px",
     },
     pageButtonsStyle: {
-      minWidth: "30px", // Adjust the width as needed
-      height: "10px", // Adjust the height as needed
+      minWidth: "30px",
+      height: "10px",
       margin: "0 0px",
       padding: "0 0px",
     },
@@ -24,13 +33,17 @@ const TableStyles = {
 
 const MeetList = () => {
   const [meetData, setMeetData] = useState([]);
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedMeet, setSelectedMeet] = useState(null);
+
   const getMeetData = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/get-all-meets`);
-      const jsonData = await response.json();
-      setMeetData(jsonData.rows);
+      const response = await meetsApi.getForCoachOrg();
+      setMeetData(response);
     } catch (error) {
-      console.error(error.message);
+      Logger.error(error.message);
     }
   };
 
@@ -38,19 +51,39 @@ const MeetList = () => {
     try {
       getMeetData();
     } catch (error) {
-      console.error(error.message);
+      Logger.error(error.message);
     }
   }, []);
 
   const handleChange = ({ selectedRows }) => {
-    // You can set state or dispatch with something like Redux so we can use the retrieved data
     if (selectedRows) {
       const ids = selectedRows?.map((row) => {
-        return row.trpe_rk;
+        return row.meet_rk;
       });
     }
   };
-  //meet_nm, meet_dt, meet_location, prsn_rk
+
+  const handleWizardSuccess = (meetData) => {
+    getMeetData(); // Refresh the meet list
+    setWizardOpen(false);
+  };
+
+  const handleEditMeet = (meet) => {
+    setSelectedMeet(meet);
+    setEditModalOpen(true);
+  };
+
+  const handleViewMeet = (meet) => {
+    setSelectedMeet(meet);
+    setViewModalOpen(true);
+  };
+
+  const handleEditSuccess = () => {
+    getMeetData(); // Refresh the meet list
+    setEditModalOpen(false);
+    setSelectedMeet(null);
+  };
+
   const columns = [
     {
       name: "Name",
@@ -58,9 +91,25 @@ const MeetList = () => {
       sortable: true,
     },
     {
-      name: "Date",
-      selector: (row) => row.meet_dt,
-      cell: (row) => <div>{dayjs(row.meet_dt).format("MMM D YYYY")}</div>,
+      name: "Date Range",
+      selector: (row) => row.meet_start_dt || row.meet_dt,
+      cell: (row) => (
+        <div>
+          {row.meet_start_dt && row.meet_end_dt ? (
+            <>
+              {dayjs(row.meet_start_dt).format("MMM D")}
+              {row.meet_start_dt !== row.meet_end_dt && (
+                <> - {dayjs(row.meet_end_dt).format("MMM D, YYYY")}</>
+              )}
+              {row.meet_start_dt === row.meet_end_dt && (
+                <>, {dayjs(row.meet_start_dt).format("YYYY")}</>
+              )}
+            </>
+          ) : (
+            dayjs(row.meet_dt).format("MMM D, YYYY")
+          )}
+        </div>
+      ),
       sortable: true,
     },
     {
@@ -68,73 +117,79 @@ const MeetList = () => {
       selector: (row) => row.meet_location,
       sortable: true,
     },
+    {
+      name: "Actions",
+      cell: (row) => (
+        <div style={{ display: "flex", gap: "5px" }}>
+          <EditButton $size="sm" onClick={() => handleEditMeet(row)}>
+            Edit
+          </EditButton>
+          <StyledButton
+            $variant="success"
+            $size="sm"
+            onClick={() => handleViewMeet(row)}
+          >
+            View
+          </StyledButton>
+        </div>
+      ),
+    },
   ];
+
   return (
     <CompWrap>
-      <Title>Meets</Title>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "20px",
+        }}
+      >
+        <Title>Meets</Title>
+        <AddButton onClick={() => setWizardOpen(true)}>
+          Create New Meet
+        </AddButton>
+      </div>
+
       <TableWrap>
         <Table
           columns={columns}
           data={meetData}
-          fixedHeader
           pagination
-          paginationPerPage={3}
-          paginationComponentOptions={{
-            rowsPerPageText: "Rows per page:",
-            rangeSeparatorText: "of",
-            selectAllRowsItem: false,
-          }}
-          customStyles={TableStyles}
-          selectableRows
-          onSelectedRowsChange={handleChange}
+          paginationComponentOptions={TableStyles.pagination}
+          onChange={handleChange}
+          highlightOnHover
+          pointerOnHover
         />
       </TableWrap>
+
+      <MeetCreationWizardModal
+        open={wizardOpen}
+        onClose={() => setWizardOpen(false)}
+        onSuccess={handleWizardSuccess}
+      />
+
+      <EditMeetModal
+        open={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setSelectedMeet(null);
+        }}
+        onSuccess={handleEditSuccess}
+        meet={selectedMeet}
+      />
+
+      <ViewMeetModal
+        open={viewModalOpen}
+        onClose={() => {
+          setViewModalOpen(false);
+          setSelectedMeet(null);
+        }}
+        meet={selectedMeet}
+      />
     </CompWrap>
   );
 };
 
-const CompWrap = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 95%;
-  height: 100%;
-`;
-const TableWrap = styled.div`
-  display: flex;
-  flex-direction: column;
-
-  width: 100%;
-  height: auto;
-  padding: 0.2rem;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
-  border-radius: 5px;
-`;
-const Table = styled(DataTable)`
-  width: 100%;
-  .rdt_Table {
-    background-color: white;
-  }
-  .rdt_TableHeadRow {
-    background-color: #a9a5ba;
-    font-weight: bold;
-  }
-  .rdt_TableRow {
-    &:nth-of-type(odd) {
-      background-color: white;
-    }
-    &:nth-of-type(even) {
-      background-color: #eeeeee;
-    }
-  }
-  .rdt_Pagination {
-    background-color: #343a40;
-    color: #fff;
-  }
-`;
-const Title = styled.h1`
-  display: flex;
-  align-self: flex-start;
-  margin: 0;
-  padding: 0 5px 5px;
-`;
 export default MeetList;

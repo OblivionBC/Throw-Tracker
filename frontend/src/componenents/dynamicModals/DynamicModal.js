@@ -1,12 +1,13 @@
 import React from "react";
+import Logger from "../../utils/logger";
 import styled from "styled-components";
 import { useState } from "react";
 import "typeface-nunito";
 
 const DynamicModal = ({ open, onClose, refresh, Component, props }) => {
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   if (!open || loading) return null;
-  console.log(props);
+  Logger.log(props);
   return (
     <Overlay>
       <ModalContainer>
@@ -22,7 +23,7 @@ const DynamicModal = ({ open, onClose, refresh, Component, props }) => {
             <Component
               refresh={() => refresh()}
               close={() => onClose()}
-              props={props}
+              {...props}
             />
           ) : (
             <p>The form did not load correctly</p>

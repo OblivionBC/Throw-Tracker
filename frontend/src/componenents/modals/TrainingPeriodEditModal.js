@@ -4,80 +4,82 @@ import "typeface-nunito";
 import dayjs from "dayjs";
 import EditTRPEForm from "../forms/EditTRPEForm";
 import Practices from "../tables/PracticeList";
-import ProgramContent from "../tables/ProgramContentList";
-import { useUser } from "../contexts/UserContext";
+import ProgramMeasurableContent from "../tables/ProgramContentList";
 import {
   Overlay,
   ModalContainer,
   CloseButton,
   Content,
   EditButton,
-} from "../styles/styles";
-
+} from "../../styles/design-system";
+import { programsApi, programMeasurableAssignmentsApi } from "../../api";
+import Logger from "../../utils/logger";
 const TrainingPeriodEditModal = ({ open, onClose, trpeObj, refresh }) => {
   const [editing, setEditing] = useState(false);
   const [programData, setProgramData] = useState([]);
-  const { getUser } = useUser();
-  console.log(trpeObj);
-  console.log({ trpeObj });
+
   const getProgramData = async () => {
+    // Don't make API call if trpeObj or trpe_rk is not available
+    if (!trpeObj || !trpeObj.trpe_rk) {
+      Logger.warn(
+        "TrainingPeriodEditModal: trpeObj or trpe_rk is not available"
+      );
+      return;
+    }
+
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/get-programsAndExerciseForTRPE`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            trpe_rk: trpeObj.trpe_rk,
-          }),
-        }
+      // Get programs for this training period
+      const programsResponse = await programsApi.getForTrainingPeriod(
+        trpeObj.trpe_rk
       );
 
-      const jsonData = await response.json();
-      console.log(jsonData);
       let newDataMap = new Map();
-      jsonData.rows.forEach((element) => {
-        console.log(element);
-        if (!newDataMap.has(element.prog_rk)) {
-          newDataMap.set(element.prog_rk, [
-            {
-              excr_nm: element.excr_nm,
-              exas_rk: element.exas_rk,
-              excr_rk: element.excr_rk,
-              exas_reps: element.exas_reps,
-              exas_sets: element.exas_sets,
-              exas_weight: element.exas_weight,
-              exas_notes: element.exas_notes,
-              excr_notes: element.excr_notes,
-              is_measurable: element.is_measurable,
-            },
-          ]);
-          //There is already an array, so we just need to push to it
-        } else {
-          newDataMap.get(element.prog_rk).push({
-            excr_nm: element.excr_nm,
-            exas_rk: element.exas_rk,
 
-            exas_reps: element.exas_reps,
-            excr_rk: element.excr_rk,
-            exas_sets: element.exas_sets,
-            exas_weight: element.exas_weight,
-            exas_notes: element.exas_notes,
-            excr_notes: element.excr_notes,
-            is_measurable: element.is_measurable,
-          });
+      // For each program, get its measurables
+      for (const program of programsResponse) {
+        try {
+          const measurablesResponse =
+            await programMeasurableAssignmentsApi.getProgramMeasurables(
+              program.prog_rk
+            );
+
+          // Transform measurable data to match expected format
+          const measurableData = measurablesResponse.map((measurable) => ({
+            meas_id: measurable.meas_id,
+            prma_rk: measurable.prma_rk,
+            meas_rk: measurable.meas_rk,
+            target_reps: measurable.target_reps,
+            target_sets: measurable.target_sets,
+            target_weight: measurable.target_weight,
+            target_val: measurable.target_val,
+            target_unit: measurable.target_unit,
+            notes: measurable.notes,
+            is_measured: measurable.is_measured,
+            meas_typ: measurable.meas_typ,
+            meas_unit: measurable.meas_unit,
+          }));
+
+          newDataMap.set(program.prog_rk, measurableData);
+        } catch (error) {
+          Logger.error(
+            `Error fetching measurables for program ${program.prog_rk}:`,
+            error
+          );
+          newDataMap.set(program.prog_rk, []);
         }
-      });
+      }
+
       setProgramData(newDataMap);
     } catch (error) {
-      console.error(error.message);
+      Logger.error(error.message);
     }
   };
   useEffect(() => {
-    getProgramData();
-  }, [trpeObj]);
+    // Only fetch data if modal is open and we have valid trpeObj
+    if (open && trpeObj && trpeObj.trpe_rk) {
+      getProgramData();
+    }
+  }, [trpeObj, open]);
   const Details = () => {
     if (editing)
       return (
@@ -97,10 +99,10 @@ const TrainingPeriodEditModal = ({ open, onClose, trpeObj, refresh }) => {
           <div>No Programs</div>
         ) : (
           [...programData.entries()].map(([key, row]) => (
-            <ProgramContent
+            <ProgramMeasurableContent
               data={row}
               prog_rk={key}
-              prsn_rk={getUser()}
+              prsn_rk={trpeObj.prsn_rk}
               bAdd={false}
               bEdit={false}
               refresh={() => getProgramData()}

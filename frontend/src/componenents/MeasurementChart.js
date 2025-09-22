@@ -1,15 +1,21 @@
-// components/BarChart.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Line } from "react-chartjs-2";
 import { Chart as ChartJS } from "chart.js/auto";
-import "chartjs-adapter-date-fns";
 import { Tooltip } from "chart.js/auto";
-import dayjs from "dayjs";
 import styled from "styled-components";
+
+import {
+  measurementsApi,
+  trainingPeriodsApi,
+  programAthleteAssignmentsApi,
+} from "../api";
+import { useApi } from "../hooks/useApi";
+import { useIsCoach, useSelectedAthlete, useUser } from "../stores/userStore";
+import Logger from "../utils/logger";
+
 ChartJS.register(Tooltip);
 
-function MeasurementChart({ activeTRPE }) {
-  const [selectedMeasurable, setSelectedMeasurable] = useState("");
+function MeasurementChart() {
   const [loading, setLoading] = useState(true);
   const [chartData, setChartData] = useState({
     labels: [],
@@ -24,22 +30,30 @@ function MeasurementChart({ activeTRPE }) {
       },
     ],
   });
-  const [dataMap, setDataMap] = useState(new Map());
+  const [selectedTrainingPeriod, setSelectedTrainingPeriod] = useState("");
+  const [selectedProgram, setSelectedProgram] = useState("all");
+  const [chartType, setChartType] = useState("line");
+  const [trainingPeriods, setTrainingPeriods] = useState([]);
+  const [programs, setPrograms] = useState([]);
+  const [measurementData, setMeasurementData] = useState([]);
+  const { apiCall } = useApi();
+  const isCoach = useIsCoach();
+  const selectedAthlete = useSelectedAthlete();
+  const user = useUser();
+  const chartInstanceRef = useRef(null);
+
   const [options, setOptions] = useState({
     responsive: true,
+    maintainAspectRatio: false,
     showLine: true,
     plugins: {
       legend: {
-        display: false,
+        display: true,
+        position: "top",
       },
-      tooltip: {
-        mode: "nearest",
-        intersect: false,
-        callbacks: {
-          label: function (tooltipItem) {
-            return `(${tooltipItem.raw}m, Prac ${tooltipItem.label})`;
-          },
-        },
+      title: {
+        display: true,
+        text: "Practice Measurements Over Time",
       },
     },
     hover: {
@@ -57,129 +71,235 @@ function MeasurementChart({ activeTRPE }) {
         position: "bottom",
         title: {
           display: true,
-          text: "Practice Number",
+          text: "Date",
+        },
+        ticks: {
+          callback: function (value, index, values) {
+            // This will be handled by the data labels
+            return "";
+          },
         },
       },
       y: {
         title: {
           display: true,
-          text: "Measurement in ",
+          text: "Measurement Value",
         },
       },
     },
   });
 
-  async function GetTrainingPeriodMeasurements() {
-    //First case is that the user has selected the training period, meaning we will set new data
-    if (activeTRPE.length > 0) {
-      const params = new URLSearchParams({
-        keys: JSON.stringify(activeTRPE),
-      });
-      //Returns msrm_rk | prac_rk | meas_id | meas_unit | prsn_rk | prac_rk | trpe_rk
-      const response = await fetch(
-        `http://localhost:5000/api//get-measurementsForTRPEs?${params}`
+  // Cleanup function to destroy chart
+  const destroyChart = () => {
+    if (chartInstanceRef.current) {
+      chartInstanceRef.current.destroy();
+      chartInstanceRef.current = null;
+    }
+  };
+
+  // Function to format date for display
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  // Function to filter and normalize dates to prevent extreme ranges
+  const normalizeDateRange = (data, maxDays = 365 * 2) => {
+    if (!data || data.length === 0) return data;
+
+    const dates = data
+      .map((item) => new Date(item.prac_dt))
+      .sort((a, b) => a - b);
+    const firstDate = dates[0];
+    const lastDate = dates[dates.length - 1];
+    const diffInDays = (lastDate - firstDate) / (1000 * 60 * 60 * 24);
+
+    // If the range is too large, filter to the most recent data
+    if (diffInDays > maxDays) {
+      const cutoffDate = new Date(
+        lastDate.getTime() - maxDays * 24 * 60 * 60 * 1000
       );
-      const jsonData = await response.json();
-      //Make a map and add each unique meas_id from the Query Results as a key with and array as the value
-      let newDataMap = new Map();
-      jsonData.rows.forEach((element) => {
-        if (!newDataMap.has(element.meas_id)) {
-          newDataMap.set(element.meas_id, [
-            {
+      return data.filter((item) => new Date(item.prac_dt) >= cutoffDate);
+    }
+
+    return data;
+  };
+
+  // Load training periods for the current person
+  const loadTrainingPeriods = useCallback(async () => {
+    try {
+      let personId;
+      if (isCoach) {
+        // For coaches, use selected athlete if available
+        personId = selectedAthlete;
+      } else {
+        // For athletes, use their own ID
+        personId = user?.id;
+      }
+
+      if (personId) {
+        const periods = await apiCall(
+          () => trainingPeriodsApi.getAllForPerson(personId),
+          "Loading training periods"
+        );
+        setTrainingPeriods(periods);
+      } else {
+        setTrainingPeriods([]);
+      }
+    } catch (error) {
+      Logger.error("Error loading training periods:", error);
+      setTrainingPeriods([]);
+    }
+  }, [isCoach, selectedAthlete, user?.id, apiCall]);
+
+  // Load programs for the selected training period
+  const loadPrograms = useCallback(async () => {
+    if (!selectedTrainingPeriod) {
+      setPrograms([]);
+      setSelectedProgram("all");
+      return;
+    }
+
+    try {
+      const programsData = await apiCall(
+        () =>
+          programAthleteAssignmentsApi.getTrainingPeriodPrograms(
+            selectedTrainingPeriod
+          ),
+        "Loading programs for training period"
+      );
+      setPrograms(programsData);
+      // Keep "All Programs" as default when training period changes
+      setSelectedProgram("all");
+    } catch (error) {
+      Logger.error("Error loading programs:", error);
+      setPrograms([]);
+      setSelectedProgram("all");
+    }
+  }, [selectedTrainingPeriod, apiCall]);
+
+  const GetMeasurements = useCallback(async () => {
+    try {
+      let jsonData;
+
+      if (isCoach) {
+        // For coaches, get measurements for the selected athlete
+        if (!selectedAthlete) {
+          jsonData = [];
+        } else {
+          jsonData = await apiCall(
+            () => measurementsApi.getForCoach(selectedAthlete),
+            "Fetching measurements for coach"
+          );
+        }
+      } else {
+        // For athletes, get all their measurements
+        jsonData = await apiCall(
+          () => measurementsApi.getAllForPerson(user.prsn_rk),
+          "Fetching measurements for athlete"
+        );
+      }
+
+      if (jsonData.length > 0) {
+        // Filter by training period if selected
+        if (selectedTrainingPeriod) {
+          jsonData = jsonData.filter(
+            (item) => String(item.trpe_rk) === String(selectedTrainingPeriod)
+          );
+        }
+
+        // Filter by program if selected (and not "all")
+        if (selectedProgram && selectedProgram !== "all") {
+          // This would require additional logic to filter by program
+          // For now, we'll show all measurements in the training period
+          // TODO: Implement program-specific filtering if needed
+        }
+
+        // Normalize the date range to prevent extreme ranges
+        jsonData = normalizeDateRange(jsonData);
+
+        // Make a map and add each unique meas_id from the Query Results as a key with an array as the value
+        let newDataMap = new Map();
+        jsonData.forEach((element) => {
+          if (!newDataMap.has(element.meas_id)) {
+            newDataMap.set(element.meas_id, [
+              {
+                prac_rk: element.prac_rk,
+                msrm_rk: element.msrm_rk,
+                meas_unit: element.meas_unit,
+                msrm_value: element.msrm_value,
+                prac_dt: element.prac_dt,
+              },
+            ]);
+          } else {
+            newDataMap.get(element.meas_id).push({
               prac_rk: element.prac_rk,
               msrm_rk: element.msrm_rk,
               meas_unit: element.meas_unit,
               msrm_value: element.msrm_value,
               prac_dt: element.prac_dt,
-            },
-          ]);
-          //There is already an array, so we just need to push to it
-        } else {
-          newDataMap.get(element.meas_id).push({
-            prac_rk: element.prac_rk,
-            msrm_rk: element.msrm_rk,
-            meas_unit: element.meas_unit,
-            msrm_value: element.msrm_value,
-            prac_dt: element.prac_dt,
-          });
-        }
-      });
-      setDataMap(newDataMap);
+            });
+          }
+        });
 
-      //Second case is that there are no active TRPEs, in which we want to reset the data
-    } else {
-      let newDataMap = new Map();
-      setDataMap(newDataMap);
-      const labels = [];
-      const values = [];
-      setChartData({
-        labels: labels,
-        datasets: [
-          {
-            //Label is the block at the top that you can click to filter
-            label: `Legend`,
+        // Store the raw data for summary calculations
+        setMeasurementData(jsonData);
+
+        let datasetArray = [];
+        let allDates = [];
+
+        // Group by measurable only
+        newDataMap.forEach((row, key) => {
+          const values = row?.map((item) => {
+            const date = new Date(item.prac_dt);
+            allDates.push(item.prac_dt);
+            return { x: date.getTime(), y: item.msrm_value };
+          });
+
+          datasetArray.push({
+            label: `${key}`,
             data: values,
-            spanGaps: false,
             pointRadius: 5,
-            pointHoverRadius: 8, // Increase the hover radius
-            pointHitRadius: 5, // Increase the hit radius
-          },
-        ],
-      });
-    }
-  }
-  async function GetMeasurableMeasurements() {
-    console.log("Getting measurable measurement");
-    if (activeTRPE.length > 0) {
-      //Make sure the selected measurable is a real measurable
-      if (selectedMeasurable !== "" && selectedMeasurable !== undefined) {
-        //Sort the array of measurements by date
-        let newArray = dataMap.get(selectedMeasurable);
-        newArray.sort(
-          (a, b) =>
-            new Date(a.prac_dt).getTime() - new Date(b.prac_dt).getTime()
-        );
-        //Set the Lables (y values) as the practice dates without the timestamps
-        const labels = newArray?.map((item) => {
-          return item.prac_dt.split("T")[0];
+            spanGaps: false,
+            pointHoverRadius: 8,
+            pointHitRadius: 5,
+            borderColor: `hsl(${datasetArray.length * 60}, 70%, 50%)`,
+            backgroundColor: `hsla(${datasetArray.length * 60}, 70%, 50%, 0.1)`,
+          });
         });
-        //Set the values (x values) as the measurement value
-        const values = newArray?.map((item) => item.msrm_value); // Adjust according to your data structure
-        //Update the chart data to this
+
         setChartData({
-          labels: labels,
-          datasets: [
-            {
-              //Label is the block at the top that you can click to filter, not using this yet
-              label: `${selectedMeasurable.meas_id} Legend`,
-              data: values,
-              pointRadius: 5,
-              spanGaps: false,
-              pointHoverRadius: 8, // Increase the hover radius
-              pointHitRadius: 5, // Increase the hit radius
-            },
-          ],
+          labels: [],
+          datasets: datasetArray,
         });
-        //Set the options for the tooltip
+
         setOptions({
           responsive: true,
+          maintainAspectRatio: false,
           showLine: true,
           plugins: {
             legend: {
-              display: false,
+              display: true,
+              position: "top",
+            },
+            title: {
+              display: true,
+              text: "Practice Measurements Over Time",
             },
             tooltip: {
               mode: "nearest",
               intersect: false,
               callbacks: {
+                title: function (tooltipItems) {
+                  const timestamp = tooltipItems[0].parsed.x;
+                  return formatDate(new Date(timestamp));
+                },
                 label: function (tooltipItem) {
-                  let prac = dataMap.get(selectedMeasurable)?.find((obj) => {
-                    return obj.prac_dt.split("T")[0] == tooltipItem.label;
-                  });
-
-                  return `${tooltipItem.raw}${prac.meas_unit}, ${dayjs(
-                    prac.prac_dt
-                  ).format("YYYY-MM-DD")}  `;
+                  return `${tooltipItem?.dataset?.label}, ${tooltipItem?.formattedValue}`;
                 },
               },
             },
@@ -195,174 +315,414 @@ function MeasurementChart({ activeTRPE }) {
           },
           scales: {
             x: {
-              type: "category",
-              time: {
-                unit: "day",
-                tooltipFormat: "yyyy-MM-dd",
-                displayFormats: { day: "yyyy-MM-dd" },
-                distribution: "series",
-              },
+              type: "linear",
               position: "bottom",
               title: { display: true, text: "Date" },
               ticks: {
-                source: "data",
-                autoSkip: true,
+                callback: function (value, index, values) {
+                  // Show only some tick labels to avoid overcrowding
+                  if (index % Math.ceil(values.length / 10) === 0) {
+                    return formatDate(new Date(value));
+                  }
+                  return "";
+                },
+                maxRotation: 45,
+                minRotation: 0,
               },
             },
             y: {
               title: {
                 display: true,
-                text: `Measurement in ${
-                  dataMap.get(selectedMeasurable)[0].meas_unit
-                }  `,
+                text: "Measurement Value",
               },
             },
           },
         });
+      } else {
+        setChartData({
+          labels: [],
+          datasets: [
+            {
+              label: "No Data",
+              data: [],
+              spanGaps: false,
+              pointRadius: 5,
+              pointHoverRadius: 8,
+              pointHitRadius: 5,
+            },
+          ],
+        });
+        setMeasurementData([]);
       }
-    } else {
-      //There are no active trpes so reset the data
-      setChartData({
-        labels: [],
-        datasets: [
-          {
-            label: "",
-            data: [],
-            spanGaps: false,
-            backgroundColor: "",
-            borderColor: "",
-            borderWidth: 0,
-          },
-        ],
-      });
+    } catch (error) {
+      Logger.error("Error fetching measurements:", error);
     }
-  }
-  //This Use effect will be for when the selected TRPEs change
+  }, [
+    isCoach,
+    selectedAthlete,
+    user?.prsn_rk,
+    selectedTrainingPeriod,
+    selectedProgram,
+    apiCall,
+  ]);
+
+  const getMeasurementStats = () => {
+    if (!measurementData.length) return [];
+
+    // Group by measurable only
+    const groupedByMeasurable = measurementData.reduce((acc, item) => {
+      if (!acc[item.meas_id]) {
+        acc[item.meas_id] = [];
+      }
+      acc[item.meas_id].push(item);
+      return acc;
+    }, {});
+
+    return Object.entries(groupedByMeasurable).map(([measId, items]) => {
+      const values = items.map((item) => item.msrm_value);
+      const best = Math.max(...values);
+      const worst = Math.min(...values);
+      const average = values.reduce((sum, val) => sum + val, 0) / values.length;
+      const latest = items[items.length - 1]?.msrm_value || 0;
+      const improvement = items.length > 1 ? latest - items[0].msrm_value : 0;
+
+      return {
+        measurableId: measId,
+        totalMeasurements: items.length,
+        bestValue: best,
+        worstValue: worst,
+        averageValue: average,
+        latestValue: latest,
+        improvement: improvement,
+        unit: items[0]?.meas_unit || "",
+      };
+    });
+  };
+
+  // Load training periods on component mount
+  useEffect(() => {
+    loadTrainingPeriods();
+  }, [loadTrainingPeriods]);
+
+  // Load programs when training period changes
+  useEffect(() => {
+    loadPrograms();
+  }, [loadPrograms]);
+
+  // Get measurements when filters change
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      GetTrainingPeriodMeasurements();
+      await GetMeasurements();
+      setLoading(false);
     };
     fetchData();
-    setLoading(false);
-  }, [activeTRPE]);
+  }, [GetMeasurements]);
 
+  // Cleanup on unmount
   useEffect(() => {
-    setLoading(true);
-    GetMeasurableMeasurements();
-    setLoading(false);
-  }, [selectedMeasurable]);
+    return () => {
+      destroyChart();
+    };
+  }, []);
+
+  // Handle chart instance creation with proper cleanup
+  const handleChartRef = (chartInstance) => {
+    // Destroy previous chart instance if it exists
+    if (chartInstanceRef.current) {
+      chartInstanceRef.current.destroy();
+    }
+
+    if (chartInstance) {
+      chartInstanceRef.current = chartInstance;
+    }
+  };
 
   if (loading) {
-    return <ChartWrap>Loading...</ChartWrap>;
+    return <LoadingMessage>Loading measurement data...</LoadingMessage>;
   }
-  return (
-    <ChartWrap>
-      <Message>
-        {activeTRPE.length === 0 ? "Please Select a Training Period" : ""}
-      </Message>
 
-      <Row>
-        <Title>Chart of Practices</Title>
-        <ImplementSelect
-          onChange={(e) => setSelectedMeasurable(e.target.value)}
-        >
-          <option value="">Choose A Measurable</option>
-          {[...dataMap?.keys()].map((key) => (
-            <option value={key}>{key}</option>
-          ))}
-        </ImplementSelect>
-        <RefreshButton onClick={() => GetMeasurableMeasurements()}>
-          Refresh
-        </RefreshButton>
-      </Row>
-      <ResponsiveLineChart data={chartData} options={options} />
-    </ChartWrap>
+  const measurementStats = getMeasurementStats();
+
+  return (
+    <ChartContainer>
+      <ControlsSection>
+        <FilterRow>
+          <FilterGroup>
+            <FieldLabel>Training Period</FieldLabel>
+            <select
+              value={selectedTrainingPeriod}
+              onChange={(e) => setSelectedTrainingPeriod(e.target.value)}
+              style={{
+                padding: "8px",
+                border: "1px solid #ddd",
+                borderRadius: "4px",
+                fontSize: "14px",
+                minWidth: "200px",
+              }}
+            >
+              <option value="">Select a Training Period</option>
+              {trainingPeriods.map((period) => (
+                <option key={period.trpe_rk} value={period.trpe_rk}>
+                  {formatDate(period.trpe_start_dt)} -{" "}
+                  {period.trpe_end_dt
+                    ? formatDate(period.trpe_end_dt)
+                    : "Active"}
+                </option>
+              ))}
+            </select>
+          </FilterGroup>
+
+          <FilterGroup>
+            <FieldLabel>Program</FieldLabel>
+            <select
+              value={selectedProgram}
+              onChange={(e) => setSelectedProgram(e.target.value)}
+              style={{
+                padding: "8px",
+                border: "1px solid #ddd",
+                borderRadius: "4px",
+                fontSize: "14px",
+                minWidth: "200px",
+              }}
+              disabled={!selectedTrainingPeriod}
+            >
+              <option value="all">All Programs</option>
+              {programs.map((program) => (
+                <option key={program.prog_rk} value={program.prog_rk}>
+                  {program.prog_nm}
+                </option>
+              ))}
+            </select>
+          </FilterGroup>
+
+          <FilterGroup>
+            <FieldLabel>Chart Type</FieldLabel>
+            <select
+              value={chartType}
+              onChange={(e) => setChartType(e.target.value)}
+              style={{
+                padding: "8px",
+                border: "1px solid #ddd",
+                borderRadius: "4px",
+                fontSize: "14px",
+                minWidth: "100px",
+              }}
+            >
+              <option value="line">Line Chart</option>
+            </select>
+          </FilterGroup>
+        </FilterRow>
+      </ControlsSection>
+
+      {chartData.datasets.length > 0 &&
+        chartData.datasets[0].data.length > 0 && (
+          <ChartSection>
+            <ChartWrapper>
+              <Line ref={handleChartRef} data={chartData} options={options} />
+            </ChartWrapper>
+          </ChartSection>
+        )}
+
+      {measurementStats.length > 0 && (
+        <PerformanceSummarySection>
+          <SectionTitle>Measurement Summary</SectionTitle>
+          <SummaryGrid>
+            {measurementStats.map((stat) => (
+              <SummaryCard key={stat.measurableId}>
+                <CardHeader>
+                  <MeasurableName>{stat.measurableId}</MeasurableName>
+                  <UnitLabel>{stat.unit}</UnitLabel>
+                </CardHeader>
+                <CardBody>
+                  <StatRow>
+                    <StatLabel>Total Measurements:</StatLabel>
+                    <StatValue>{stat.totalMeasurements}</StatValue>
+                  </StatRow>
+                  <StatRow>
+                    <StatLabel>Best Value:</StatLabel>
+                    <StatValue>{stat.bestValue.toFixed(2)}</StatValue>
+                  </StatRow>
+                  <StatRow>
+                    <StatLabel>Worst Value:</StatLabel>
+                    <StatValue>{stat.worstValue.toFixed(2)}</StatValue>
+                  </StatRow>
+                  <StatRow>
+                    <StatLabel>Average:</StatLabel>
+                    <StatValue>{stat.averageValue.toFixed(2)}</StatValue>
+                  </StatRow>
+                  <StatRow>
+                    <StatLabel>Latest:</StatLabel>
+                    <StatValue>{stat.latestValue.toFixed(2)}</StatValue>
+                  </StatRow>
+                  <StatRow>
+                    <StatLabel>Overall Change:</StatLabel>
+                    <StatValue trend={stat.improvement}>
+                      {stat.improvement > 0 ? "+" : ""}
+                      {stat.improvement.toFixed(2)}
+                    </StatValue>
+                  </StatRow>
+                </CardBody>
+              </SummaryCard>
+            ))}
+          </SummaryGrid>
+        </PerformanceSummarySection>
+      )}
+
+      {chartData.datasets.length === 0 ||
+      chartData.datasets[0].data.length === 0 ? (
+        <NoDataMessage>
+          <h3>No Measurement Data</h3>
+          <p>
+            {isCoach
+              ? "Please select an athlete from the navbar and a training period to view measurement data."
+              : "Please select a training period to view measurement data."}
+          </p>
+        </NoDataMessage>
+      ) : null}
+    </ChartContainer>
   );
 }
 
-const Message = styled.div`
-  position: relative;
-  padding: 0;
-  margin: 0;
-  top: 50%;
-  left: 20%;
-  transform: translate(-50%, -50%);
-  z-index: 2;
-  padding: 12px 24px;
-  color: black;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+const ChartContainer = styled.div`
+  width: 100%;
 `;
 
-const ChartWrap = styled.div`
+const ControlsSection = styled.div`
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+`;
+
+const FilterRow = styled.div`
   display: flex;
-  flex-shrink: 1;
-  align-items: center;
-  justify-content: center;
+  gap: 20px;
+  align-items: end;
+  flex-wrap: wrap;
+`;
+
+const FilterGroup = styled.div`
+  display: flex;
   flex-direction: column;
-  width: 95% !important;
-  height: 100% !important;
-  margin: 0;
-  padding: 0;
+  gap: 5px;
+`;
+
+const FieldLabel = styled.label`
+  font-weight: 500;
+  color: #555;
+  font-size: 14px;
+`;
+
+const ChartSection = styled.div`
+  margin-bottom: 30px;
+`;
+
+const ChartWrapper = styled.div`
+  height: 400px;
+  position: relative;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+`;
+
+const PerformanceSummarySection = styled.div`
+  margin-top: 30px;
+`;
+
+const SectionTitle = styled.h4`
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 16px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+`;
+
+const SummaryGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 15px;
+`;
+
+const SummaryCard = styled.div`
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: white;
   overflow: hidden;
 `;
 
-const ImplementSelect = styled.select`
-  display: flex;
-  border-radius: 30px;
-  border-width: 2px;
-  font-family: "Nunito", sans-serif;
-  align-text: center;
-  width: 200px;
-  font-weight: 700;
-  margin: 0;
-  padding: 0;
+const CardHeader = styled.div`
+  background: #f8f9fa;
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
 `;
-const ResponsiveLineChart = styled(Line)`
-  width: 100% !important;
-  height: 90% !important;
-  margin: 0;
-  padding: 0;
+
+const MeasurableName = styled.div`
+  font-weight: bold;
+  color: #333;
+  font-size: 14px;
+  margin-bottom: 2px;
 `;
-const Title = styled.h2`
-  display: flex;
-  align-self: flex-start;
-  margin: 0;
-  padding: 0;
-  margin-right: 15px;
-  white-space: nowrap;
+
+const UnitLabel = styled.div`
+  color: #666;
+  font-size: 12px;
+  font-style: italic;
 `;
-const Row = styled.div`
+
+const CardBody = styled.div`
+  padding: 15px;
+`;
+
+const StatRow = styled.div`
   display: flex;
-  flex-direction: row;
-  justify-content: space-evenly;
+  justify-content: space-between;
   align-items: center;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-`;
+  margin-bottom: 8px;
 
-const RefreshButton = styled.button`
-  background: linear-gradient(45deg, #808080 30%, white 95%);
-  border: none;
-  border-radius: 25px;
-  color: white;
-  padding: 5px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transform: translateY(0);
+  &:last-child {
+    margin-bottom: 0;
   }
 `;
+
+const StatLabel = styled.span`
+  font-weight: 500;
+  color: #555;
+  font-size: 13px;
+`;
+
+const StatValue = styled.span`
+  font-weight: bold;
+  color: ${(props) => {
+    if (props.trend > 0) return "#28a745";
+    if (props.trend < 0) return "#dc3545";
+    return "#333";
+  }};
+  font-size: 13px;
+`;
+
+const LoadingMessage = styled.div`
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-style: italic;
+`;
+
+const NoDataMessage = styled.div`
+  text-align: center;
+  padding: 40px;
+  color: #666;
+
+  h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+  }
+
+  p {
+    margin: 0;
+    font-style: italic;
+  }
+`;
+
 export default MeasurementChart;

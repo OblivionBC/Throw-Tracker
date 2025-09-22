@@ -1,42 +1,35 @@
 import React from "react";
 import { Field, useFormikContext } from "formik";
 import { useEffect, useState } from "react";
-import { useUser } from "../contexts/UserContext";
 import dayjs from "dayjs";
+import { trainingPeriodsApi } from "../../api";
+import Logger from "../../utils/logger";
+import { useApi } from "../../hooks/useApi";
 
 const TrainingPeriodOptions = ({ name }) => {
   const [trainingPeriods, setTrainingPeriods] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { getUser } = useUser();
   const { setFieldValue } = useFormikContext();
+  const { apiCall } = useApi();
   useEffect(() => {
     const fetchTrainingPeriods = async () => {
       setLoading(true);
       try {
-        const response = await fetch(
-          `http://localhost:5000/api//get-all-trainingPeriods`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              prsn_rk: getUser(),
-            }),
-          }
+        const response = await apiCall(
+          () => trainingPeriodsApi.getAll(),
+          "Fetching training periods for options"
         );
-        const jsonData = await response.json();
-        setTrainingPeriods(jsonData.rows);
-        if (jsonData.rowCount > 0) {
-          setFieldValue(name, jsonData.rows[0].trpe_rk);
+        setTrainingPeriods(response);
+        if (response.length > 0) {
+          setFieldValue(name, response[0].trpe_rk);
         }
       } catch (error) {
-        console.error(error.message);
+        Logger.error(error.message);
       }
       setLoading(false);
     };
     fetchTrainingPeriods();
-  }, []);
+  }, [apiCall, setFieldValue, name]);
 
   if (loading) return <div>Loading...</div>;
   return (

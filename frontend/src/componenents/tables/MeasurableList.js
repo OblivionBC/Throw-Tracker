@@ -1,11 +1,23 @@
-import React, { useEffect, useState } from "react";
-import styled from "styled-components";
-import "typeface-nunito";
-import DataTable from "react-data-table-component";
-import { useUser } from "../contexts/UserContext";
+import React, { useEffect, useState, useRef } from "react";
+import {
+  Table,
+  TableWrap,
+  RowDiv,
+  Title,
+  CompWrap,
+  AddButton,
+  EditButton,
+} from "../../styles/design-system";
 import AddMeasurableModal from "../modals/AddMeasurableModal";
 import ConfirmMeasurableDeleteModal from "../modals/ConfirmMeasurableDeleteModal";
 import MeasurableEditModal from "../modals/MeasurableEditModal";
+import { measurablesApi } from "../../api";
+import { useDataChange } from "../contexts/DataChangeContext";
+import Logger from "../../utils/logger";
+import {
+  getPaginationNumber,
+  getContainerHeight,
+} from "../../utils/tableUtils";
 // This is your PracticeItem component
 //Test that this works and add it to the practices component
 
@@ -26,45 +38,73 @@ const TableStyles = {
 };
 
 const Measurables = ({ paginationNum }) => {
-  if (!paginationNum) paginationNum = 8;
+  const containerRef = useRef(null);
+  const [containerHeight, setContainerHeight] = useState(600);
   const [measurableData, setMeasurableData] = useState([]);
   const [addMeasurableOpen, setaddMeasurableOpen] = useState(false);
   const [confirmMeasDelete, setConfirmMeasDelete] = useState(false);
   const [editMeas, setEditMeas] = useState(false);
-
   const [selectedMeas, setSelectedMeas] = useState({});
-  const { getUser } = useUser();
-  console.log(useUser());
-  const getMeasurableData = async () => {
-    try {
-      const response = await fetch(
-        `http://localhost:5000/api//get-all-measurablesForPrsn`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            prsn_rk: getUser(),
-          }),
-        }
-      );
 
-      const jsonData = await response.json();
-      setMeasurableData(jsonData.rows);
+  const {
+    isCacheValid,
+    setCacheData,
+    setCacheLoading,
+    getCachedData,
+    invalidateCache,
+    refreshFlags,
+  } = useDataChange();
+
+  const getMeasurableData = async (forceRefresh = false) => {
+    const cacheKey = "measurables";
+
+    // Check if we have valid cached data and don't need to force refresh
+    if (!forceRefresh && isCacheValid(cacheKey)) {
+      const cachedData = getCachedData(cacheKey);
+      if (cachedData && cachedData.data) {
+        setMeasurableData(cachedData.data);
+        return;
+      }
+    }
+
+    // Set loading state
+    setCacheLoading(cacheKey, true);
+
+    try {
+      const response = await measurablesApi.getAllForPerson();
+      setMeasurableData(response);
+      setCacheData(cacheKey, response);
     } catch (error) {
-      console.error(error.message);
+      Logger.error(error.message);
+    } finally {
+      setCacheLoading(cacheKey, false);
     }
   };
 
+  // Update container height on mount and resize
   useEffect(() => {
-    try {
-      getMeasurableData();
-      console.log("REFRESHINGGGGG");
-    } catch (error) {
-      console.error(error.message);
-    }
-  }, [getUser()]);
+    const updateHeight = () => {
+      if (containerRef.current) {
+        setContainerHeight(containerRef.current.clientHeight);
+      }
+    };
+
+    updateHeight();
+    window.addEventListener("resize", updateHeight);
+    return () => window.removeEventListener("resize", updateHeight);
+  }, []);
+
+  useEffect(() => {
+    getMeasurableData();
+  }, [refreshFlags.measurables]);
+
+  const handleRefresh = () => {
+    getMeasurableData(true);
+  };
+
+  const handleDataChange = () => {
+    invalidateCache("measurables");
+  };
 
   const columns = [
     {
@@ -90,53 +130,63 @@ const Measurables = ({ paginationNum }) => {
       sortable: true,
     },
     {
+      name: "Actions",
       cell: (row) => (
-        <Detail // Swap to a edit modal for the measurables
-          onClick={() => {
-            setEditMeas(true);
-            setSelectedMeas(row);
-          }}
-        >
-          Edit
-        </Detail>
-      ),
-    },
-    {
-      cell: (row) => (
-        <DeleteButton
-          onClick={() => {
-            setConfirmMeasDelete(true);
-            setSelectedMeas(row);
-          }}
-        >
-          Delete
-        </DeleteButton>
+        <div style={{ display: "flex", gap: "5px" }}>
+          <EditButton
+            $size="sm"
+            onClick={() => {
+              setEditMeas(true);
+              setSelectedMeas(row);
+            }}
+          >
+            Edit
+          </EditButton>
+          <EditButton
+            $size="sm"
+            onClick={() => {
+              setConfirmMeasDelete(true);
+              setSelectedMeas(row);
+            }}
+          >
+            Delete
+          </EditButton>
+        </div>
       ),
     },
   ];
+  // Calculate optimal pagination
+  const optimalPagination = getPaginationNumber(paginationNum, containerHeight);
+
   return (
-    <CompWrap>
-      <ConfirmMeasurableDeleteModal
-        open={confirmMeasDelete}
-        onClose={() => setConfirmMeasDelete(false)}
-        measObj={selectedMeas}
-        refresh={() => getMeasurableData()}
-      />
-      <AddMeasurableModal
-        open={addMeasurableOpen}
-        onClose={() => setaddMeasurableOpen(false)}
-        refresh={() => getMeasurableData()}
-      />
-      <MeasurableEditModal
-        open={editMeas}
-        onClose={() => setEditMeas(false)}
-        measObj={selectedMeas}
-        refresh={() => getMeasurableData()}
-      />
+    <CompWrap ref={containerRef}>
+      {confirmMeasDelete && (
+        <ConfirmMeasurableDeleteModal
+          open={confirmMeasDelete}
+          onClose={() => setConfirmMeasDelete(false)}
+          measObj={selectedMeas}
+          refresh={handleDataChange}
+        />
+      )}
+      {addMeasurableOpen && (
+        <AddMeasurableModal
+          open={addMeasurableOpen}
+          onClose={() => setaddMeasurableOpen(false)}
+          refresh={handleDataChange}
+        />
+      )}
+      {editMeas && (
+        <MeasurableEditModal
+          open={editMeas}
+          onClose={() => setEditMeas(false)}
+          measObj={selectedMeas}
+          refresh={handleDataChange}
+        />
+      )}
       <RowDiv>
         <Title>Measurables</Title>
         <AddButton onClick={() => setaddMeasurableOpen(true)}>Add</AddButton>
-        <AddButton onClick={() => getMeasurableData()}>Refresh</AddButton>
+        <AddButton onClick={handleRefresh}>Refresh</AddButton>
       </RowDiv>
 
       <TableWrap>
@@ -145,7 +195,7 @@ const Measurables = ({ paginationNum }) => {
           data={measurableData}
           fixedHeader
           pagination
-          paginationPerPage={paginationNum}
+          paginationPerPage={optimalPagination}
           paginationComponentOptions={{
             rowsPerPageText: "Rows per page:",
             rangeSeparatorText: "of",
@@ -157,118 +207,5 @@ const Measurables = ({ paginationNum }) => {
     </CompWrap>
   );
 };
-
-const RowDiv = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-`;
-const CompWrap = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 95%;
-  height: 100%;
-`;
-const TableWrap = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: auto;
-  padding: 0.2rem;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
-  border-radius: 5px;
-`;
-const Table = styled(DataTable)`
-  width: 100%;
-  .rdt_Table {
-    background-color: white;
-  }
-  .rdt_TableHeadRow {
-    background-color: #a9a5ba;
-    font-weight: bold;
-  }
-  .rdt_TableRow {
-    &:nth-of-type(odd) {
-      background-color: white;
-    }
-    &:nth-of-type(even) {
-      background-color: #eeeeee;
-    }
-  }
-  .rdt_Pagination {
-    background-color: #343a40;
-    color: #fff;
-  }
-`;
-const Title = styled.h1`
-  display: flex;
-  align-self: flex-start;
-  margin: 0;
-  padding: 0 5px 5px;
-`;
-
-const Detail = styled.button`
-  background: linear-gradient(45deg, #808080 30%, black 95%);
-  border: none;
-  border-radius: 25px;
-  color: white;
-  padding: 5px 10px;
-  font-size: 12px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transform: translateY(0);
-  }
-`;
-const DeleteButton = styled.button`
-  background: linear-gradient(45deg, black 30%, #808080 95%);
-  border: none;
-  border-radius: 25px;
-  color: white;
-  padding: 5px 10px;
-  font-size: 12px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transform: translateY(0);
-  }
-`;
-const AddButton = styled.button`
-  background: linear-gradient(45deg, #808080 30%, white 95%);
-  border: none;
-  border-radius: 25px;
-  color: white;
-  padding: 5px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transform: translateY(0);
-  }
-`;
 
 export default Measurables;

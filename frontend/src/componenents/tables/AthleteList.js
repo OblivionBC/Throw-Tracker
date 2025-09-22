@@ -1,9 +1,25 @@
-import React, { useEffect, useState } from "react";
-import styled from "styled-components";
-import "typeface-nunito";
-import DataTable from "react-data-table-component";
-import { useUser } from "../contexts/UserContext";
+import React, { useEffect, useState, useRef } from "react";
+import {
+  Table,
+  TableWrap,
+  Title,
+  CompWrap,
+  AddButton,
+  RowDiv,
+} from "../../styles/design-system";
 import AthleteDetails from "../modals/AthleteDetails";
+import ConfirmAssignAthleteModal from "../modals/ConfirmAssignAthleteModal";
+import { personsApi, athleteEventAssignmentsApi } from "../../api";
+import useUserStore, { useUser } from "../../stores/userStore";
+import { useApi } from "../../hooks/useApi";
+import Logger from "../../utils/logger";
+import {
+  getPaginationNumber,
+  getContainerHeight,
+} from "../../utils/tableUtils";
+import styled from "styled-components";
+import logo from "../../images/LogoIcon.png";
+
 const TableStyles = {
   pagination: {
     style: {
@@ -21,41 +37,106 @@ const TableStyles = {
 };
 
 const AthleteList = ({ paginationNum }) => {
+  const containerRef = useRef(null);
+  const [containerHeight, setContainerHeight] = useState(600);
   const [excrData, setExcrData] = useState([]);
   const [programOpen, setProgramOpen] = useState(false);
   const [selectedPrsn, setSelectedPrsn] = useState();
-  const { user } = useUser();
-  let pagination = 3;
-  paginationNum === undefined ? (pagination = 3) : (pagination = paginationNum);
+  const [filter, setFilter] = useState("assigned");
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [athleteToAssign, setAthleteToAssign] = useState(null);
+  const [profileImageErrors, setProfileImageErrors] = useState({});
+  const user = useUser();
+  const { apiCall } = useApi();
 
-  const getExerciseData = async () => {
+  const getAthleteData = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/athletes`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          coach_prsn_rk: user.prsn_rk,
-          org_name: user.org_name,
-        }),
-      });
-      const jsonData = await response.json();
-      setExcrData(jsonData.rows);
+      Logger.log("Getting athlete data for filter:", filter);
+      let athletes;
+      if (filter === "assigned") {
+        Logger.log("Fetching assigned athletes...");
+        athletes = await apiCall(
+          () => personsApi.getAthletesForCoach(),
+          "Fetching assigned athletes"
+        );
+        Logger.log("Assigned athletes result:", athletes);
+      } else {
+        Logger.log("Fetching unassigned athletes...");
+        athletes = await apiCall(
+          () => personsApi.getUnassignedAthletesInOrg(),
+          "Fetching unassigned athletes"
+        );
+        Logger.log("Unassigned athletes result:", athletes);
+      }
+      // Fetch event assignments for each athlete
+      const athletesWithEvents = await Promise.all(
+        athletes.map(async (athlete) => {
+          try {
+            const events = await apiCall(
+              () => athleteEventAssignmentsApi.getByAthlete(athlete.prsn_rk),
+              `Fetching events for athlete ${athlete.prsn_rk}`
+            );
+            return {
+              ...athlete,
+              events: events.slice(0, 2), // Limit to 2 events
+            };
+          } catch (error) {
+            Logger.error(
+              `Error fetching events for athlete ${athlete.prsn_rk}:`,
+              error
+            );
+            return {
+              ...athlete,
+              events: [],
+            };
+          }
+        })
+      );
+      Logger.log("Final athletes with events:", athletesWithEvents);
+      setExcrData(athletesWithEvents);
     } catch (error) {
-      console.error(error.message);
+      Logger.error("Error in getAthleteData:", error.message);
     }
   };
 
+  // Update container height on mount and resize
   useEffect(() => {
-    try {
-      getExerciseData();
-    } catch (error) {
-      console.error(error.message);
-    }
+    const updateHeight = () => {
+      if (containerRef.current) {
+        setContainerHeight(containerRef.current.clientHeight);
+      }
+    };
+
+    updateHeight();
+    window.addEventListener("resize", updateHeight);
+    return () => window.removeEventListener("resize", updateHeight);
   }, []);
 
+  useEffect(() => {
+    getAthleteData();
+    // eslint-disable-next-line
+  }, [filter]);
+
+  const handleProfileImageError = (athleteId) => {
+    setProfileImageErrors((prev) => ({ ...prev, [athleteId]: true }));
+  };
+
   const columns = [
+    {
+      name: "Profile",
+      cell: (row) => (
+        <AthleteProfileImage
+          src={
+            row.profile_url && !profileImageErrors[row.prsn_rk]
+              ? row.profile_url
+              : logo
+          }
+          alt={`${row.prsn_first_nm} ${row.prsn_last_nm}`}
+          onError={() => handleProfileImageError(row.prsn_rk)}
+        />
+      ),
+      width: "80px",
+    },
     {
       name: "Name",
       selector: (row) => row.prsn_first_nm + " " + row.prsn_last_nm,
@@ -67,38 +148,90 @@ const AthleteList = ({ paginationNum }) => {
       sortable: true,
     },
     {
+      name: "Events",
+      selector: (row) => {
+        if (!row.events || row.events.length === 0) {
+          return "No events assigned";
+        }
+        return row.events.map((event) => event.etyp_type_name).join(", ");
+      },
+      sortable: false,
+    },
+    {
       name: "Email",
       selector: (row) => row.prsn_email,
       sortable: true,
     },
     {
+      name: "Actions",
       cell: (row) => (
-        <AddButton
-          onClick={() => {
-            setSelectedPrsn(row);
-            setProgramOpen(true);
-          }}
-        >
-          Details
-        </AddButton>
+        <div style={{ display: "flex", gap: "5px" }}>
+          {filter === "unassigned" ? (
+            <AddButton
+              $size="sm"
+              onClick={() => {
+                setAthleteToAssign(row);
+                setAssignModalOpen(true);
+              }}
+            >
+              Assign To Me
+            </AddButton>
+          ) : (
+            <AddButton
+              $size="sm"
+              onClick={() => {
+                setSelectedPrsn(row);
+                setProgramOpen(true);
+              }}
+            >
+              Details
+            </AddButton>
+          )}
+        </div>
       ),
     },
   ];
+
+  // Calculate optimal pagination
+  const optimalPagination = getPaginationNumber(paginationNum, containerHeight);
+
   return (
-    <CompWrap>
+    <CompWrap ref={containerRef}>
       <AthleteDetails
         athlete={selectedPrsn}
         open={programOpen}
         onClose={() => setProgramOpen(false)}
+        refresh={getAthleteData}
       />
-      <Title>Athletes</Title>
+      <ConfirmAssignAthleteModal
+        athlete={athleteToAssign}
+        open={assignModalOpen}
+        onClose={() => {
+          setAssignModalOpen(false);
+          setAthleteToAssign(null);
+        }}
+        refresh={getAthleteData}
+      />
+      <RowDiv>
+        <Title>Athletes</Title>
+        <div style={{ marginLeft: "auto" }}>
+          <label>
+            <b>Show: </b>
+            <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+              <option value="assigned">Assigned Athletes</option>
+              <option value="unassigned">Unassigned Athletes</option>
+            </select>
+          </label>
+        </div>
+      </RowDiv>
+
       <TableWrap>
         <Table
           columns={columns}
           data={excrData}
           fixedHeader
           pagination
-          paginationPerPage={pagination}
+          paginationPerPage={optimalPagination}
           paginationComponentOptions={{
             rowsPerPageText: "Rows per page:",
             rangeSeparatorText: "of",
@@ -111,69 +244,12 @@ const AthleteList = ({ paginationNum }) => {
   );
 };
 
-const CompWrap = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 95%;
-  height: 100%;
+const AthleteProfileImage = styled.img`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #1976d2;
+  object-fit: cover;
 `;
-const TableWrap = styled.div`
-  display: flex;
-  flex-direction: column;
 
-  width: 100%;
-  height: auto;
-  padding: 0.2rem;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
-  border-radius: 5px;
-`;
-const AddButton = styled.button`
-  background: linear-gradient(45deg, #808080 30%, white 95%);
-  border: none;
-  border-radius: 25px;
-  color: white;
-  padding: 3px 15px;
-  font-size: 14px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transform: translateY(0);
-  }
-`;
-const Table = styled(DataTable)`
-  width: 100%;
-  .rdt_Table {
-    background-color: white;
-  }
-  .rdt_TableHeadRow {
-    background-color: #a9a5ba;
-    font-weight: bold;
-  }
-  .rdt_TableRow {
-    &:nth-of-type(odd) {
-      background-color: white;
-    }
-    &:nth-of-type(even) {
-      background-color: #eeeeee;
-    }
-  }
-  .rdt_Pagination {
-    background-color: #343a40;
-    color: #fff;
-  }
-`;
-const Title = styled.h1`
-  display: flex;
-  align-self: flex-start;
-  margin: 0;
-  padding: 0 5px 5px;
-`;
 export default AthleteList;

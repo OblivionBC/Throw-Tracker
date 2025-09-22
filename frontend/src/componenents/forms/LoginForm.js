@@ -1,44 +1,80 @@
 import React, { useState } from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
-import { useUser } from "../contexts/UserContext";
+import {
+  StyledForm,
+  StyledButton,
+  CancelButton,
+  FieldOutputContainer,
+  FieldLabel,
+  SubmitError,
+  StyledInput,
+} from "../../styles/design-system";
+import { useNavigate, useLocation } from "react-router-dom";
 import "typeface-nunito";
+import ForgotPasswordForm from "./ForgotPasswordForm.js";
+import useUserStore, { useError } from "../../stores/userStore";
+import Logger from "../../utils/logger";
 
 const LoginForm = ({ on, off }) => {
   const [failed, setFailed] = useState(false);
+  const [forgot, setForgot] = useState(false);
+  const error = useError();
+  const { login, clearError } = useUserStore();
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const initialValues = {
     username: "",
     password: "",
   };
-  const navigate = useNavigate();
-  const { login } = useUser();
 
   const validationSchema = Yup.object().shape({
-    username: Yup.string().email("Invalid Email").required("Email is required"),
-    password: Yup.string().required("Password is required"),
+    username: Yup.string("Must be a string")
+      .email("Invalid Email")
+      .required("Email is required"),
+    password: Yup.string("Must be a string").required("Password is required"),
   });
 
-  const handleSubmit = async (values, { setSubmitting }) => {
-    // Handle form submission here
-    // For example, you could make an API call to authenticate the user\
+  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     setSubmitting(true);
-    const getLogin = async () => {
-      setFailed(false);
-      const loginSuccess = await login(values);
-      if (loginSuccess === true) {
-        navigate("/home");
+    setFailed(false);
+    clearError();
+
+    try {
+      const userData = await login(values);
+      if (userData) {
+        // Redirect to the intended page or home
+        const from = location.state?.from?.pathname || "/home";
+        navigate(from, { replace: true });
       } else {
         setFailed(true);
+        setErrors({ submit: "Login failed. Please check your credentials." });
       }
-    };
+    } catch (err) {
+      Logger.error("Login error - Full object:", err);
+      Logger.error("Login error - Message:", err.message);
+      Logger.error("Login error - Status:", err.status);
+      Logger.error("Login error - Code:", err.code);
+      Logger.error("Login error - Response:", err.response);
+      setFailed(true);
+      setErrors({
+        submit:
+          err.message ||
+          "Either the password or email is incorrect, please try again",
+      });
+    }
 
-    getLogin();
     setSubmitting(false);
   };
   if (!on) {
     return null;
+  }
+  if (forgot) {
+    return (
+      <ForgotPasswordForm off={() => setForgot(false)}></ForgotPasswordForm>
+    );
   }
   return (
     <>
@@ -47,7 +83,7 @@ const LoginForm = ({ on, off }) => {
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
       >
-        {({ handleSubmit, isSubmitting }) => (
+        {({ handleSubmit, isSubmitting, errors }) => (
           <StyledForm onSubmit={handleSubmit}>
             <Field name="username">
               {({ field }) => (
@@ -74,82 +110,31 @@ const LoginForm = ({ on, off }) => {
             <StyledButton type="submit" disabled={isSubmitting}>
               Login
             </StyledButton>
-            {failed ? (
+            {(failed || error || errors.submit) && (
               <SubmitError>
-                Either the password or email is incorrect, please try again
+                {errors.submit ||
+                  error ||
+                  "Either the password or email is incorrect, please try again"}
               </SubmitError>
-            ) : null}
+            )}
           </StyledForm>
         )}
       </Formik>
-      <Blab onClick={off}>Sign Up</Blab>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "10px",
+          marginTop: "20px",
+        }}
+      >
+        <CancelButton onClick={off}>Sign Up</CancelButton>
+        <CancelButton onClick={() => setForgot(true)}>
+          Forgot your password?
+        </CancelButton>
+      </div>
     </>
   );
 };
 
-const FieldOutputContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  font-family: "Nunito", sans-serif;
-`;
-
-const FieldLabel = styled.h3`
-  margin-right: 10px;
-`;
-
-const StyledForm = styled(Form)`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-`;
-
-const StyledInput = styled.input`
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  margin-bottom: 10px;
-`;
-
-const StyledButton = styled.button`
-  background: linear-gradient(45deg, black 30%, #808080 95%);
-  border: none;
-  border-radius: 25px;
-  color: white;
-  padding: 5px 10px;
-  font-size: 12px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transform: translateY(0);
-  }
-`;
-const Blab = styled.div`
-  font-family: "Nunito", sans-serif;
-  color: blue;
-  cursor: pointer;
-  text-decoration: underline;
-`;
-const SubmitError = styled.div`
-  font-size: 18;
-  color: red;
-  font-family: "Nunito", sans-serif;
-`;
-
-const Title = styled.h2`
-  font-family: "Nunito", sans-serif;
-  padding: 0;
-  margin: 0;
-`;
 export default LoginForm;

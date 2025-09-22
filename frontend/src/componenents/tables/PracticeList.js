@@ -1,14 +1,24 @@
-import React, { useEffect, useState } from "react";
-import styled from "styled-components";
-import "typeface-nunito";
-import DataTable from "react-data-table-component";
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import {
+  Table,
+  TableWrap,
+  RowDiv,
+  Title,
+  CompWrap,
+  AddButton,
+  EditButton,
+} from "../../styles/design-system";
 import dayjs from "dayjs";
 import PracticeDetailsModal from "../modals/PracticeDetailsModal";
 import ConfirmPracDeleteModal from "../modals/ConfirmPracDeleteModal";
 import AddPracticeModal from "../modals/AddPracticeModal";
-import { useUser } from "../contexts/UserContext";
-// This is your PracticeItem component
-//Test that this works and add it to the practices component
+import { practicesApi, trainingPeriodsApi } from "../../api";
+import { useDataChange } from "../contexts/DataChangeContext";
+import { useIsCoach, useSelectedAthlete } from "../../stores/userStore";
+import useUserStore from "../../stores/userStore";
+import { getPaginationNumber } from "../../utils/tableUtils";
+import Logger from "../../utils/logger";
+import styled from "styled-components";
 
 const TableStyles = {
   pagination: {
@@ -24,142 +34,298 @@ const TableStyles = {
       padding: "0 0px",
     },
   },
+  headRow: { style: { minHeight: "25px", maxHeight: "40px" } }, // Set your desired height here
 };
 
-const Practices = ({ trpe_rk, paginationNum, bAdd, bDetail, bDelete }) => {
+const FilterContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+`;
+
+const FilterSelect = styled.select`
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 14px;
+  min-width: 200px;
+`;
+
+const Practices = ({
+  trpe_rk,
+  bAdd,
+  bDetail,
+  bDelete,
+  paginationNum: propPaginationNum,
+}) => {
+  const containerRef = useRef(null);
+  const [containerHeight, setContainerHeight] = useState(600);
   const [practiceData, setPracticeData] = useState([]);
   const [addPracticeOpen, setAddPracticeOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [confirmPracDelete, setConfirmPracDelete] = useState(false);
   const [selectedPrac, setSelectedPrac] = useState({});
-  const { getUser } = useUser();
-  const getPracticeData = async () => {
+  const [trainingPeriods, setTrainingPeriods] = useState([]);
+  const [selectedTrainingPeriod, setSelectedTrainingPeriod] = useState("");
+  const isCoach = useIsCoach();
+  const selectedAthlete = useSelectedAthlete();
+  const getUserId = useUserStore((state) => state.getUserId);
+
+  const {
+    isCacheValid,
+    setCacheData,
+    setCacheLoading,
+    getCachedData,
+    invalidateCache,
+    refreshFlags,
+  } = useDataChange();
+
+  // Update container height on mount and resize
+  useEffect(() => {
+    const updateHeight = () => {
+      if (containerRef.current) {
+        setContainerHeight(containerRef.current.clientHeight);
+      }
+    };
+
+    updateHeight();
+    window.addEventListener("resize", updateHeight);
+    return () => window.removeEventListener("resize", updateHeight);
+  }, []);
+
+  // Load training periods
+  const loadTrainingPeriods = useCallback(async () => {
     try {
-      let response;
-      //If the training period was passed in, we want to get the practices only from the training period
-      if (trpe_rk) {
-        response = await fetch(
-          `http://localhost:5000/api/get-practicesInTrpe`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              trpe_rk: trpe_rk,
-            }),
-          }
-        );
+      let personId;
+      if (isCoach) {
+        // For coaches, use selected athlete if available
+        personId = selectedAthlete;
       } else {
-        //No Training Period was specified so get all for the person
-        console.log("Getting All for Person");
-        response = await fetch(`http://localhost:5000/api/get-all-practices`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            prsn_rk: getUser(),
-          }),
-        });
+        // For athletes, get their own training periods
+        personId = getUserId();
       }
 
-      const jsonData = await response.json();
-      setPracticeData(jsonData.rows);
+      if (personId) {
+        const response = await trainingPeriodsApi.getAllForPerson(personId);
+        setTrainingPeriods(response);
+      } else {
+        setTrainingPeriods([]);
+      }
     } catch (error) {
-      console.error(error.message);
+      Logger.error("Error loading training periods:", error);
+      setTrainingPeriods([]);
     }
-  };
+  }, [isCoach, selectedAthlete, getUserId]);
 
   useEffect(() => {
-    try {
-      getPracticeData();
-    } catch (error) {
-      console.error(error.message);
-    }
-  }, [getUser()]);
+    loadTrainingPeriods();
+  }, [loadTrainingPeriods]);
 
-  if (paginationNum <= 0) paginationNum = 8;
+  const getPracticeData = useCallback(
+    async (forceRefresh = false) => {
+      // Create cache key that includes athlete selection for coaches
+      const cacheKey = isCoach
+        ? `practices_coach_${selectedAthlete || "no_athlete"}_${
+            selectedTrainingPeriod || trpe_rk || "all"
+          }`
+        : `practices_${selectedTrainingPeriod || trpe_rk || "all"}`;
+
+      // Check if we have valid cached data and don't need to force refresh
+      if (!forceRefresh && isCacheValid(cacheKey)) {
+        const cachedData = getCachedData(cacheKey);
+        if (cachedData && cachedData.data) {
+          setPracticeData(cachedData.data);
+          return;
+        }
+      }
+
+      // Set loading state
+      setCacheLoading(cacheKey, true);
+
+      try {
+        let response;
+
+        if (isCoach) {
+          // For coaches, always get all practices for their athletes
+          if (!selectedAthlete) {
+            // No athlete selected, show empty data
+            response = [];
+          } else {
+            // Get all practices for coach's athletes
+            response = await practicesApi.getAllForCoach();
+
+            // Filter by selected athlete
+            response = response.filter(
+              (practice) =>
+                String(practice.athlete_prsn_rk) === String(selectedAthlete)
+            );
+
+            // If a training period is selected, also filter by that
+            if (selectedTrainingPeriod) {
+              response = response.filter(
+                (practice) =>
+                  String(practice.trpe_rk) === String(selectedTrainingPeriod)
+              );
+            } else if (trpe_rk) {
+              // If trpe_rk prop is provided, filter by that
+              response = response.filter(
+                (practice) => String(practice.trpe_rk) === String(trpe_rk)
+              );
+            }
+          }
+        } else {
+          // For athletes, use existing logic
+          if (selectedTrainingPeriod) {
+            response = await practicesApi.getInTrainingPeriod(
+              selectedTrainingPeriod
+            );
+          } else if (trpe_rk) {
+            response = await practicesApi.getInTrainingPeriod(trpe_rk);
+          } else {
+            response = await practicesApi.getAll();
+          }
+        }
+
+        setPracticeData(response);
+        setCacheData(cacheKey, response);
+      } catch (error) {
+        Logger.error(error.message);
+      } finally {
+        setCacheLoading(cacheKey, false);
+      }
+    },
+    [isCoach, selectedAthlete, selectedTrainingPeriod, trpe_rk]
+  );
+
+  useEffect(() => {
+    getPracticeData();
+  }, [getPracticeData, refreshFlags.practices]);
+
+  const handleRefresh = () => {
+    getPracticeData(true);
+  };
+
+  const handleDataChange = () => {
+    invalidateCache("practices");
+  };
+
+  const handleTrainingPeriodChange = (event) => {
+    setSelectedTrainingPeriod(event.target.value);
+  };
+
+  // Calculate optimal pagination
+  const optimalPagination = getPaginationNumber(
+    propPaginationNum,
+    containerHeight
+  );
   const columns = [
     {
       name: "ID",
       selector: (row) => row.prac_rk,
       sortable: true,
-      //width: "9%",
     },
     {
       name: "Date",
       cell: (row) => <div>{dayjs(row.prac_dt).format("MMM D YYYY")}</div>,
       selector: (row) => row.prac_dt,
       sortable: true,
-      //width: "15%",
     },
     {
       name: "Measurables",
       selector: (row) => row.measurement_count,
       sortable: true,
-      //width: "15%",
     },
     {
       name: "TRPE",
-      selector: (row) => trpe_rk || row.trpe_rk,
+      selector: (row) => selectedTrainingPeriod || trpe_rk || row.trpe_rk,
       sortable: true,
-      //width: "10%",
     },
   ];
 
-  if (bDetail)
+  // Add Actions column if any action buttons are enabled
+  if (bDetail || bDelete) {
     columns.push({
+      name: "Actions",
       cell: (row) => (
-        <Detail
-          onClick={() => {
-            setDetailModalOpen(true);
-            setSelectedPrac(row);
-          }}
-          style={{ display: "block" }}
-        >
-          Details
-        </Detail>
+        <div style={{ display: "flex", gap: "5px" }}>
+          {bDetail && (
+            <EditButton
+              $size="sm"
+              onClick={() => {
+                setDetailModalOpen(true);
+                setSelectedPrac(row);
+              }}
+            >
+              Details
+            </EditButton>
+          )}
+          {bDelete && (
+            <EditButton
+              $size="sm"
+              onClick={() => {
+                setConfirmPracDelete(true);
+                setSelectedPrac(row);
+              }}
+            >
+              Delete
+            </EditButton>
+          )}
+        </div>
       ),
     });
-  if (bDelete)
-    columns.push({
-      cell: (row) => (
-        <DeleteButton
-          onClick={() => {
-            setConfirmPracDelete(true);
-            setSelectedPrac(row);
-          }}
-        >
-          Delete
-        </DeleteButton>
-      ),
-    });
+  }
   return (
-    <CompWrap>
-      <PracticeDetailsModal
-        open={detailModalOpen}
-        onClose={() => setDetailModalOpen(false)}
-        pracObj={selectedPrac}
-        refresh={() => getPracticeData()}
-      />
-      <ConfirmPracDeleteModal
-        open={confirmPracDelete}
-        onClose={() => setConfirmPracDelete(false)}
-        pracObj={selectedPrac}
-        refresh={() => getPracticeData()}
-      />
-      <AddPracticeModal
-        open={addPracticeOpen}
-        onClose={() => setAddPracticeOpen(false)}
-        refresh={() => getPracticeData()}
-      />
+    <CompWrap ref={containerRef}>
+      {detailModalOpen && (
+        <PracticeDetailsModal
+          open={detailModalOpen}
+          onClose={() => setDetailModalOpen(false)}
+          pracObj={selectedPrac}
+          refresh={handleDataChange}
+        />
+      )}
+      {confirmPracDelete && (
+        <ConfirmPracDeleteModal
+          open={confirmPracDelete}
+          onClose={() => setConfirmPracDelete(false)}
+          pracObj={selectedPrac}
+          refresh={handleDataChange}
+        />
+      )}
+      {addPracticeOpen && (
+        <AddPracticeModal
+          open={addPracticeOpen}
+          onClose={() => setAddPracticeOpen(false)}
+          refresh={handleDataChange}
+        />
+      )}
       <RowDiv>
         <Title>Practices</Title>
-        {bAdd ? (
-          <AddButton onClick={() => setAddPracticeOpen(true)}>Add</AddButton>
-        ) : null}
-        <AddButton onClick={() => getPracticeData()}>Refresh</AddButton>
+        <FilterContainer>
+          {/* Only show training period filter if no specific trpe_rk is provided */}
+          {!trpe_rk && (
+            <FilterSelect
+              value={selectedTrainingPeriod}
+              onChange={handleTrainingPeriodChange}
+            >
+              <option value="">All Training Periods</option>
+              {trainingPeriods.map((period) => (
+                <option key={period.trpe_rk} value={period.trpe_rk}>
+                  {dayjs(period.trpe_start_dt).format("MMM D YYYY")} -
+                  {period.trpe_end_dt
+                    ? dayjs(period.trpe_end_dt).format("MMM D YYYY")
+                    : "Ongoing"}
+                </option>
+              ))}
+            </FilterSelect>
+          )}
+          {bAdd ? (
+            <AddButton onClick={() => setAddPracticeOpen(true)}>Add</AddButton>
+          ) : null}
+          <AddButton onClick={handleRefresh}>Refresh</AddButton>
+        </FilterContainer>
       </RowDiv>
 
       <TableWrap>
@@ -167,130 +333,19 @@ const Practices = ({ trpe_rk, paginationNum, bAdd, bDetail, bDelete }) => {
           columns={columns}
           data={practiceData}
           pagination
-          paginationPerPage={paginationNum}
+          paginationPerPage={optimalPagination}
+          paginationRowsPerPageOptions={[2, 4, 7, 10]}
           paginationComponentOptions={{
-            rowsPerPageText: "Rows per page:",
+            rowsPerPageText: "Rows",
             rangeSeparatorText: "of",
             selectAllRowsItem: false,
           }}
           customStyles={TableStyles}
+          key={optimalPagination}
         />
       </TableWrap>
     </CompWrap>
   );
 };
-
-const RowDiv = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-`;
-const CompWrap = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 95%;
-  height: 100%;
-`;
-const TableWrap = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: auto;
-  padding: 0.2rem;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
-  border-radius: 5px;
-`;
-const Table = styled(DataTable)`
-  width: 100%;
-  .rdt_Table {
-    background-color: white;
-  }
-  .rdt_TableHeadRow {
-    background-color: #a9a5ba;
-    font-weight: bold;
-  }
-  .rdt_TableRow {
-    &:nth-of-type(odd) {
-      background-color: white;
-    }
-    &:nth-of-type(even) {
-      background-color: #eeeeee;
-    }
-  }
-  .rdt_Pagination {
-    background-color: #343a40;
-    color: #fff;
-  }
-`;
-const Title = styled.h1`
-  display: flex;
-  align-self: flex-start;
-  margin: 0;
-  padding: 0 5px 5px;
-`;
-
-const Detail = styled.button`
-  background: linear-gradient(45deg, #808080 30%, black 95%);
-  border: none;
-  border-radius: 25px;
-  color: white;
-  padding: 5px 10px;
-  font-size: 12px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transform: translateY(0);
-  }
-`;
-const DeleteButton = styled.button`
-  background: linear-gradient(45deg, black 30%, #808080 95%);
-  border: none;
-  border-radius: 25px;
-  color: white;
-  padding: 5px 10px;
-  font-size: 12px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transform: translateY(0);
-  }
-`;
-const AddButton = styled.button`
-  background: linear-gradient(45deg, #808080 30%, white 95%);
-  border: none;
-  border-radius: 25px;
-  color: white;
-  padding: 5px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transform: translateY(0);
-  }
-`;
 
 export default Practices;

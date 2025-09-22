@@ -1,26 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import styled from "styled-components";
 import PracticeList from "../componenents/tables/PracticeList";
-import TrainingPeriodList from "../componenents/tables/TrainingPeriodList";
-import CurrentExcersiseList from "../componenents/tables/CurrentExerciseList";
 import Measurables from "../componenents/tables/MeasurableList";
 import "typeface-rubik";
-import { useUser } from "../componenents/contexts/UserContext";
+
 import ErrorBoundary from "../componenents/ErrorBoundary";
 import AthleteList from "../componenents/tables/AthleteList";
+import CoachPrograms from "../componenents/CoachPrograms";
 
 const Coach = () => {
-  const [activeTRPE, setActiveTRPE] = useState([]);
-  const { getUser } = useUser();
-  useEffect(() => {
-    setActiveTRPE([]);
-  }, [getUser()]);
-
   return (
     <Page>
       <LeftColumn>
         <ErrorBoundary>
-          <CurrentExcersiseList paginationNum={5} />
+          <CoachPrograms />
         </ErrorBoundary>
 
         <ErrorBoundary>
