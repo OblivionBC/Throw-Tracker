@@ -4,6 +4,7 @@ import useUserStore, {
   useIsAuthenticated,
   useIsLoading,
 } from "../stores/userStore";
+import Logger from "../utils/logger";
 
 const ProtectedRoute = ({ children }) => {
   const isAuthenticated = useIsAuthenticated();

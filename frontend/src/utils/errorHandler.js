@@ -1,3 +1,5 @@
+import Logger from "./logger";
+
 class ErrorHandler {
   static handle(error, context = "") {
     Logger.error(`Error in ${context}:`, error);
