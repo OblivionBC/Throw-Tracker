@@ -1,14 +1,14 @@
 import React from "react";
 import styled from "styled-components";
-import Measurables from "../componenents/tables/MeasurableList";
+import MeasurablesTable from "../components/tables/MeasurablesTable";
 import "typeface-rubik";
-import ErrorBoundary from "../componenents/ErrorBoundary";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 const MeasurablesPage = () => {
   return (
     <Page>
       <ErrorBoundary>
-        <Measurables paginationNum={8} />
+        <MeasurablesTable paginationNum={8} />
       </ErrorBoundary>
     </Page>
   );

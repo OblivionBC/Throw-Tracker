@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import MeetPerformanceChart from "../componenents/MeetPerformanceChart";
-import MeetAnalytics from "../componenents/MeetAnalytics";
-import MeetComparison from "../componenents/MeetComparison";
-import AllMeetsPerformanceChart from "../componenents/AllMeetsPerformanceChart";
+import MeetPerformanceChart from "../components/MeetPerformanceChart";
+import MeetAnalytics from "../components/MeetAnalytics";
+import MeetComparison from "../components/MeetComparison";
+import AllMeetsPerformanceChart from "../components/AllMeetsPerformanceChart";
 import { meetsApi } from "../api";
 import { useApi } from "../hooks/useApi";
 import Logger from "../utils/logger";
 import "typeface-rubik";
-import ErrorBoundary from "../componenents/ErrorBoundary";
+import ErrorBoundary from "../components/ErrorBoundary";
 import { Title } from "../styles/design-system";
 
 const MeetsChartPage = () => {

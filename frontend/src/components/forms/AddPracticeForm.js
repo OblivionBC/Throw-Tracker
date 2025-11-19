@@ -1,0 +1,186 @@
+import React, { useEffect, useState } from "react";
+import { Formik, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
+import {
+  StyledForm,
+  StyledButton,
+  FieldOutputContainer,
+  FieldLabel,
+  SubmitError,
+  ParagraphInput,
+} from "../../styles/design-system";
+import "typeface-nunito";
+import dayjs from "dayjs";
+import { MeasurableFieldArray } from "../formHelpers/MeasurableFieldArray.js";
+import TrainingPeriodOptions from "../formHelpers/TrainingPeriodOptions";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import ProgramSelectWithMeasurables from "../formHelpers/ProgramSelectWithExercise";
+import { practicesApi, measurementsApi } from "../../api";
+import { useApi } from "../../hooks/useApi";
+
+//Grab the initial values
+const addMeasurement = async (measurable, prac_rk, apiCall) => {
+  const response = await apiCall(
+    () => measurementsApi.create(measurable, prac_rk),
+    "Creating measurement"
+  );
+  return response;
+};
+
+const addPractice = async (prac_dt, trpe_rk, notes, apiCall) => {
+  const response = await apiCall(
+    () => practicesApi.create(prac_dt, trpe_rk, notes),
+    "Creating practice"
+  );
+  return response.prac_rk;
+};
+
+const AddPracticeForm = ({ close, refresh }) => {
+  const [failed, setFailed] = useState(false);
+  const [programData, setProgramData] = useState([]);
+  const { apiCall } = useApi();
+  let formikRef = null;
+
+  useEffect(() => {
+    let defaultMeasurables = [];
+    programData?.forEach((row) => {
+      defaultMeasurables.push({ meas_rk: row.meas_rk, msrm_value: 0 });
+    });
+    if (formikRef) {
+      formikRef.setFieldValue("measurables", defaultMeasurables);
+    }
+  }, [programData, formikRef]);
+  const initialValues = {
+    trpe: "",
+    date: "",
+    measurables: [],
+    notes: "",
+  };
+  const validationSchema = Yup.object().shape({
+    trpe: Yup.number("Must be a number").required(
+      "Training Period is a required field"
+    ),
+    date: Yup.date("Must be a valid Date").required("Date is required"),
+    measurables: Yup.array("Must be an array")
+      .of(
+        Yup.object().shape({
+          meas_rk: Yup.number("Must be a number")
+            .typeError("Must Be Number")
+            .required("Measurable key is required"),
+          msrm_value: Yup.number("Must be a Number")
+            .typeError("Must Be Number")
+            .required("Measurement Value is required"),
+        })
+      )
+      .required("Must have measurables"),
+  });
+  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
+    // Handle form submission here
+    //Make call on submit to update practice, and delete all measurments in for the prac, then create a new one for each in the array
+    setSubmitting(true);
+    try {
+      const prac_rk = await addPractice(
+        values.date,
+        values.trpe,
+        values.notes,
+        apiCall
+      );
+      for (const element of values.measurables) {
+        await addMeasurement(element, prac_rk, apiCall);
+      }
+      alert("Practice Added Successfully");
+      close();
+      refresh(prac_rk);
+      setSubmitting(false);
+      return;
+    } catch (error) {
+      setErrors({ submit: error.message });
+      setFailed(true);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+  return (
+    <>
+      <Formik
+        initialValues={initialValues}
+        innerRef={(formik) => (formikRef = formik)}
+        validationSchema={validationSchema}
+        validateOnChange={false}
+        validateOnBlur={false}
+        onSubmit={handleSubmit}
+      >
+        {({ handleSubmit, isSubmitting, values, setFieldValue, errors }) => (
+          //date, training period, wind, notes, measurables
+          <StyledForm onSubmit={handleSubmit}>
+            <Field name="trpe" type="number">
+              {({ field }) => (
+                <FieldOutputContainer>
+                  <FieldLabel>Training Period:</FieldLabel>
+                  <TrainingPeriodOptions name="trpe" />
+                </FieldOutputContainer>
+              )}
+            </Field>
+            <ErrorMessage name="trpe" component={SubmitError} />
+
+            <ProgramSelectWithMeasurables
+              trpe_rk={values.trpe}
+              disabled={values.trpe === ""}
+              setData={setProgramData}
+            />
+            <Field name="date">
+              {({ field }) => (
+                <FieldOutputContainer>
+                  <FieldLabel>Date:</FieldLabel>
+                  <DatePicker
+                    {...field}
+                    selected={values.date}
+                    disabled={values.trpe === ""}
+                    onChange={(date) =>
+                      setFieldValue(
+                        "date",
+                        date ? dayjs(date).format("YYYY-MM-DD") : null
+                      )
+                    }
+                    dateFormat="yyyy-MM-dd"
+                  />
+                </FieldOutputContainer>
+              )}
+            </Field>
+            <ErrorMessage name="date" component={SubmitError} />
+
+            <MeasurableFieldArray />
+            <ErrorMessage name="measurables" component={SubmitError} />
+
+            <Field name="notes" type="text">
+              {({ field }) => (
+                <FieldOutputContainer>
+                  <FieldLabel>Notes:</FieldLabel>
+                  <ParagraphInput
+                    type="text"
+                    placeholder={"Notes Here"}
+                    {...field}
+                  />
+                </FieldOutputContainer>
+              )}
+            </Field>
+            <ErrorMessage name="notes" component={SubmitError} />
+
+            <StyledButton type="submit" disabled={isSubmitting}>
+              Save
+            </StyledButton>
+            {errors.submit && <SubmitError>{errors.submit}</SubmitError>}
+            {failed ? (
+              <SubmitError>
+                Something went wrong, please try again later
+              </SubmitError>
+            ) : null}
+          </StyledForm>
+        )}
+      </Formik>
+    </>
+  );
+};
+
+export default AddPracticeForm;

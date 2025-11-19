@@ -1,12 +1,12 @@
 import React from "react";
 import styled from "styled-components";
-import PracticeList from "../componenents/tables/PracticeList";
-import Measurables from "../componenents/tables/MeasurableList";
+import PracticesTable from "../components/tables/PracticesTable";
+import MeasurablesTable from "../components/tables/MeasurablesTable";
 import "typeface-rubik";
 
-import ErrorBoundary from "../componenents/ErrorBoundary";
-import AthleteList from "../componenents/tables/AthleteList";
-import CoachPrograms from "../componenents/CoachPrograms";
+import ErrorBoundary from "../components/ErrorBoundary";
+import AthleteTable from "../components/tables/AthleteTable";
+import CoachPrograms from "../components/CoachPrograms";
 
 const Coach = () => {
   return (
@@ -17,20 +17,20 @@ const Coach = () => {
         </ErrorBoundary>
 
         <ErrorBoundary>
-          <AthleteList />
+          <AthleteTable />
         </ErrorBoundary>
       </LeftColumn>
       <RightColumn>
         <ErrorBoundary>
           <Block />
-          <PracticeList
+          <PracticesTable
             bAdd={true}
             bDelete={true}
             bDetail={true}
             paginationNum={3}
           />
           <Block />
-          <Measurables paginationNum={3} />
+          <MeasurablesTable paginationNum={3} />
         </ErrorBoundary>
       </RightColumn>
     </Page>

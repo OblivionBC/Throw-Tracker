@@ -1,8 +1,8 @@
 import React from "react";
 import styled from "styled-components";
-import ProgramsList from "../componenents/tables/ProgramsList";
+import ProgramsTable from "../components/tables/ProgramsTable";
 import "typeface-rubik";
-import ErrorBoundary from "../componenents/ErrorBoundary";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 const Page = styled.div`
   padding: 20px;
@@ -14,7 +14,7 @@ const ProgramsPage = () => {
   return (
     <Page>
       <ErrorBoundary>
-        <ProgramsList />
+        <ProgramsTable />
       </ErrorBoundary>
     </Page>
   );

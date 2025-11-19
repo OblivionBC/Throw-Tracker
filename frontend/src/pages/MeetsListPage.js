@@ -1,14 +1,14 @@
 import React from "react";
 import styled from "styled-components";
-import MeetList from "../componenents/tables/MeetList";
+import MeetsTable from "../components/tables/MeetsTable";
 import "typeface-rubik";
-import ErrorBoundary from "../componenents/ErrorBoundary";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 const MeetsListPage = () => {
   return (
     <Page>
       <ErrorBoundary>
-        <MeetList />
+        <MeetsTable />
       </ErrorBoundary>
     </Page>
   );

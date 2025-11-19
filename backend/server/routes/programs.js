@@ -10,6 +10,7 @@ const {
   getAllProgramsForCoach,
   getProgramDetails,
   getProgramsForTrainingPeriod,
+  getProgramsWithMeasurablesForTrainingPeriod,
   updateProgram,
   deleteProgram,
 } = require("../controllers/programs");
@@ -22,6 +23,11 @@ router.get(
   requireAuth,
   getProgramsForTrainingPeriod
 ); // GET /programs/training-period/:trpe_rk
+router.get(
+  "/training-period/:trpe_rk/with-measurables",
+  requireAuth,
+  getProgramsWithMeasurablesForTrainingPeriod
+); // GET /programs/training-period/:trpe_rk/with-measurables
 router.get("/:prog_rk", requireAuth, getProgramDetails); // GET /programs/:prog_rk
 router.put("/:prog_rk", requireAuth, updateProgram); // PUT /programs/:prog_rk
 router.delete("/:prog_rk", requireAuth, deleteProgram); // DELETE /programs/:prog_rk

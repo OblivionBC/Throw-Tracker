@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import MeasurementChart from "../componenents/MeasurementChart";
+import MeasurementChart from "../components/MeasurementChart";
 import "typeface-rubik";
 
 const ChartPage = () => {

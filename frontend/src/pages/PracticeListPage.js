@@ -1,14 +1,14 @@
 import React from "react";
 import styled from "styled-components";
-import PracticeList from "../componenents/tables/PracticeList";
+import PracticesTable from "../components/tables/PracticesTable";
 import "typeface-rubik";
-import ErrorBoundary from "../componenents/ErrorBoundary";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 const PracticeListPage = () => {
   return (
     <Page>
       <ErrorBoundary>
-        <PracticeList
+        <PracticesTable
           bAdd={true}
           bDelete={true}
           bDetail={true}

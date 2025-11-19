@@ -1,14 +1,14 @@
 import React from "react";
 import styled from "styled-components";
-import AthleteList from "../componenents/tables/AthleteList";
+import AthleteTable from "../components/tables/AthleteTable";
 import "typeface-rubik";
-import ErrorBoundary from "../componenents/ErrorBoundary";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 const AthletesPage = () => {
   return (
     <Page>
       <ErrorBoundary>
-        <AthleteList />
+        <AthleteTable />
       </ErrorBoundary>
     </Page>
   );

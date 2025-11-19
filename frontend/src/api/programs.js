@@ -45,6 +45,13 @@ export const programsApi = {
     });
   },
 
+  // Get programs with measurables for training period (optimized - single query)
+  getForTrainingPeriodWithMeasurables: async (trpe_rk) => {
+    return await apiCall(`/programs/training-period/${trpe_rk}/with-measurables`, {
+      method: "GET",
+    });
+  },
+
   // Invalidate programs cache (no-op)
   invalidateProgramsCache: () => {},
 

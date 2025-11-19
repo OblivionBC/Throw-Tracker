@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import "typeface-rubik";
 import { Navigate } from "react-router-dom";
-import ErrorBoundary from "../componenents/ErrorBoundary";
+import ErrorBoundary from "../components/ErrorBoundary";
 import logo from "../images/LogoIcon.png";
 import text from "../images/LogoText.png";
 import {
@@ -11,8 +11,8 @@ import {
   PageContent,
   Row,
 } from "../styles/design-system";
-import LoginForm from "../componenents/forms/LoginForm";
-import SignUpForm from "../componenents/forms/SignUpForm";
+import LoginForm from "../components/forms/LoginForm";
+import SignUpForm from "../components/forms/SignUpForm";
 import { useIsAuthenticated } from "../stores/userStore";
 
 const Login = () => {

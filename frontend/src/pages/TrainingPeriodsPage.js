@@ -1,14 +1,14 @@
 import React from "react";
 import styled from "styled-components";
-import TrainingPeriodList from "../componenents/tables/TrainingPeriodList";
+import TrainingPeriodsTable from "../components/tables/TrainingPeriodsTable";
 import "typeface-rubik";
-import ErrorBoundary from "../componenents/ErrorBoundary";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 const TrainingPeriodsPage = () => {
   return (
     <Page>
       <ErrorBoundary>
-        <TrainingPeriodList
+        <TrainingPeriodsTable
           paginationNum={8}
           bAdd={true}
           bEdit={true}

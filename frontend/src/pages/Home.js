@@ -1,18 +1,18 @@
 import React from "react";
 import styled from "styled-components";
-import LastPractice from "../componenents/LastPractice";
+import LastPractice from "../components/LastPractice";
 import "typeface-rubik";
-import Measurables from "../componenents/tables/MeasurableList";
-import ErrorBoundary from "../componenents/ErrorBoundary";
-import MeetList from "../componenents/tables/MeetList";
-import CurrentPrograms from "../componenents/CurrentPrograms";
+import MeasurablesTable from "../components/tables/MeasurablesTable";
+import ErrorBoundary from "../components/ErrorBoundary";
+import MeetsTable from "../components/tables/MeetsTable";
+import CurrentPrograms from "../components/CurrentPrograms";
 
 const Home = () => {
   return (
     <Page>
       <LeftColumn>
         <ErrorBoundary>
-          <Measurables paginationNum={8} />
+          <MeasurablesTable paginationNum={8} />
         </ErrorBoundary>
 
         <ErrorBoundary>
@@ -25,7 +25,7 @@ const Home = () => {
         </ErrorBoundary>
 
         <ErrorBoundary>
-          <MeetList />
+          <MeetsTable />
         </ErrorBoundary>
       </RightColumn>
     </Page>

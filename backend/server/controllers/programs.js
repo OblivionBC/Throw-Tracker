@@ -109,16 +109,27 @@ exports.getProgramDetails = asyncHandler(async (req, res) => {
     [prog_rk]
   );
 
-  // Get assigned training periods for this program
   const assignments = await pool.query(
     `SELECT 
+      paa.paa_rk,
+      paa.prog_rk,
       paa.trpe_rk,
+      paa.assigner_prsn_rk,
+      paa.assigned_dt,
+      paa.notes,
       tp.trpe_start_dt,
       tp.trpe_end_dt,
-      tp.prsn_rk as athlete_prsn_rk
+      tp.prsn_rk as athlete_prsn_rk,
+      athlete.prsn_first_nm as athlete_first_nm,
+      athlete.prsn_last_nm as athlete_last_nm,
+      assigner.prsn_first_nm as assigner_first_nm,
+      assigner.prsn_last_nm as assigner_last_nm
     FROM program_athlete_assignment paa
     LEFT JOIN training_period tp ON paa.trpe_rk = tp.trpe_rk
-    WHERE paa.prog_rk = $1`,
+    LEFT JOIN person athlete ON tp.prsn_rk = athlete.prsn_rk
+    LEFT JOIN person assigner ON paa.assigner_prsn_rk = assigner.prsn_rk
+    WHERE paa.prog_rk = $1
+    ORDER BY athlete.prsn_last_nm, athlete.prsn_first_nm, tp.trpe_start_dt`,
     [prog_rk]
   );
 
@@ -151,6 +162,57 @@ exports.getProgramsForTrainingPeriod = asyncHandler(async (req, res) => {
     FROM program p
     JOIN program_athlete_assignment paa ON p.prog_rk = paa.prog_rk
     WHERE paa.trpe_rk = $1 AND p.coach_prsn_rk = $2
+    ORDER BY p.prog_nm`,
+    [trpe_rk, coach_prsn_rk]
+  );
+
+  res.json(programs.rows);
+});
+
+// Optimized endpoint: Get all programs with their measurables for a training period in one query
+exports.getProgramsWithMeasurablesForTrainingPeriod = asyncHandler(async (req, res) => {
+  const { trpe_rk } = req.params;
+  const coach_prsn_rk = req.user.id;
+
+  if (!trpe_rk) {
+    throw new ValidationError("Training period ID is required");
+  }
+
+  // Single query to get all programs with their measurables using JSON aggregation
+  const programs = await pool.query(
+    `SELECT 
+      p.prog_rk,
+      p.prog_nm,
+      p.coach_prsn_rk,
+      paa.paa_rk,
+      paa.assigned_dt,
+      paa.notes,
+      COALESCE(
+        json_agg(
+          json_build_object(
+            'prma_rk', prma.prma_rk,
+            'meas_rk', prma.meas_rk,
+            'meas_id', m.meas_id,
+            'meas_typ', m.meas_typ,
+            'meas_unit', m.meas_unit,
+            'target_val', prma.target_val,
+            'target_reps', prma.target_reps,
+            'target_sets', prma.target_sets,
+            'target_weight', prma.target_weight,
+            'target_unit', prma.target_unit,
+            'notes', prma.notes,
+            'is_measured', prma.is_measured,
+            'sort_order', prma.sort_order
+          ) ORDER BY prma.sort_order, m.meas_id
+        ) FILTER (WHERE prma.prma_rk IS NOT NULL),
+        '[]'::json
+      ) as measurables
+    FROM program_athlete_assignment paa
+    JOIN program p ON paa.prog_rk = p.prog_rk
+    LEFT JOIN program_measurable_assignment prma ON p.prog_rk = prma.prog_rk
+    LEFT JOIN measurable m ON prma.meas_rk = m.meas_rk
+    WHERE paa.trpe_rk = $1 AND p.coach_prsn_rk = $2
+    GROUP BY p.prog_rk, p.prog_nm, p.coach_prsn_rk, paa.paa_rk, paa.assigned_dt, paa.notes
     ORDER BY p.prog_nm`,
     [trpe_rk, coach_prsn_rk]
   );

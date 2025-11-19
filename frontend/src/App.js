@@ -1,5 +1,5 @@
 import React from "react";
-import Navbar from "./componenents/overlay/Navbar";
+import Navbar from "./components/overlay/Navbar";
 import { AppRHS, AppLayout } from "./styles/design-system";
 import {
   BrowserRouter as Router,
@@ -13,11 +13,11 @@ import Home from "./pages/Home";
 
 import Login from "./pages/Login";
 import Coach from "./pages/Coach";
-import Sidebar from "./componenents/overlay/SideBar";
-import ProtectedRoute from "./componenents/ProtectedRoute";
-import { DataChangeProvider } from "./componenents/contexts/DataChangeContext";
+import Sidebar from "./components/overlay/SideBar";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { DataChangeProvider } from "./components/contexts/DataChangeContext";
 import { ErrorProvider } from "./contexts/ErrorContext";
-import ErrorNotifications from "./componenents/ErrorNotifications";
+import ErrorNotifications from "./components/ErrorNotifications";
 
 // New pages for sidebar navigation
 import MeasurablesPage from "./pages/MeasurablesPage";
@@ -28,7 +28,20 @@ import MeetsChartPage from "./pages/MeetsChartPage";
 import MeetsListPage from "./pages/MeetsListPage";
 import MeetsCalendarPage from "./pages/MeetsCalendarPage";
 import AthletesPage from "./pages/AthletesPage";
+import AthleteDetailPage from "./pages/athletes/AthleteDetailPage";
 import ProgramsPage from "./pages/ProgramsPage";
+import ProgramDetailPage from "./pages/programs/ProgramDetailPage";
+import ProgramEditPage from "./pages/programs/ProgramEditPage";
+import ProgramNewPage from "./pages/programs/ProgramNewPage";
+import MeetDetailPage from "./pages/meets/MeetDetailPage";
+import MeetEditPage from "./pages/meets/MeetEditPage";
+import MeetNewPage from "./pages/meets/MeetNewPage";
+import PracticeDetailPage from "./pages/practices/PracticeDetailPage";
+import PracticeNewPage from "./pages/practices/PracticeNewPage";
+import TrainingPeriodEditPage from "./pages/training-periods/TrainingPeriodEditPage";
+import TrainingPeriodNewPage from "./pages/training-periods/TrainingPeriodNewPage";
+import MeasurableNewPage from "./pages/measurables/MeasurableNewPage";
+import MeasurableEditPage from "./pages/measurables/MeasurableEditPage";
 import Profile from "./pages/Profile";
 import AdminDashboard from "./pages/AdminDashboard";
 
@@ -147,10 +160,114 @@ const AppContent = () => {
             }
           />
           <Route
+            path="/athletes/:id"
+            element={
+              <ProtectedRoute>
+                <AthleteDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/programs"
             element={
               <ProtectedRoute>
                 <ProgramsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/programs/new"
+            element={
+              <ProtectedRoute>
+                <ProgramNewPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/programs/:id/edit"
+            element={
+              <ProtectedRoute>
+                <ProgramEditPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/programs/:id"
+            element={
+              <ProtectedRoute>
+                <ProgramDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/meets/new"
+            element={
+              <ProtectedRoute>
+                <MeetNewPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/meets/:id/edit"
+            element={
+              <ProtectedRoute>
+                <MeetEditPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/meets/:id"
+            element={
+              <ProtectedRoute>
+                <MeetDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/practices/new"
+            element={
+              <ProtectedRoute>
+                <PracticeNewPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/practices/:id"
+            element={
+              <ProtectedRoute>
+                <PracticeDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training-periods/new"
+            element={
+              <ProtectedRoute>
+                <TrainingPeriodNewPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training-periods/:id/edit"
+            element={
+              <ProtectedRoute>
+                <TrainingPeriodEditPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/measurables/new"
+            element={
+              <ProtectedRoute>
+                <MeasurableNewPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/measurables/:id/edit"
+            element={
+              <ProtectedRoute>
+                <MeasurableEditPage />
               </ProtectedRoute>
             }
           />

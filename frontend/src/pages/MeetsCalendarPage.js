@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import "typeface-rubik";
-import ErrorBoundary from "../componenents/ErrorBoundary";
+import ErrorBoundary from "../components/ErrorBoundary";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { meetsApi, eventAssignmentsApi } from "../api";
 import { useApi } from "../hooks/useApi";
 import dayjs from "dayjs";
-import AssignEventToAthleteModal from "../componenents/modals/AssignEventToAthleteModal";
-import EditEventAssignmentModal from "../componenents/modals/EditEventAssignmentModal";
-import MeetCreationWizardModal from "../componenents/modals/MeetCreationWizardModal";
-import AddEventToMeetModal from "../componenents/modals/AddEventToMeetModal";
+import AssignEventToAthleteModal from "../components/modals/AssignEventToAthleteModal";
+import EditEventAssignmentModal from "../components/modals/EditEventAssignmentModal";
+import { useNavigate } from "react-router-dom";
+import AddEventToMeetModal from "../components/modals/AddEventToMeetModal";
 import { useIsCoach } from "../stores/userStore";
 import { StyledButton, Title } from "../styles/design-system";
 import Logger from "../utils/logger";
@@ -32,12 +32,12 @@ const MeetsCalendarPage = () => {
   const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [eventAthletes, setEventAthletes] = useState([]);
   const [showEventAthletes, setShowEventAthletes] = useState(false);
-  const [wizardModalOpen, setWizardModalOpen] = useState(false);
   const [addEventModalOpen, setAddEventModalOpen] = useState(false);
   const [currentView, setCurrentView] = useState("month");
   const [currentDate, setCurrentDate] = useState(new Date("2025-08-22"));
   const { apiCall } = useApi();
   const isCoach = useIsCoach();
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadMeets();
@@ -249,10 +249,6 @@ const MeetsCalendarPage = () => {
     }
   };
 
-  const handleCreateMeetSuccess = () => {
-    loadMeets(); // Refresh the calendar with the new meet
-  };
-
   // Color palette for meet rotation
   const meetColors = [
     "#007bff", // Blue
@@ -307,7 +303,7 @@ const MeetsCalendarPage = () => {
         <PageHeader>
           <Title>Meets Calendar</Title>
           <StyledButton
-            onClick={() => setWizardModalOpen(true)}
+            onClick={() => navigate("/meets/new")}
             style={{ backgroundColor: "#28a745" }}
           >
             Create New Meet
@@ -565,12 +561,6 @@ const MeetsCalendarPage = () => {
           assignment={selectedAssignment}
           meet={selectedMeet}
         />
-        <MeetCreationWizardModal
-          open={wizardModalOpen}
-          onClose={() => setWizardModalOpen(false)}
-          onSuccess={handleCreateMeetSuccess}
-        />
-
         <AddEventToMeetModal
           open={addEventModalOpen}
           onClose={() => setAddEventModalOpen(false)}
