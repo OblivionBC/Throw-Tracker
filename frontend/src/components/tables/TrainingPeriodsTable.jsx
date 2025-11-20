@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import DataTable from "../ui/DataTable/DataTable";
@@ -77,68 +77,56 @@ const TrainingPeriodsTable = ({
   const optimalPagination = getPaginationNumber(paginationNum, containerHeight);
   const isSelectable = selectable !== undefined ? selectable : false;
 
-  const getPersonForTrainingPeriods = useCallback(() => {
+  const getPersonForTrainingPeriods = () => {
     if (isCoach) {
       return selectedAthlete || prsn_rk;
     } else {
       return prsn_rk;
     }
-  }, [isCoach, selectedAthlete, prsn_rk]);
+  };
 
-  const getTRPEData = useCallback(
-    async (forceRefresh = false) => {
-      const personId = getPersonForTrainingPeriods();
-      const cacheKey = isCoach
-        ? `trpe_coach_${selectedAthlete || "no_athlete"}`
-        : `trpe_${personId}`;
+  const getTRPEData = async (forceRefresh = false) => {
+    const personId = getPersonForTrainingPeriods();
+    const cacheKey = isCoach
+      ? `trpe_coach_${selectedAthlete || "no_athlete"}`
+      : `trpe_${personId}`;
 
-      if (!forceRefresh && isCacheValid(cacheKey)) {
-        const cachedData = getCachedData(cacheKey);
-        if (cachedData && cachedData.data) {
-          setTrpeData(cachedData.data);
-          return;
-        }
+    if (!forceRefresh && isCacheValid(cacheKey)) {
+      const cachedData = getCachedData(cacheKey);
+      if (cachedData && cachedData.data) {
+        setTrpeData(cachedData.data);
+        return;
+      }
+    }
+
+    setCacheLoading(cacheKey, true);
+
+    try {
+      let response;
+
+      if (isCoach && !selectedAthlete) {
+        response = [];
+      } else {
+        response = await apiCall(
+          () => trainingPeriodsApi.getAllForPerson(personId),
+          `Fetching training periods for person ${personId}`
+        );
       }
 
-      setCacheLoading(cacheKey, true);
-
-      try {
-        let response;
-
-        if (isCoach && !selectedAthlete) {
-          response = [];
-        } else {
-          response = await apiCall(
-            () => trainingPeriodsApi.getAllForPerson(personId),
-            `Fetching training periods for person ${personId}`
-          );
-        }
-
-        setTrpeData(response);
-        setCacheData(cacheKey, response);
-      } catch (error) {
-        Logger.error(error.message);
-      } finally {
-        setCacheLoading(cacheKey, false);
-      }
-    },
-    [
-      getPersonForTrainingPeriods,
-      isCoach,
-      selectedAthlete,
-      apiCall,
-      isCacheValid,
-      getCachedData,
-      setCacheLoading,
-      setCacheData,
-    ]
-  );
+      setTrpeData(response);
+      setCacheData(cacheKey, response);
+    } catch (error) {
+      Logger.error(error.message);
+    } finally {
+      setCacheLoading(cacheKey, false);
+    }
+  };
 
   const personRefreshFlag = refreshFlags[prsn_rk];
 
   useEffect(() => {
     getTRPEData();
-  }, [getTRPEData, personRefreshFlag]);
+  }, [isCoach, selectedAthlete, prsn_rk, personRefreshFlag, apiCall, isCacheValid, getCachedData, setCacheLoading, setCacheData]);
 
   const handleRefresh = () => {
     getTRPEData(true);

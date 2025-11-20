@@ -114,16 +114,17 @@ const MeetsTable = () => {
   );
 
   return (
-    <DataTable
-        title="Meets"
-        columns={columns}
-        data={meetData}
-        loading={loading}
-        pagination={{ page: 1, perPage: 10 }}
-        onRowClick={handleRowClick}
-        actions={actions}
-        customStyles={TableStyles}
-      />
+    <>
+      <DataTable
+          title="Meets"
+          columns={columns}
+          data={meetData}
+          loading={loading}
+          pagination={{ page: 1, perPage: 10 }}
+          onRowClick={handleRowClick}
+          actions={actions}
+          customStyles={TableStyles}
+        />
     </>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import {
   Chart as ChartJS,
@@ -40,7 +40,7 @@ const AllMeetsPerformanceChart = () => {
   const [allAssignments, setAllAssignments] = useState([]);
   const { apiCall } = useApi();
 
-  const loadData = useCallback(async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
 
@@ -64,9 +64,9 @@ const AllMeetsPerformanceChart = () => {
     } finally {
       setLoading(false);
     }
-  }, [apiCall]);
+  };
 
-  const generateChartData = useCallback(() => {
+  const generateChartData = () => {
     if (!selectedAthlete || !selectedEvent) {
       setChartData(null);
       return;
@@ -117,24 +117,17 @@ const AllMeetsPerformanceChart = () => {
     };
 
     setChartData(chartConfig);
-  }, [
-    selectedAthlete,
-    selectedEvent,
-    allAssignments,
-    athletes,
-    eventTypes,
-    chartType,
-  ]);
+  };
 
   useEffect(() => {
     loadData();
-  }, [loadData]);
+  }, [apiCall]);
 
   useEffect(() => {
     if (allAssignments.length > 0) {
       generateChartData();
     }
-  }, [generateChartData, allAssignments]);
+  }, [selectedAthlete, selectedEvent, allAssignments, athletes, eventTypes, chartType]);
 
   const getPerformanceStats = () => {
     if (!selectedAthlete || !selectedEvent || !chartData) return null;

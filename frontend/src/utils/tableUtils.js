@@ -1,5 +1,3 @@
-// Utility functions for table components
-
 /**
  * Calculates the optimal number of rows to display based on available vertical space
  * @param {number} containerHeight - The height of the container in pixels

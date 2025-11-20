@@ -18,31 +18,22 @@ const {
 
 // Production-safe logging
 const isDevelopment = process.env.NODE_ENV === 'development';
-const Logger = {
+export const Logger = {
   log: (...args) => isDevelopment && console.log(...args),
-  error: (...args) => isDevelopment && console.error(...args),
+  error: (...args) => console.error(...args),
   warn: (...args) => isDevelopment && console.warn(...args),
   info: (...args) => isDevelopment && console.info(...args),
   debug: (...args) => isDevelopment && console.debug(...args),
-  critical: (...args) => console.error(...args) // Always log critical errors
+  critical: (...args) => console.error(...args)
 };
 
-
-const { pool } = require("./server/db.js");
-
-// Validate environment variables on startup
 validateEnvironment();
 app.set('port', (process.env.PORT || 8081));
-
-// Trust proxy for accurate IP addresses (required for Vercel)
 app.set("trust proxy", 1);
-
-// Rate limiting - always enabled but with different limits
 
 
 if (process.env.NODE_ENV === "production") {
     Logger.info("In Production")
-    // Security middleware - must come first
     app.use(securityLogger);
     app.use(validateIP);
     app.use(requestSizeLimit);
@@ -64,7 +55,7 @@ if (process.env.NODE_ENV === "production") {
             crossOriginResourcePolicy: {policy: "cross-origin"},
             crossOriginEmbedderPolicy: false,
             hsts: {
-                maxAge: 31536000, // 1 year
+                maxAge: 31536000,
                 includeSubDomains: true,
                 preload: true,
             },
@@ -74,21 +65,16 @@ if (process.env.NODE_ENV === "production") {
     app.use(securityHeaders);
 }
 
-// CORS configuration
 app.use(cors(corsConfig));
-
-// Handle preflight requests explicitly
 app.options("*", cors(corsConfig));
 
 
-// Body parsing with size limits
-app.use(express.json({ limit: "10mb" }));
+app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
 
 app.use("/api", routes);
 
-// Global error handler - must be last
 app.use(errorHandler);
 
 app.listen(app.get('port'), () => {

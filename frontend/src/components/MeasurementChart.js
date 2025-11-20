@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, startTransition } from "react";
 import { Line } from "react-chartjs-2";
 import { Chart as ChartJS } from "chart.js/auto";
 import { Tooltip } from "chart.js/auto";
@@ -130,7 +130,7 @@ function MeasurementChart() {
   };
 
   // Load training periods for the current person
-  const loadTrainingPeriods = useCallback(async () => {
+  const loadTrainingPeriods = async () => {
     try {
       let personId;
       if (isCoach) {
@@ -154,10 +154,10 @@ function MeasurementChart() {
       Logger.error("Error loading training periods:", error);
       setTrainingPeriods([]);
     }
-  }, [isCoach, selectedAthlete, user?.id, apiCall]);
+  };
 
   // Load programs for the selected training period
-  const loadPrograms = useCallback(async () => {
+  const loadPrograms = async () => {
     if (!selectedTrainingPeriod) {
       setPrograms([]);
       setSelectedProgram("all");
@@ -180,9 +180,9 @@ function MeasurementChart() {
       setPrograms([]);
       setSelectedProgram("all");
     }
-  }, [selectedTrainingPeriod, apiCall]);
+  };
 
-  const GetMeasurements = useCallback(async () => {
+  const GetMeasurements = async () => {
     try {
       let jsonData;
 
@@ -357,14 +357,7 @@ function MeasurementChart() {
     } catch (error) {
       Logger.error("Error fetching measurements:", error);
     }
-  }, [
-    isCoach,
-    selectedAthlete,
-    user?.prsn_rk,
-    selectedTrainingPeriod,
-    selectedProgram,
-    apiCall,
-  ]);
+  };
 
   const getMeasurementStats = () => {
     if (!measurementData.length) return [];
@@ -402,12 +395,12 @@ function MeasurementChart() {
   // Load training periods on component mount
   useEffect(() => {
     loadTrainingPeriods();
-  }, [loadTrainingPeriods]);
+  }, [isCoach, selectedAthlete, user?.id, apiCall]);
 
   // Load programs when training period changes
   useEffect(() => {
     loadPrograms();
-  }, [loadPrograms]);
+  }, [selectedTrainingPeriod, apiCall]);
 
   // Get measurements when filters change
   useEffect(() => {
@@ -417,7 +410,7 @@ function MeasurementChart() {
       setLoading(false);
     };
     fetchData();
-  }, [GetMeasurements]);
+  }, [isCoach, selectedAthlete, user?.prsn_rk, selectedTrainingPeriod, selectedProgram, apiCall]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -452,7 +445,7 @@ function MeasurementChart() {
             <FieldLabel>Training Period</FieldLabel>
             <select
               value={selectedTrainingPeriod}
-              onChange={(e) => setSelectedTrainingPeriod(e.target.value)}
+              onChange={(e) => startTransition(() => setSelectedTrainingPeriod(e.target.value))}
               style={{
                 padding: "8px",
                 border: "1px solid #ddd",
@@ -477,7 +470,7 @@ function MeasurementChart() {
             <FieldLabel>Program</FieldLabel>
             <select
               value={selectedProgram}
-              onChange={(e) => setSelectedProgram(e.target.value)}
+              onChange={(e) => startTransition(() => setSelectedProgram(e.target.value))}
               style={{
                 padding: "8px",
                 border: "1px solid #ddd",

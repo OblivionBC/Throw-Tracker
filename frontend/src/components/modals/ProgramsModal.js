@@ -16,10 +16,8 @@ import {
   programMeasurableAssignmentsApi,
 } from "../../api";
 const ProgramsModal = ({ open, onClose, refresh, trpe_rk }) => {
-  const [loading, setLoading] = useState(false);
   const [programData, setProgramData] = useState([]);
   const getProgramData = async (forceRefresh = false) => {
-    // Don't make API call if trpe_rk is not available
     if (!trpe_rk) {
       Logger.warn("ProgramsModal: trpe_rk is not available");
       return;
@@ -58,12 +56,11 @@ const ProgramsModal = ({ open, onClose, refresh, trpe_rk }) => {
     }
   };
   useEffect(() => {
-    // Only fetch data if modal is open and we have valid trpe_rk
     if (open && trpe_rk) {
-      getProgramData(true); // Always force refresh on open
+      getProgramData(true);
     }
   }, [trpe_rk, open]);
-  if (!open || loading) return null;
+  if (!open) return null;
   return (
     <Overlay>
       <ModalContainer>

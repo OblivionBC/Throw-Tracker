@@ -1,6 +1,6 @@
 import React from "react";
 import dayjs from "dayjs";
-import Practices from "../tables/PracticeList";
+import Practices from "../tables/PracticesTable";
 import {
   Overlay,
   ModalContainer,

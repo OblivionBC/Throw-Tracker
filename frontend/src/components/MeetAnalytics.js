@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { eventAssignmentsApi, eventTypesApi } from "../api";
 import { useApi } from "../hooks/useApi";
@@ -12,7 +12,7 @@ const MeetAnalytics = ({ meetId }) => {
   const [performanceData, setPerformanceData] = useState([]);
   const { apiCall } = useApi();
 
-  const loadData = useCallback(async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
 
@@ -35,9 +35,9 @@ const MeetAnalytics = ({ meetId }) => {
     } finally {
       setLoading(false);
     }
-  }, [meetId, apiCall]);
+  };
 
-  const generateAnalytics = useCallback(() => {
+  const generateAnalytics = () => {
     const filteredData =
       selectedEvent === "all"
         ? performanceData
@@ -133,19 +133,19 @@ const MeetAnalytics = ({ meetId }) => {
         : 0;
 
     setAnalytics(analyticsData);
-  }, [performanceData, selectedEvent, eventTypes]);
+  };
 
   useEffect(() => {
     if (meetId) {
       loadData();
     }
-  }, [meetId, loadData]);
+  }, [meetId, apiCall]);
 
   useEffect(() => {
     if (performanceData.length > 0) {
       generateAnalytics();
     }
-  }, [performanceData, selectedEvent, generateAnalytics]);
+  }, [performanceData, selectedEvent, eventTypes]);
 
   if (loading) {
     return <LoadingMessage>Loading analytics...</LoadingMessage>;

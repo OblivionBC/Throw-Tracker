@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Logger from "../utils/logger";
 
 /**
@@ -22,7 +22,7 @@ export const useAsyncData = (
   const [error, setError] = useState(null);
   const abortControllerRef = useRef(null);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = async () => {
     // Cancel previous request if still pending
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -56,7 +56,7 @@ export const useAsyncData = (
     } finally {
       setLoading(false);
     }
-  }, [fetchFn, onSuccess, onError]);
+  };
 
   useEffect(() => {
     if (immediate) {
@@ -68,11 +68,11 @@ export const useAsyncData = (
         abortControllerRef.current.abort();
       }
     };
-  }, [immediate, fetchData, ...dependencies]);
+  }, [immediate, fetchFn, onSuccess, onError, ...dependencies]);
 
-  const refetch = useCallback(() => {
+  const refetch = () => {
     fetchData();
-  }, [fetchData]);
+  };
 
   return {
     data,

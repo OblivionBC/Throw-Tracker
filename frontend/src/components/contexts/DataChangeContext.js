@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState } from "react";
 
 // Create a Context for the user data
 const DataChangeContext = createContext();
@@ -31,16 +31,13 @@ export const DataChangeProvider = ({ children }) => {
   // Cache duration in milliseconds (5 minutes)
   const CACHE_DURATION = 5 * 60 * 1000;
 
-  const isCacheValid = useCallback(
-    (cacheKey) => {
-      const cache = dataCache[cacheKey];
-      if (!cache || !cache.timestamp) return false;
-      return Date.now() - cache.timestamp < CACHE_DURATION;
-    },
-    [dataCache]
-  );
+  const isCacheValid = (cacheKey) => {
+    const cache = dataCache[cacheKey];
+    if (!cache || !cache.timestamp) return false;
+    return Date.now() - cache.timestamp < CACHE_DURATION;
+  };
 
-  const setCacheData = useCallback((cacheKey, data) => {
+  const setCacheData = (cacheKey, data) => {
     setDataCache((prev) => ({
       ...prev,
       [cacheKey]: {
@@ -49,9 +46,9 @@ export const DataChangeProvider = ({ children }) => {
         loading: false,
       },
     }));
-  }, []);
+  };
 
-  const setCacheLoading = useCallback((cacheKey, loading) => {
+  const setCacheLoading = (cacheKey, loading) => {
     setDataCache((prev) => ({
       ...prev,
       [cacheKey]: {
@@ -59,9 +56,9 @@ export const DataChangeProvider = ({ children }) => {
         loading,
       },
     }));
-  }, []);
+  };
 
-  const invalidateCache = useCallback((cacheKey) => {
+  const invalidateCache = (cacheKey) => {
     setDataCache((prev) => ({
       ...prev,
       [cacheKey]: {
@@ -74,14 +71,11 @@ export const DataChangeProvider = ({ children }) => {
       ...prev,
       [cacheKey]: !prev[cacheKey],
     }));
-  }, []);
+  };
 
-  const getCachedData = useCallback(
-    (cacheKey) => {
-      return dataCache[cacheKey];
-    },
-    [dataCache]
-  );
+  const getCachedData = (cacheKey) => {
+    return dataCache[cacheKey];
+  };
 
   const value = {
     dataCache,

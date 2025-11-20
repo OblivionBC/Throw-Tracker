@@ -1,43 +1,30 @@
 require("dotenv").config();
 const { Pool } = require("pg");
+const { Logger } = require("../index")
 
-// Production-safe logging
-const isDevelopment = process.env.NODE_ENV === 'development';
-const Logger = {
-  log: (...args) => isDevelopment && console.log(...args),
-  error: (...args) => isDevelopment && console.error(...args),
-  warn: (...args) => isDevelopment && console.warn(...args),
-  info: (...args) => isDevelopment && console.info(...args),
-  debug: (...args) => isDevelopment && console.debug(...args),
-  critical: (...args) => console.error(...args) // Always log critical errors
-};
-
-
+const DB_URL = process.env.DB_URL;
+/*
 const PORT = process.env.DB_PORT;
 const PASS = process.env.DB_USER_PASS;
 const USER = process.env.DB_USER;
 const HOST = process.env.DB_HOST;
 const DB = process.env.DB_NAME;
-const DB_URL = process.env.DB_URL;
 const env = process.env.NODE_ENV;
 
-let pool;
-if (isDevelopment) {
-  pool = new Pool({
-    user: USER,
-    password: PASS,
-    host: HOST,
-    port: PORT,
-    database: DB,
-  });
 
-
-} else {
   pool = new Pool({
-    connectionString: DB_URL,
-    ssl: { rejectUnauthorized: false },
+      user: USER,
+      password: PASS,
+      host: HOST,
+      port: PORT,
+      database: DB,
   });
-}
+   */
+
+const pool = new Pool({
+  connectionString: DB_URL,
+  ssl: { rejectUnauthorized: false },
+});
 
 pool.on("error", (err) => {
   Logger.error("Unexpected DB error", err);

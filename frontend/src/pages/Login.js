@@ -19,7 +19,6 @@ const Login = () => {
   const [loginOpen, setLoginOpen] = useState(true);
   const isAuthenticated = useIsAuthenticated();
 
-  // Redirect authenticated users to home
   if (isAuthenticated) {
     return <Navigate to="/home" replace />;
   }
@@ -50,13 +49,12 @@ const Page = styled.div`
   transform: translate(-50%, -50%);
   z-index: 10;
   position: fixed;
-  height: 100%;
   width: 100%;
+  height: 100%;
   overflow: auto;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  height: 100vh;
+  align-items: center;
   font-family: "Rubik", sans-serif;
 `;
 export default Login;

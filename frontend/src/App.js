@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import Navbar from "./components/overlay/Navbar";
 import { AppRHS, AppLayout } from "./styles/design-system";
 import {
@@ -9,41 +9,54 @@ import {
   useLocation,
 } from "react-router-dom";
 import { createGlobalStyle } from "styled-components";
-import Home from "./pages/Home";
-
-import Login from "./pages/Login";
-import Coach from "./pages/Coach";
 import Sidebar from "./components/overlay/SideBar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { DataChangeProvider } from "./components/contexts/DataChangeContext";
 import { ErrorProvider } from "./contexts/ErrorContext";
 import ErrorNotifications from "./components/ErrorNotifications";
 
-// New pages for sidebar navigation
-import MeasurablesPage from "./pages/MeasurablesPage";
-import TrainingPeriodsPage from "./pages/TrainingPeriodsPage";
-import PracticeListPage from "./pages/PracticeListPage";
-import ChartPage from "./pages/ChartPage";
-import MeetsChartPage from "./pages/MeetsChartPage";
-import MeetsListPage from "./pages/MeetsListPage";
-import MeetsCalendarPage from "./pages/MeetsCalendarPage";
-import AthletesPage from "./pages/AthletesPage";
-import AthleteDetailPage from "./pages/athletes/AthleteDetailPage";
-import ProgramsPage from "./pages/ProgramsPage";
-import ProgramDetailPage from "./pages/programs/ProgramDetailPage";
-import ProgramEditPage from "./pages/programs/ProgramEditPage";
-import ProgramNewPage from "./pages/programs/ProgramNewPage";
-import MeetDetailPage from "./pages/meets/MeetDetailPage";
-import MeetEditPage from "./pages/meets/MeetEditPage";
-import MeetNewPage from "./pages/meets/MeetNewPage";
-import PracticeDetailPage from "./pages/practices/PracticeDetailPage";
-import PracticeNewPage from "./pages/practices/PracticeNewPage";
-import TrainingPeriodEditPage from "./pages/training-periods/TrainingPeriodEditPage";
-import TrainingPeriodNewPage from "./pages/training-periods/TrainingPeriodNewPage";
-import MeasurableNewPage from "./pages/measurables/MeasurableNewPage";
-import MeasurableEditPage from "./pages/measurables/MeasurableEditPage";
-import Profile from "./pages/Profile";
-import AdminDashboard from "./pages/AdminDashboard";
+// Lazy load route components for code splitting
+const Home = lazy(() => import("./pages/Home"));
+const Login = lazy(() => import("./pages/Login"));
+const Coach = lazy(() => import("./pages/Coach"));
+const MeasurablesPage = lazy(() => import("./pages/MeasurablesPage"));
+const TrainingPeriodsPage = lazy(() => import("./pages/TrainingPeriodsPage"));
+const PracticeListPage = lazy(() => import("./pages/PracticeListPage"));
+const ChartPage = lazy(() => import("./pages/ChartPage"));
+const MeetsChartPage = lazy(() => import("./pages/MeetsChartPage"));
+const MeetsListPage = lazy(() => import("./pages/MeetsListPage"));
+const MeetsCalendarPage = lazy(() => import("./pages/MeetsCalendarPage"));
+const AthletesPage = lazy(() => import("./pages/AthletesPage"));
+const AthleteDetailPage = lazy(() => import("./pages/athletes/AthleteDetailPage"));
+const ProgramsPage = lazy(() => import("./pages/ProgramsPage"));
+const ProgramDetailPage = lazy(() => import("./pages/programs/ProgramDetailPage"));
+const ProgramEditPage = lazy(() => import("./pages/programs/ProgramEditPage"));
+const ProgramNewPage = lazy(() => import("./pages/programs/ProgramNewPage"));
+const MeetDetailPage = lazy(() => import("./pages/meets/MeetDetailPage"));
+const MeetEditPage = lazy(() => import("./pages/meets/MeetEditPage"));
+const MeetNewPage = lazy(() => import("./pages/meets/MeetNewPage"));
+const PracticeDetailPage = lazy(() => import("./pages/practices/PracticeDetailPage"));
+const PracticeNewPage = lazy(() => import("./pages/practices/PracticeNewPage"));
+const TrainingPeriodEditPage = lazy(() => import("./pages/training-periods/TrainingPeriodEditPage"));
+const TrainingPeriodNewPage = lazy(() => import("./pages/training-periods/TrainingPeriodNewPage"));
+const MeasurableNewPage = lazy(() => import("./pages/measurables/MeasurableNewPage"));
+const MeasurableEditPage = lazy(() => import("./pages/measurables/MeasurableEditPage"));
+const Profile = lazy(() => import("./pages/Profile"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+
+// Loading fallback component
+const LoadingFallback = () => (
+  <div style={{ 
+    display: "flex", 
+    justifyContent: "center", 
+    alignItems: "center", 
+    height: "100vh",
+    fontSize: "18px",
+    color: "#666"
+  }}>
+    Loading...
+  </div>
+);
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -64,7 +77,8 @@ const AppContent = () => {
       {!isLoginPage && <Sidebar />}
       <AppRHS>
         {!isLoginPage && <Navbar />}
-        <Routes>
+        <Suspense fallback={<LoadingFallback />}>
+          <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login />} />
           <Route
@@ -290,7 +304,8 @@ const AppContent = () => {
           />
           {/* Catch all route - redirect to login */}
           <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
+          </Routes>
+        </Suspense>
       </AppRHS>
     </>
   );

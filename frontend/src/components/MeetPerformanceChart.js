@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useState, useEffect, startTransition } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -78,7 +78,7 @@ const MeetPerformanceChart = ({ meetId, athleteId }) => {
     },
   });
 
-  const loadData = useCallback(async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
 
@@ -116,9 +116,9 @@ const MeetPerformanceChart = ({ meetId, athleteId }) => {
     } finally {
       setLoading(false);
     }
-  }, [meetId, apiCall]);
+  };
 
-  const generateChartData = useCallback(() => {
+  const generateChartData = () => {
     let filteredData = performanceData;
 
     // Filter by event if not "all"
@@ -181,13 +181,13 @@ const MeetPerformanceChart = ({ meetId, athleteId }) => {
       labels,
       datasets,
     });
-  }, [performanceData, selectedEvent, selectedAthlete, chartType, eventTypes]);
+  };
 
   useEffect(() => {
     if (meetId) {
       loadData();
     }
-  }, [meetId, loadData]);
+  }, [meetId, apiCall]);
 
   useEffect(() => {
     if (performanceData.length > 0) {
@@ -198,7 +198,7 @@ const MeetPerformanceChart = ({ meetId, athleteId }) => {
     selectedEvent,
     selectedAthlete,
     chartType,
-    generateChartData,
+    eventTypes,
   ]);
 
   const getPerformanceStats = () => {
@@ -264,7 +264,7 @@ const MeetPerformanceChart = ({ meetId, athleteId }) => {
             <FieldLabel>Event Type</FieldLabel>
             <select
               value={selectedEvent}
-              onChange={(e) => setSelectedEvent(e.target.value)}
+              onChange={(e) => startTransition(() => setSelectedEvent(e.target.value))}
               style={{
                 padding: "8px",
                 border: "1px solid #ddd",
@@ -290,7 +290,7 @@ const MeetPerformanceChart = ({ meetId, athleteId }) => {
             <FieldLabel>Athlete</FieldLabel>
             <select
               value={selectedAthlete}
-              onChange={(e) => setSelectedAthlete(e.target.value)}
+              onChange={(e) => startTransition(() => setSelectedAthlete(e.target.value))}
               style={{
                 padding: "8px",
                 border: "1px solid #ddd",
@@ -312,7 +312,7 @@ const MeetPerformanceChart = ({ meetId, athleteId }) => {
             <FieldLabel>Chart Type</FieldLabel>
             <select
               value={chartType}
-              onChange={(e) => setChartType(e.target.value)}
+              onChange={(e) => startTransition(() => setChartType(e.target.value))}
               style={{
                 padding: "8px",
                 border: "1px solid #ddd",

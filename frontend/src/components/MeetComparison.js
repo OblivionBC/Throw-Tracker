@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import {
   Chart as ChartJS,
@@ -36,7 +36,7 @@ const MeetComparison = () => {
   const [loading, setLoading] = useState(true);
   const { apiCall } = useApi();
 
-  const loadInitialData = useCallback(async () => {
+  const loadInitialData = async () => {
     try {
       setLoading(true);
 
@@ -78,9 +78,9 @@ const MeetComparison = () => {
     } finally {
       setLoading(false);
     }
-  }, [apiCall]);
+  };
 
-  const loadComparisonData = useCallback(async () => {
+  const loadComparisonData = async () => {
     try {
       setLoading(true);
 
@@ -105,18 +105,9 @@ const MeetComparison = () => {
     } finally {
       setLoading(false);
     }
-  }, [
-    selectedMeets,
-    apiCall,
-    athletes,
-    eventTypes,
-    selectedAthlete,
-    selectedEvent,
-    generateComparisonChart,
-  ]);
+  };
 
-  const generateComparisonChart = useCallback(
-    (allData) => {
+  const generateComparisonChart = (allData) => {
       const datasets = [];
       const labels = allData.map((data) => data.meet.meet_nm);
 
@@ -199,19 +190,17 @@ const MeetComparison = () => {
         labels,
         datasets,
       });
-    },
-    [athletes, eventTypes, selectedAthlete, selectedEvent]
-  );
+    };
 
   useEffect(() => {
     loadInitialData();
-  }, [loadInitialData]);
+  }, [apiCall]);
 
   useEffect(() => {
     if (selectedMeets.length > 0) {
       loadComparisonData();
     }
-  }, [loadComparisonData, selectedMeets]);
+  }, [selectedMeets, apiCall, athletes, eventTypes, selectedAthlete, selectedEvent]);
 
   const handleMeetToggle = (meet) => {
     setSelectedMeets((prev) => {

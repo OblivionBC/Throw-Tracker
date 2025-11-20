@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, startTransition } from "react";
 import { Formik, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import {
@@ -14,22 +14,7 @@ import { programsApi, trainingPeriodsApi } from "../../api";
 import Logger from "../../utils/logger";
 
 const EditProgramForm = ({ close, refresh, program }) => {
-  const [trainingPeriods, setTrainingPeriods] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchTrainingPeriods = async () => {
-      try {
-        const response = await trainingPeriodsApi.getAllForPerson();
-        setTrainingPeriods(response);
-      } catch (error) {
-        Logger.error("Error fetching training periods:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchTrainingPeriods();
-  }, []);
 
   const initialValues = {
     prog_nm: program?.prog_nm || "",
@@ -48,7 +33,9 @@ const EditProgramForm = ({ close, refresh, program }) => {
         prog_nm: values.prog_nm,
       });
       alert("Program Updated Successfully");
-      refresh();
+      startTransition(() => {
+        refresh();
+      });
       close();
       setSubmitting(false);
       return;

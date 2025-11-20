@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, startTransition } from "react";
 import { Formik, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import {
@@ -91,7 +91,9 @@ const AddPracticeForm = ({ close, refresh }) => {
       }
       alert("Practice Added Successfully");
       close();
-      refresh(prac_rk);
+      startTransition(() => {
+        refresh(prac_rk);
+      });
       setSubmitting(false);
       return;
     } catch (error) {

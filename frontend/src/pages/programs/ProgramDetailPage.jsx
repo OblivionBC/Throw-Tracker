@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   StyledButton,
@@ -32,15 +32,13 @@ const ProgramDetailPage = () => {
     [id]
   );
 
-  // Extract program, measurables, and assignments from the response
   const program = programData?.program || programData;
-  const assignments = programData?.assignments || [];
 
   useEffect(() => {
-    if (assignments) {
-      setAssignments(assignments);
+    if (programData?.assignments) {
+      setAssignments(programData.assignments);
     }
-  }, [assignments]);
+  }, [programData]);
 
   const handleUnassign = async (paa_rk, athleteName) => {
     if (

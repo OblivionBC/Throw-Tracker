@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { CompWrap, Title, RowDiv, AddButton } from "../styles/design-system";
 import { programsApi } from "../api";
 import { useApi } from "../hooks/useApi";
@@ -14,7 +14,7 @@ const CoachPrograms = () => {
   const { apiCall } = useApi();
   const navigate = useNavigate();
 
-  const fetchPrograms = useCallback(async () => {
+  const fetchPrograms = async () => {
     try {
       const programsData = await apiCall(
         () => programsApi.getAll(),
@@ -27,11 +27,11 @@ const CoachPrograms = () => {
     } finally {
       setLoading(false);
     }
-  }, [apiCall]);
+  };
 
   useEffect(() => {
     fetchPrograms();
-  }, [fetchPrograms]);
+  }, [apiCall]);
 
   const handleAssignProgram = (program) => {
     setSelectedProgram(program);

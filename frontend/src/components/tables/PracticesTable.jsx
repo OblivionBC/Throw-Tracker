@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef, startTransition } from "react";
 import { useNavigate } from "react-router-dom";
 import DataTable from "../ui/DataTable/DataTable";
 import {
@@ -79,83 +79,80 @@ const PracticesTable = ({
     return () => window.removeEventListener("resize", updateHeight);
   }, []);
 
-  const loadTrainingPeriods = useCallback(async () => {
+  const loadTrainingPeriods = async () => {
     try {
       const periods = await trainingPeriodsApi.getAll();
       setTrainingPeriods(periods);
     } catch (error) {
       Logger.error("Error loading training periods:", error);
     }
-  }, []);
+  };
 
   useEffect(() => {
     loadTrainingPeriods();
-  }, [loadTrainingPeriods]);
+  }, []);
 
-  const getPracticeData = useCallback(
-    async (forceRefresh = false) => {
-      const cacheKey = `practices_${selectedAthlete || "all"}_${selectedTrainingPeriod || "all"}`;
+  const getPracticeData = async (forceRefresh = false) => {
+    const cacheKey = `practices_${selectedAthlete || "all"}_${selectedTrainingPeriod || "all"}`;
 
-      if (!forceRefresh && isCacheValid(cacheKey)) {
-        const cachedData = getCachedData(cacheKey);
-        if (cachedData && cachedData.data) {
-          setPracticeData(cachedData.data);
-          return;
-        }
+    if (!forceRefresh && isCacheValid(cacheKey)) {
+      const cachedData = getCachedData(cacheKey);
+      if (cachedData && cachedData.data) {
+        setPracticeData(cachedData.data);
+        return;
       }
+    }
 
-      setCacheLoading(cacheKey, true);
+    setCacheLoading(cacheKey, true);
 
-      try {
-        let response;
+    try {
+      let response;
 
-        if (isCoach) {
-          if (!selectedAthlete) {
-            response = [];
-          } else {
-            response = await practicesApi.getAllForCoach();
+      if (isCoach) {
+        if (!selectedAthlete) {
+          response = [];
+        } else {
+          response = await practicesApi.getAllForCoach();
+          response = response.filter(
+            (practice) =>
+              String(practice.athlete_prsn_rk) === String(selectedAthlete)
+          );
+
+          if (selectedTrainingPeriod) {
             response = response.filter(
               (practice) =>
-                String(practice.athlete_prsn_rk) === String(selectedAthlete)
-            );
-
-            if (selectedTrainingPeriod) {
-              response = response.filter(
-                (practice) =>
-                  String(practice.trpe_rk) === String(selectedTrainingPeriod)
-              );
-            } else if (trpe_rk) {
-              response = response.filter(
-                (practice) => String(practice.trpe_rk) === String(trpe_rk)
-              );
-            }
-          }
-        } else {
-          if (selectedTrainingPeriod) {
-            response = await practicesApi.getInTrainingPeriod(
-              selectedTrainingPeriod
+                String(practice.trpe_rk) === String(selectedTrainingPeriod)
             );
           } else if (trpe_rk) {
-            response = await practicesApi.getInTrainingPeriod(trpe_rk);
-          } else {
-            response = await practicesApi.getAll();
+            response = response.filter(
+              (practice) => String(practice.trpe_rk) === String(trpe_rk)
+            );
           }
         }
-
-        setPracticeData(response);
-        setCacheData(cacheKey, response);
-      } catch (error) {
-        Logger.error(error.message);
-      } finally {
-        setCacheLoading(cacheKey, false);
+      } else {
+        if (selectedTrainingPeriod) {
+          response = await practicesApi.getInTrainingPeriod(
+            selectedTrainingPeriod
+          );
+        } else if (trpe_rk) {
+          response = await practicesApi.getInTrainingPeriod(trpe_rk);
+        } else {
+          response = await practicesApi.getAll();
+        }
       }
-    },
-    [isCoach, selectedAthlete, selectedTrainingPeriod, trpe_rk, isCacheValid, getCachedData, setCacheLoading, setCacheData]
-  );
+
+      setPracticeData(response);
+      setCacheData(cacheKey, response);
+    } catch (error) {
+      Logger.error(error.message);
+    } finally {
+      setCacheLoading(cacheKey, false);
+    }
+  };
 
   useEffect(() => {
     getPracticeData();
-  }, [getPracticeData, refreshFlags.practices]);
+  }, [isCoach, selectedAthlete, selectedTrainingPeriod, trpe_rk, refreshFlags.practices, isCacheValid, getCachedData, setCacheLoading, setCacheData]);
 
   const handleRefresh = () => {
     getPracticeData(true);
@@ -166,7 +163,9 @@ const PracticesTable = ({
   };
 
   const handleTrainingPeriodChange = (event) => {
-    setSelectedTrainingPeriod(event.target.value);
+    startTransition(() => {
+      setSelectedTrainingPeriod(event.target.value);
+    });
   };
 
   const handleRowClick = (row) => {
